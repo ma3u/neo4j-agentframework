@@ -5,3 +5,8 @@ sentence-transformers
 numpy
 python-dotenv
 tiktoken
+
+# Document Processing with Docling
+docling>=2.55.0
+pypdfium2>=4.30.0
+reportlab>=4.0.0  # Optional: for creating test PDFs

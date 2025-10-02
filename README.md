@@ -25,6 +25,7 @@ A powerful Retrieval-Augmented Generation (RAG) system built on Neo4j graph data
 - 📚 **Pre-loaded Knowledge**: Comprehensive Neo4j documentation included
 - 🛠️ **Flexible Architecture**: Modular design for easy customization
 - 🌐 **Multi-Model Support**: OpenAI, Sentence Transformers, and more
+- 📄 **Advanced Document Processing**: Powered by Docling for PDF, DOCX, PPTX extraction with tables and structure preservation
 
 ## 🚀 Quick Start
 
@@ -96,6 +97,10 @@ pip install -r requirements.txt
 
 # For official GraphRAG support (Neo4j 5.18+)
 pip install neo4j-graphrag[openai,langchain]
+
+# Optional: For advanced document processing with Docling
+# (Already included in requirements.txt)
+pip install docling pypdfium2 reportlab
 ```
 
 #### 3️⃣ Verify Installation
@@ -107,6 +112,7 @@ curl http://localhost:7474
 # Test Python setup
 python -c "import neo4j; print('✅ Neo4j driver ready')"
 python -c "from sentence_transformers import SentenceTransformer; print('✅ Embeddings ready')"
+python -c "from docling.document_converter import DocumentConverter; print('✅ Docling ready for document processing')"
 ```
 
 ## 📖 User Guide
@@ -180,6 +186,46 @@ rag.close()
 ```
 
 ### Advanced Features
+
+#### 📄 Advanced Document Processing with Docling
+
+**NEW**: Enhanced document extraction powered by IBM's Docling library for superior PDF, DOCX, and PPTX processing.
+
+```python
+from docling_loader import DoclingDocumentLoader
+from neo4j_rag import Neo4jRAG
+
+# Initialize with Neo4j connection
+rag = Neo4jRAG()
+loader = DoclingDocumentLoader(neo4j_rag=rag)
+
+# Load a PDF with advanced extraction
+doc_info = loader.load_document(
+    "research_paper.pdf",
+    metadata={"category": "research", "year": "2024"}
+)
+
+print(f"Extracted {doc_info['statistics']['character_count']:,} characters")
+print(f"Found {doc_info['statistics']['table_count']} tables")
+print(f"Found {doc_info['statistics']['image_count']} images")
+
+# Load entire directory of documents
+results = loader.load_directory(
+    "documents/",
+    recursive=True,
+    file_filter=['.pdf', '.docx', '.pptx']
+)
+
+loader.close()
+```
+
+**Docling Features**:
+- **Multi-format Support**: PDF, DOCX, PPTX, HTML, Markdown, and more
+- **Table Extraction**: Preserves table structure and formatting
+- **Metadata Extraction**: Titles, authors, creation dates, page counts
+- **OCR Support**: Handles scanned PDFs automatically
+- **Section Detection**: Identifies document structure and hierarchy
+- **Batch Processing**: Efficiently process entire directories
 
 #### 🚀 Optimized Version for Large Datasets
 
@@ -415,6 +461,25 @@ class RAGQueryEngine:
         # }
 ```
 
+#### DoclingDocumentLoader
+
+```python
+class DoclingDocumentLoader:
+    def __init__(self, neo4j_rag: Optional[Neo4jRAG] = None)
+
+    def load_document(self, file_path: str, metadata: Optional[Dict] = None) -> Dict
+        # Returns document info with statistics, tables, images, sections
+
+    def load_directory(self, directory_path: str,
+                       recursive: bool = True,
+                       file_filter: Optional[List[str]] = None) -> List[Dict]
+
+    def extract_text_only(self, file_path: str) -> str
+        # Extract text without storing in Neo4j
+
+    def close(self) -> None
+```
+
 ## 🧪 Testing
 
 ```bash
@@ -423,6 +488,9 @@ python test_rag.py
 
 # Test optimized version
 python test_optimized.py
+
+# Test Docling PDF extraction
+python test_docling_pdf.py
 
 # Quick validation
 python quick_test.py
