@@ -208,6 +208,33 @@ jupyter notebook notebooks/03_graph_analysis.ipynb
 
 4. **Explore your data** - Notebooks generate visualizations and insights about your knowledge graph
 
+### Upload Notebooks to Neo4j Knowledge Graph
+
+You can also upload the notebook content itself to Neo4j, making the tutorials searchable:
+
+```bash
+# Upload all notebooks to Neo4j
+python upload_notebooks_to_neo4j.py
+
+# Verify the upload
+python upload_notebooks_to_neo4j.py --verify
+```
+
+This will:
+- Process all 5 notebooks and extract their content
+- Create ~200 searchable chunks in Neo4j
+- Enable semantic search on notebook documentation
+- Allow you to find specific code examples and explanations
+
+**Example queries after upload:**
+```python
+# Search for optimization techniques in notebooks
+results = rag.vector_search("performance optimization batch processing", k=5)
+
+# Find graph analysis examples
+results = rag.vector_search("graph visualization networkx", k=5)
+```
+
 ### What You'll Learn from the Notebooks
 
 **Graph Analysis (`03_graph_analysis.ipynb`):**
