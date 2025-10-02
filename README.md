@@ -141,6 +141,14 @@ python quick_test.py
 # ✅ Search working: Found results for 'Neo4j'
 ```
 
+#### 6️⃣ Explore in Neo4j Browser
+
+Open [http://localhost:7474](http://localhost:7474) in your browser and login with `neo4j/password`:
+
+![Neo4j Browser - Graph Visualization](images/neo4j-browser-screenshot.png)
+
+*The Neo4j Browser showing document categories, relationships, and query results*
+
 ---
 
 ## 🧩 Components Overview
@@ -383,6 +391,28 @@ results = rag.graph_search(
     relationship_types=["REFERENCES", "RELATED_TO"]
 )
 ```
+
+### Visual Graph Exploration
+
+Use Neo4j Browser to explore your knowledge graph visually:
+
+```cypher
+// View document categories and counts
+MATCH (d:Document)
+RETURN d.category, COUNT(d) as document_count
+
+// Explore document-chunk relationships
+MATCH (d:Document)-[:HAS_CHUNK]->(c:Chunk)
+RETURN d, c LIMIT 50
+
+// Find most similar chunks
+MATCH (c:Chunk)
+WHERE c.text CONTAINS 'Neo4j'
+RETURN c.text, c.chunk_index
+LIMIT 10
+```
+
+![Neo4j Browser - Interactive Graph Exploration](images/neo4j-browser-screenshot.png)
 
 ---
 
@@ -692,6 +722,10 @@ splitter = RecursiveCharacterTextSplitter(
 // Relationships
 (document:Document)-[:HAS_CHUNK]->(chunk:Chunk)
 ```
+
+You can visualize this graph structure in the Neo4j Browser:
+
+![Neo4j Browser - Document and Chunk Relationships](images/neo4j-browser-screenshot.png)
 
 ### Data Flow
 
