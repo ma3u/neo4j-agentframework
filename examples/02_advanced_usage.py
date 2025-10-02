@@ -9,8 +9,8 @@ This file contains more advanced examples including:
 - Cypher queries
 """
 
-from neo4j_rag import Neo4jRAG
-from neo4j_rag_optimized import Neo4jRAGOptimized
+from src.neo4j_rag import Neo4jRAG
+from src.neo4j_rag_optimized import Neo4jRAGOptimized
 from sentence_transformers import SentenceTransformer
 import time
 

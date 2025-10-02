@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 #!/usr/bin/env python3
 """
 Upload Jupyter Notebooks to Neo4j Knowledge Graph
@@ -10,7 +14,7 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, List, Any
-from neo4j_rag import Neo4jRAG
+from src.neo4j_rag import Neo4jRAG
 from datetime import datetime
 
 def extract_notebook_content(notebook_path: Path) -> Dict[str, Any]:

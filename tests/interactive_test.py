@@ -1,10 +1,14 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 #!/usr/bin/env python3
 """
 Interactive RAG Query Script
 Run this to test your own questions against the RAG system
 """
 
-from neo4j_rag import Neo4jRAG, RAGQueryEngine
+from src.neo4j_rag import Neo4jRAG, RAGQueryEngine
 import sys
 
 def get_database_stats(rag):

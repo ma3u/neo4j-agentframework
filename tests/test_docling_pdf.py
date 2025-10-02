@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 #!/usr/bin/env python3
 """
 Test Docling PDF Extraction
@@ -7,8 +11,8 @@ Downloads sample PDFs and demonstrates extraction capabilities
 import os
 import requests
 from pathlib import Path
-from docling_loader import DoclingDocumentLoader
-from neo4j_rag import Neo4jRAG
+from src.docling_loader import DoclingDocumentLoader
+from src.neo4j_rag import Neo4jRAG
 import logging
 
 logging.basicConfig(level=logging.INFO)

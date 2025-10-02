@@ -6,8 +6,8 @@ This file contains simple examples to get you started.
 Each example is self-contained and explains what it does.
 """
 
-from neo4j_rag import Neo4jRAG, RAGQueryEngine
-from docling_loader import DoclingDocumentLoader
+from src.neo4j_rag import Neo4jRAG, RAGQueryEngine
+from src.docling_loader import DoclingDocumentLoader
 
 # ============================================
 # Example 1: Add a Simple Document

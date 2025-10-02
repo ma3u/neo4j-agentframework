@@ -10,7 +10,7 @@ from pathlib import Path
 from docling.document_converter import DocumentConverter
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PipelineOptions
-from neo4j_rag import Neo4jRAG
+from .neo4j_rag import Neo4jRAG
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

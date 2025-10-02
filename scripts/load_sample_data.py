@@ -2,7 +2,11 @@
 Load sample data into Neo4j RAG system
 """
 
-from neo4j_rag import Neo4jRAG
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.neo4j_rag import Neo4jRAG
 import logging
 
 logging.basicConfig(level=logging.INFO)

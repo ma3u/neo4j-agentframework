@@ -65,7 +65,7 @@ pip install -r requirements.txt
 
 ### Step 4: Test Everything Works
 ```bash
-python quick_test.py
+python scripts/quick_test.py
 ```
 **What's happening?** This loads sample documents and runs a test search. You should see:
 - ✅ Connected to Neo4j
@@ -80,6 +80,36 @@ Open http://localhost:7474 in your browser
 You'll see your documents as a graph!
 
 ---
+
+## 📁 Project Structure
+
+```
+neo4j-rag-demo/
+├── src/                    # Core source code
+│   ├── neo4j_rag.py       # Main RAG implementation
+│   ├── neo4j_rag_optimized.py  # Optimized version
+│   ├── docling_loader.py  # Document processing
+│   └── official_graphrag_demo.py  # Official integration
+├── scripts/                # Utility scripts
+│   ├── quick_test.py      # Quick system test
+│   ├── load_sample_data.py  # Load example data
+│   └── upload_notebooks_to_neo4j.py  # Upload notebooks
+├── tests/                  # Test files
+│   ├── test_rag.py        # Main tests
+│   └── test_optimized.py  # Performance tests
+├── notebooks/              # Jupyter tutorials
+│   ├── 01_setup.ipynb     # Getting started
+│   ├── 02_embeddings.ipynb  # Understanding embeddings
+│   ├── 03_graph_analysis.ipynb  # Graph analysis
+│   ├── 04_knowledge_discovery.ipynb  # Knowledge exploration
+│   └── 05_query_optimization.ipynb  # Performance tuning
+├── examples/               # Code examples
+│   ├── 01_basic_usage.py  # Basic examples
+│   └── 02_advanced_usage.py  # Advanced features
+├── docs/                   # Documentation
+├── knowledge/              # Knowledge base files
+└── samples/                # Sample documents
+```
 
 ## 🔧 How It Works
 
@@ -115,7 +145,7 @@ Your Documents (PDFs, etc.)
 
 **Simple text document:**
 ```python
-from neo4j_rag import Neo4jRAG
+from src.neo4j_rag import Neo4jRAG
 
 rag = Neo4jRAG()
 rag.add_document("Your text content here", metadata={"source": "manual"})
@@ -124,7 +154,7 @@ rag.close()
 
 **PDF with tables (advanced):**
 ```python
-from docling_loader import DoclingDocumentLoader
+from src.docling_loader import DoclingDocumentLoader
 
 loader = DoclingDocumentLoader()
 loader.load_document("report.pdf")
@@ -135,7 +165,7 @@ loader.close()
 
 **Find similar content:**
 ```python
-from neo4j_rag import Neo4jRAG
+from src.neo4j_rag import Neo4jRAG
 
 rag = Neo4jRAG()
 results = rag.vector_search("What is Neo4j?", k=5)
@@ -149,7 +179,7 @@ rag.close()
 
 **Get answers from your documents:**
 ```python
-from neo4j_rag import Neo4jRAG, RAGQueryEngine
+from src.neo4j_rag import Neo4jRAG, RAGQueryEngine
 
 rag = Neo4jRAG()
 engine = RAGQueryEngine(rag)
@@ -214,10 +244,10 @@ You can also upload the notebook content itself to Neo4j, making the tutorials s
 
 ```bash
 # Upload all notebooks to Neo4j
-python upload_notebooks_to_neo4j.py
+python scripts/upload_notebooks_to_neo4j.py
 
 # Verify the upload
-python upload_notebooks_to_neo4j.py --verify
+python scripts/upload_notebooks_to_neo4j.py --verify
 ```
 
 This will:
@@ -300,11 +330,11 @@ For advanced features and detailed API documentation, see:
 - Did you install requirements? Run: `pip install -r requirements.txt`
 
 **"Out of memory"**
-- For large datasets (>1000 docs), use: `from neo4j_rag_optimized import Neo4jRAGOptimized`
+- For large datasets (>1000 docs), use: `from src.neo4j_rag_optimized import Neo4jRAGOptimized`
 - Increase Docker memory in Docker Desktop settings
 
 **No search results**
-- Check if data loaded: `python -c "from neo4j_rag import Neo4jRAG; print(Neo4jRAG().get_stats())"`
+- Check if data loaded: `python -c "from src.neo4j_rag import Neo4jRAG; print(Neo4jRAG().get_stats())"`
 - Try broader search terms
 
 ### Getting Help

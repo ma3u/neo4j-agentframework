@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 #!/usr/bin/env python3
 """
 Knowledge Base Processor using Docling
@@ -11,7 +15,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 from docling.document_converter import DocumentConverter
 from docling.datamodel.base_models import ConversionStatus
-from neo4j_rag import Neo4jRAG
+from src.neo4j_rag import Neo4jRAG
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
