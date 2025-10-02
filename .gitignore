@@ -41,7 +41,8 @@ neo4j-data/
 
 # Jupyter Notebooks
 .ipynb_checkpoints/
-*.ipynb
+# Keep our tutorial notebooks
+!notebooks/*.ipynb
 
 # Testing
 .pytest_cache/

@@ -1,9 +1,6 @@
 # 🚀 Neo4j RAG System
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
-[![Neo4j](https://img.shields.io/badge/Neo4j-5.11+-green.svg)](https://neo4j.com/)
-[![Docling](https://img.shields.io/badge/Docling-2.55+-blue.svg)](https://github.com/DS4SD/docling)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/) [![Neo4j](https://img.shields.io/badge/Neo4j-5.11+-green.svg)](https://neo4j.com/) [![Docling](https://img.shields.io/badge/Docling-2.55+-blue.svg)](https://github.com/DS4SD/docling)
 
 **Build a powerful question-answering system** using Neo4j graph database and advanced document processing. This RAG (Retrieval-Augmented Generation) system helps you search through documents intelligently and get accurate answers based on your data.
 
@@ -167,14 +164,72 @@ rag.close()
 
 ## 📚 Learn More
 
-### Interactive Tutorials
-Start with our Jupyter notebooks:
-1. `notebooks/01_setup.ipynb` - First steps
-2. `notebooks/02_embeddings.ipynb` - Understanding how search works
+### Interactive Tutorials with Jupyter Notebooks
 
+We provide comprehensive Jupyter notebooks to help you understand and analyze your knowledge graph:
+
+#### Getting Started
+1. **`01_setup.ipynb`** - First steps and environment setup
+2. **`02_embeddings.ipynb`** - Understanding how embeddings and search work
+
+#### Knowledge Graph Analysis (NEW!)
+3. **`03_graph_analysis.ipynb`** - Analyze your knowledge graph structure
+   - Graph statistics and metrics
+   - Document and chunk distribution
+   - Embedding coverage analysis
+   - Connectivity and relationship mapping
+
+4. **`04_knowledge_discovery.ipynb`** - Discover insights in your data
+   - Semantic similarity networks
+   - Topic clustering and visualization
+   - Knowledge gap detection
+   - Cross-document connections
+   - Content recommendations
+
+5. **`05_query_optimization.ipynb`** - Optimize performance
+   - Query performance benchmarking
+   - Index optimization strategies
+   - Batch processing techniques
+   - Caching implementation
+   - Memory management
+
+### How to Use the Notebooks
+
+1. **Start Jupyter:**
 ```bash
-jupyter notebook notebooks/01_setup.ipynb
+jupyter notebook
+# Or for a specific notebook:
+jupyter notebook notebooks/03_graph_analysis.ipynb
 ```
+
+2. **Follow the guided steps** - Each notebook has clear sections and explanations
+
+3. **Run cells in order** - Press Shift+Enter to execute each cell
+
+4. **Explore your data** - Notebooks generate visualizations and insights about your knowledge graph
+
+### What You'll Learn from the Notebooks
+
+**Graph Analysis (`03_graph_analysis.ipynb`):**
+- How many documents and chunks are in your database
+- Which documents have the most content
+- Distribution of topics across your knowledge base
+- Data quality and completeness metrics
+- Export capabilities for external analysis
+
+**Knowledge Discovery (`04_knowledge_discovery.ipynb`):**
+- Find hidden connections between documents
+- Identify knowledge gaps in your documentation
+- Get content recommendations based on similarity
+- Visualize topic clusters in your data
+- Test different search strategies
+
+**Query Optimization (`05_query_optimization.ipynb`):**
+- Measure current query performance
+- Compare standard vs optimized implementations
+- Learn caching strategies for faster responses
+- Optimize batch processing for large datasets
+- Reduce memory usage by 30-50%
 
 ### Key Concepts Explained
 
