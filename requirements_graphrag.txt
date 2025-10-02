@@ -1,0 +1,5 @@
+neo4j
+neo4j-graphrag[openai,langchain]
+python-dotenv
+numpy
+pandas
