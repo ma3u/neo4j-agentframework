@@ -90,10 +90,24 @@ python scripts/quick_test.py
 ```
 
 ### 5. Explore in Neo4j Browser
+
+#### Quick Setup - Import Pre-built Queries
+```bash
+# Run this to create an import helper and open it in your browser
+python scripts/upload_queries_to_browser.py
+```
+This will:
+- Create `neo4j_browser_import.html` with 10 essential queries
+- Open it in your browser for easy copy-paste
+- Test all queries to ensure they work
+
+#### Manual Setup
 1. Open http://localhost:7474/browser/
 2. Login: `neo4j` / `password`
-3. Copy queries from `scripts/neo4j_content_analysis.cypher`
-4. Follow setup guide in `scripts/browser_quick_setup.md`
+3. Click the star (⭐) icon in the left sidebar
+4. Click "Add empty favorite" (+)
+5. Copy queries from the import helper or `scripts/neo4j_content_analysis.cypher`
+6. Paste, name, and save each query
 
 ---
 
@@ -155,8 +169,16 @@ Chunk Nodes
 
 ## 📊 Rich Analytics & Insights
 
-### Browser Integration
-The framework includes 50+ pre-built Cypher queries for comprehensive analysis:
+### Pre-built Neo4j Browser Queries
+The framework includes 50+ pre-built Cypher queries ready to import into Neo4j Browser.
+
+**Quick Import:**
+```bash
+# Automatically creates HTML import helper with 10 essential queries
+python scripts/upload_queries_to_browser.py
+```
+
+### Available Query Categories
 
 **📈 Dashboard Overview**
 - Document and chunk statistics
