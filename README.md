@@ -731,257 +731,75 @@ docker-compose up -d
 
 ## 👨‍💻 Developer Journey
 
-### Getting Started: From Zero to Production
+**New to the project?** Follow this path: [Quick Start](#-quick-start-5-minutes) → [Browse Queries](#-neo4j-browser-queries--analytics) → [Explore Architecture](#️-architecture) → [Try Azure Deployment](#️-azure-deployment)
 
-#### 1️⃣ **Local Development Setup** (15 minutes)
-
-**Prerequisites**
-- Python 3.12+
-- Docker Desktop
-- Azure CLI (for cloud deployment)
-
-**Quick Start**
-```bash
-# Clone and setup
-git clone https://github.com/ma3u/neo4j-agentframework.git
-cd neo4j-rag-demo
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Start Neo4j locally
-docker run -d --name neo4j-rag \
-  -p7474:7474 -p7687:7687 \
-  -e NEO4J_AUTH=neo4j/password \
-  neo4j:5.11
-```
-
-#### 2️⃣ **Exploring the Codebase** (30 minutes)
-
-**Core Components**
-```
-neo4j-rag-demo/
-├── src/
-│   ├── neo4j_rag.py           # 417x optimized RAG engine
-│   ├── docling_loader.py      # Advanced PDF processing
-│   └── official_graphrag_demo.py  # Neo4j GraphRAG integration
-├── scripts/
-│   ├── load_sample_data.py    # Sample data loader
-│   ├── rag_demo.py            # Interactive demo
-│   └── rag_statistics.py      # Analytics dashboard
-├── azure/
-│   ├── deploy.sh              # Automated Azure deployment
-│   ├── Dockerfile.agent       # Production container
-│   └── app.py                 # FastAPI application
-└── tests/
-    └── test_rag.py            # Comprehensive test suite
-```
-
-**Key Concepts**
-- **417x Performance**: Connection pooling + query caching + parallel search
-- **Hybrid Search**: Vector similarity + keyword matching (configurable alpha)
-- **Smart Chunking**: 300 chars with 50 char overlap for optimal retrieval
-- **Enterprise Ready**: Auto-scaling, monitoring, backup strategies
-
-#### 3️⃣ **Making Your First Changes** (45 minutes)
-
-**Example: Add Custom Document Category**
-
-```python
-# 1. Load custom PDFs with metadata
-from src.neo4j_rag import Neo4jRAG
-
-rag = Neo4jRAG()
-rag.add_document(
-    content="Your content here",
-    metadata={
-        "source": "custom_doc.pdf",
-        "category": "custom",  # Your category
-        "author": "Your Name",
-        "year": 2025
-    }
-)
-
-# 2. Query with filters
-results = rag.hybrid_search(
-    "your query",
-    k=5,
-    filter_metadata={"category": "custom"}
-)
-```
-
-**Testing Your Changes**
-```bash
-# Run test suite
-python tests/test_rag.py
-
-# Check performance
-python scripts/rag_statistics.py
-
-# Interactive testing
-python scripts/rag_demo.py
-```
-
-#### 4️⃣ **Contributing Workflow** (Standards)
+### 🎯 Contributing Guide
 
 **Development Standards**
-- ✅ **Code Quality**: Follow PEP 8, type hints, docstrings
-- ✅ **Testing**: Unit tests + integration tests (≥80% coverage)
-- ✅ **Documentation**: Update CLAUDE.md + inline comments
-- ✅ **Performance**: Profile changes, maintain sub-110ms queries
+- ✅ **Code Quality**: PEP 8, type hints, comprehensive docstrings
+- ✅ **Testing**: Unit + integration tests (≥80% coverage required)
+- ✅ **Documentation**: Update CLAUDE.md for AI assistance + inline comments
+- ✅ **Performance**: Maintain sub-110ms query times (profile changes)
 
-**Pull Request Checklist**
+**Quick Contribution Workflow**
 ```bash
-# 1. Create feature branch
-git checkout -b feature/your-feature-name
+# 1. Fork & clone
+git checkout -b feature/your-feature
 
-# 2. Make changes with tests
-# ... code changes ...
-
-# 3. Run quality checks
-python -m pytest tests/
+# 2. Make changes & test
+python tests/test_rag.py
 python -m black src/
 python -m pylint src/
 
-# 4. Commit with clear message
-git commit -m "feat: Add custom document categories
-
-- Add category metadata support
-- Update hybrid search filters
-- Add tests for category filtering
-- Update documentation"
-
-# 5. Push and create PR
-git push origin feature/your-feature-name
-# Open PR on GitHub with description
+# 3. Commit & push
+git commit -m "feat: Description"
+git push origin feature/your-feature
 ```
 
-#### 5️⃣ **Path to Production** (Azure Deployment)
-
-**From Local to Cloud**
-
-```mermaid
-graph LR
-    A[Local Dev] -->|Test| B[Docker Build]
-    B -->|Validate| C[Azure Container Registry]
-    C -->|Deploy| D[Container Apps]
-    D -->|Monitor| E[Production]
-
-    style A fill:#e1f5ff
-    style E fill:#c8e6c9
-```
-
-**Deployment Path**
-```bash
-# 1. Local validation
-python tests/test_rag.py  # All tests pass
-docker build -f azure/Dockerfile.agent -t neo4j-rag-agent:test .
-
-# 2. Azure deployment
-cd azure
-./deploy.sh  # Automated deployment
-
-# 3. Production testing
-curl https://your-app.azurecontainerapps.io/health
-curl -X POST https://your-app.azurecontainerapps.io/query \
-  -H "Content-Type: application/json" \
-  -d '{"question":"What is Neo4j?"}'
-
-# 4. Monitoring
-az containerapp logs show \
-  --name neo4j-rag-agent \
-  --resource-group rg-neo4j-rag-bitnet \
-  --follow
-```
-
-#### 6️⃣ **Advanced Customization**
+### 🔧 Advanced Customization
 
 **Performance Tuning**
 ```python
-# Adjust connection pool size
-rag = Neo4jRAG(max_connections=20)
+# Adjust connection pool and cache
+rag = Neo4jRAG(max_connections=20, cache_size=200)
 
-# Configure cache size
-rag = Neo4jRAG(cache_size=200)
-
-# Tune search parameters
-results = rag.hybrid_search(
-    query="...",
-    k=10,              # More results
-    alpha=0.7,         # Favor vector search
-    similarity_threshold=0.6  # Higher precision
-)
+# Fine-tune search
+results = rag.hybrid_search(query="...", k=10, alpha=0.7, similarity_threshold=0.6)
 ```
 
 **Custom Embeddings**
 ```python
 from sentence_transformers import SentenceTransformer
-
-# Use different embedding model
 custom_model = SentenceTransformer('all-mpnet-base-v2')
 rag = Neo4jRAG(embedding_model=custom_model)
 ```
 
-**Azure Auto-Scaling Configuration**
-```bash
-# Scale based on load
-az containerapp update \
-  --name neo4j-rag-agent \
-  --resource-group rg-neo4j-rag-bitnet \
-  --min-replicas 2 \
-  --max-replicas 20 \
-  --scale-rule-name http-rule \
-  --scale-rule-type http \
-  --scale-rule-http-concurrency 50
-```
+### 🐛 Troubleshooting
 
-#### 7️⃣ **Debugging & Troubleshooting**
-
-**Common Issues**
-
-| Issue | Solution |
-|-------|----------|
-| Slow queries | Check cache hit rate, increase pool size |
-| Memory errors | Reduce chunk size, batch processing |
-| Connection timeouts | Increase timeout, check Neo4j resources |
-| Deployment fails | Validate Docker build, check Azure quotas |
+| Issue | Quick Fix |
+|-------|-----------|
+| Slow queries | `rag.get_stats()` → increase pool/cache |
+| Memory errors | Reduce chunk_size in `RecursiveCharacterTextSplitter` |
+| Connection fails | Check `docker ps`, verify Neo4j running on 7687 |
+| Azure deploy fails | Validate: `docker build -f azure/Dockerfile.agent .` |
 
 **Debug Commands**
 ```bash
-# Local debugging
-python -m pdb scripts/rag_demo.py
-
-# Container debugging
+# Local
 docker logs neo4j-rag
-docker exec -it neo4j-rag /bin/bash
+python -c "from src.neo4j_rag import Neo4jRAG; rag=Neo4jRAG(); print(rag.get_stats())"
 
-# Azure debugging
+# Azure
 az containerapp logs show --name neo4j-rag-agent --resource-group rg-neo4j-rag-bitnet --tail 100
-az monitor metrics list --resource <resource-id> --metric-names Requests,ResponseTime
 ```
 
-#### 8️⃣ **Next Steps**
+### 📚 Learning Path
 
-**Learning Resources**
-- 📖 [Neo4j GraphRAG Documentation](https://neo4j.com/docs/graph-data-science)
-- 📖 [Microsoft Agent Framework Guide](https://learn.microsoft.com/azure/ai)
-- 📖 [RAG Best Practices](docs/RAG_BEST_PRACTICES.md)
-- 📺 [Video Tutorials](https://youtube.com/playlist/neo4j-rag)
-
-**Advanced Topics**
-1. **Multi-Modal RAG**: Images + text embeddings
-2. **Streaming Responses**: Real-time answer generation
-3. **Fine-Tuning**: Custom embedding models
-4. **Enterprise Integration**: SSO, RBAC, compliance
-5. **Multi-Tenant**: Isolated data per organization
-
-**Community Engagement**
-- 💬 [Join Discord](https://discord.gg/neo4j-community)
-- 🐛 [Report Issues](https://github.com/ma3u/neo4j-agentframework/issues)
-- 💡 [Feature Requests](https://github.com/ma3u/neo4j-agentframework/discussions)
-- 🤝 [Contribute](CONTRIBUTING.md)
+**Next Steps**
+1. 📖 Read [CLAUDE.md](CLAUDE.md) for detailed architecture
+2. 🔍 Explore [Neo4j Browser Queries](#-neo4j-browser-queries--analytics)
+3. ☁️ Try [Azure Deployment](#️-azure-deployment)
+4. 🤝 Join [GitHub Discussions](https://github.com/ma3u/neo4j-agentframework/discussions)
 
 ---
 
