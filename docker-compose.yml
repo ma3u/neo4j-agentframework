@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j-rag-optimized
+    restart: unless-stopped
+    ports:
+      - "7474:7474"   # HTTP
+      - "7687:7687"   # Bolt
+    environment:
+      # Authentication
+      - NEO4J_AUTH=neo4j/password
+      
+      # Memory Configuration (Production Optimized)
+      - NEO4J_dbms_memory_heap_initial__size=2G
+      - NEO4J_dbms_memory_heap_max__size=4G
+      - NEO4J_dbms_memory_pagecache_size=2G
+      
+      # Connection Pool Settings
+      - NEO4J_dbms_connector_bolt_thread__pool__min__size=5
+      - NEO4J_dbms_connector_bolt_thread__pool__max__size=400
+      - NEO4J_dbms_connector_bolt_thread__pool__keep__alive=5m
+      
+      # Query Performance
+      - NEO4J_dbms_query_cache_size=1000
+      - NEO4J_dbms_logs_query_enabled=INFO
+      - NEO4J_dbms_logs_query_threshold=1s
+      
+      # Transaction Settings
+      - NEO4J_dbms_transaction_timeout=60s
+      - NEO4J_dbms_transaction_concurrent_maximum=1000
+      
+      # Security Settings
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+      
+      # Performance Monitoring
+      - NEO4J_metrics_enabled=true
+      - NEO4J_metrics_csv_enabled=true
+      - NEO4J_metrics_csv_interval=30s
+      
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+      - neo4j_plugins:/plugins
+      - ./neo4j-conf:/conf
+      
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+          cpus: '4.0'
+        reservations:
+          memory: 4G
+          cpus: '2.0'
+
+volumes:
+  neo4j_data:
+    driver: local
+  neo4j_logs:
+    driver: local  
+  neo4j_import:
+    driver: local
+  neo4j_plugins:
+    driver: local

@@ -41,7 +41,8 @@ def interactive_rag():
     rag = Neo4jRAG(
         uri="bolt://localhost:7687",
         username="neo4j", 
-        password="password"
+        password="password",
+        max_pool_size=10  # Optimized connection pooling
     )
     
     # Show database statistics
