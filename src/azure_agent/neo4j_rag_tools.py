@@ -11,7 +11,8 @@ from typing import Dict, List, Any, Optional, Annotated
 from dataclasses import dataclass
 
 # Microsoft Agent Framework imports
-from agent_framework import ChatAgent, tools
+from agent_framework import ChatAgent
+from agent_framework.tools import tool
 from agent_framework.azure import AzureAIAgentClient
 from azure.identity.aio import AzureCliCredential, DefaultAzureCredential
 
@@ -67,7 +68,7 @@ class Neo4jRAGTools:
         if self.rag:
             await asyncio.to_thread(self.rag.close)
     
-    @tools.tool
+    @tool
     async def query_knowledge_graph(
         self,
         query: Annotated[str, "The question to search for in the Neo4j knowledge graph"],
@@ -161,7 +162,7 @@ class Neo4jRAGTools:
             logger.error(f"Error in query_knowledge_graph: {str(e)}", exc_info=True)
             return f"❌ Error querying knowledge graph: {str(e)}"
     
-    @tools.tool
+    @tool
     async def search_similar_content(
         self,
         search_query: Annotated[str, "Search query for finding similar content"],
@@ -224,7 +225,7 @@ class Neo4jRAGTools:
             logger.error(f"Error in search_similar_content: {str(e)}", exc_info=True)
             return f"❌ Error in similarity search: {str(e)}"
     
-    @tools.tool
+    @tool
     async def get_system_statistics(self) -> str:
         """
         Get comprehensive statistics about the Neo4j RAG system performance and content.

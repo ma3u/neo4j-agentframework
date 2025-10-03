@@ -301,8 +301,39 @@ Answer:"""
             }
         }
     
-    def close(self):
-        """Close database connections"""
+    async def query(self, question: str, max_results: int = 3) -> Dict[str, Any]:
+        """
+        Main query method for async compatibility
+        Wrapper around search_and_generate for FastAPI integration
+        """
+        result = await asyncio.to_thread(self.search_and_generate, question, max_results)
+        return {
+            'answer': result.get('answer', ''),
+            'sources': result.get('contexts', []),
+            'bitnet_latency': self.stats.get('avg_latency', 0.029) * 1000  # Convert to ms
+        }
+
+    def get_neo4j_stats(self) -> Dict[str, Any]:
+        """Get Neo4j database statistics"""
+        with self.driver.session() as session:
+            # Get document count
+            doc_count = session.run("MATCH (d:Document) RETURN count(d) as count").single()['count']
+
+            # Get chunk count
+            chunk_count = session.run("MATCH (c:Chunk) RETURN count(c) as count").single()['count']
+
+            return {
+                'documents': doc_count,
+                'chunks': chunk_count,
+                'avg_chunks_per_doc': chunk_count / max(doc_count, 1)
+            }
+
+    async def close(self):
+        """Close database connections (async for lifespan compatibility)"""
+        await asyncio.to_thread(self._close_sync)
+
+    def _close_sync(self):
+        """Synchronous close helper"""
         if self.driver:
             self.driver.close()
 
