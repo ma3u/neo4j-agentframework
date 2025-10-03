@@ -56,7 +56,7 @@ This framework has been tested with substantial knowledge bases:
 
 ### 1. Clone & Setup
 ```bash
-git clone https://github.com/yourusername/neo4j-agentframework.git
+git clone https://github.com/ma3u/neo4j-agentframework.git
 cd neo4j-agentframework
 
 # Create virtual environment
@@ -118,9 +118,11 @@ print("Sources:", response['sources'])
 **📄 Advanced Document Processing**
 ```python
 from src.docling_loader import DoclingDocumentLoader
+from src.neo4j_rag import Neo4jRAG
 
 # Process complex PDFs with tables and structure
-loader = DoclingDocumentLoader()
+rag = Neo4jRAG()
+loader = DoclingDocumentLoader(neo4j_rag=rag)
 loader.load_document("complex_report.pdf")
 ```
 
@@ -133,7 +135,7 @@ results = rag.vector_search("graph algorithms", k=5)
 results = rag.hybrid_search("Neo4j performance optimization", k=5)
 
 # Search with similarity threshold
-results = rag.similarity_search("knowledge graphs", threshold=0.8)
+results = rag.similarity_threshold_search("knowledge graphs", threshold=0.8)
 ```
 
 ### Graph Structure
@@ -222,20 +224,18 @@ RETURN
 ## 📚 Documentation & Examples
 
 ### Getting Started Guides
-- **[Quick Start Guide](docs/QUICK_START.md)** - Get running in 5 minutes
-- **[Installation Guide](docs/INSTALLATION.md)** - Detailed setup instructions
-- **[Configuration Guide](docs/CONFIGURATION.md)** - Customize for your needs
+- **[Quick Start](README.md#-quick-start-5-minutes)** - Get running in 5 minutes
+- **[CLAUDE.md](CLAUDE.md)** - Development guide and project overview
+- **[USER_GUIDE.md](USER_GUIDE.md)** - Complete usage instructions
 
 ### Advanced Usage
-- **[Agent Development](docs/AGENT_DEVELOPMENT.md)** - Build custom AI agents
-- **[Performance Tuning](docs/PERFORMANCE.md)** - Optimize for production
-- **[Docker Deployment](docs/DOCKER.md)** - Production deployment guide
-- **[API Reference](docs/API.md)** - Complete API documentation
+- **[Test Suite](tests/)** - Comprehensive testing examples
+- **[Scripts](scripts/)** - Utility scripts for data loading and analysis
+- **[Examples](examples/)** - Code examples for common tasks
 
-### Examples & Tutorials
-- **[Jupyter Notebooks](notebooks/)** - Interactive tutorials and analysis
-- **[Code Examples](examples/)** - Practical implementation examples
-- **[Use Cases](docs/USE_CASES.md)** - Real-world applications
+### Analytics & Visualization
+- **[Neo4j Browser Queries](scripts/neo4j_content_analysis.cypher)** - 50+ analytical queries
+- **[Browser Setup Guide](scripts/browser_quick_setup.md)** - Neo4j Browser configuration
 
 ---
 
@@ -246,11 +246,11 @@ RETURN
 # Run all tests
 python test_rag.py
 
-# Performance benchmarks
-python tests/test_performance.py
+# Interactive testing
+python tests/interactive_test.py
 
-# Integration tests
-python tests/test_integration.py
+# PDF processing tests
+python tests/test_docling_pdf.py
 ```
 
 ### Quality Metrics
@@ -267,9 +267,9 @@ python tests/test_integration.py
 ```
 neo4j-agentframework/
 ├── src/                    # Core framework code
-│   ├── neo4j_rag.py       # Main RAG implementation
-│   ├── docling_loader.py  # Document processing
-│   └── query_engine.py    # AI query processing
+│   ├── neo4j_rag.py       # Main RAG implementation with query engine
+│   ├── docling_loader.py  # Advanced PDF document processing
+│   └── official_graphrag_demo.py  # Neo4j GraphRAG integration
 ├── scripts/                # Utility scripts
 │   ├── neo4j_content_analysis.cypher  # Browser queries
 │   ├── upload_pdfs_to_neo4j.py       # Batch PDF processing
@@ -287,14 +287,14 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 ### Development Setup
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/neo4j-agentframework.git
+git clone https://github.com/ma3u/neo4j-agentframework.git
 cd neo4j-agentframework
 
 # Install development dependencies
 pip install -r requirements-dev.txt
 
 # Run tests
-python -m pytest tests/
+python tests/test_rag.py
 
 # Start development environment
 docker-compose up -d
@@ -347,8 +347,8 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🤝 Support & Community
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/yourusername/neo4j-agentframework/issues)
-- **Discussions**: [Community discussions and Q&A](https://github.com/yourusername/neo4j-agentframework/discussions)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/ma3u/neo4j-agentframework/issues)
+- **Discussions**: [Community discussions and Q&A](https://github.com/ma3u/neo4j-agentframework/discussions)
 - **Documentation**: [Comprehensive guides and tutorials](docs/)
 - **Examples**: [Code examples and use cases](examples/)
 
@@ -375,7 +375,7 @@ Built with ❤️ using:
 
 ## 📊 Repository Stats
 
-![GitHub stars](https://img.shields.io/github/stars/yourusername/neo4j-agentframework?style=social)
-![GitHub forks](https://img.shields.io/github/forks/yourusername/neo4j-agentframework?style=social)
-![GitHub issues](https://img.shields.io/github/issues/yourusername/neo4j-agentframework)
-![GitHub license](https://img.shields.io/github/license/yourusername/neo4j-agentframework)
+![GitHub stars](https://img.shields.io/github/stars/ma3u/neo4j-agentframework?style=social)
+![GitHub forks](https://img.shields.io/github/forks/ma3u/neo4j-agentframework?style=social)
+![GitHub issues](https://img.shields.io/github/issues/ma3u/neo4j-agentframework)
+![GitHub license](https://img.shields.io/github/license/ma3u/neo4j-agentframework)
