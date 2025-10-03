@@ -96,7 +96,7 @@ class Neo4jRAG:
                         logger.warning("Fulltext index already exists or creation failed")
                 
             except Exception as e:
-logger.warning(f"Some indexes might already exist: {e}")
+                logger.warning(f"Some indexes might already exist: {e}")
 
             logger.info("Neo4j schema initialized")
 
