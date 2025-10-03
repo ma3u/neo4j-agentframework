@@ -1,48 +1,20 @@
 # 🤖 Neo4j Agent Framework
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.12](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![Neo4j](https://img.shields.io/badge/Neo4j-5.11+-green.svg)](https://neo4j.com/)
-[![Docling](https://img.shields.io/badge/Docling-2.55+-blue.svg)](https://github.com/DS4SD/docling)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python 3.12](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/) [![Neo4j](https://img.shields.io/badge/Neo4j-5.11+-green.svg)](https://neo4j.com/) [![Docling](https://img.shields.io/badge/Docling-2.55+-blue.svg)](https://github.com/DS4SD/docling) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 **Advanced AI Agent Framework for Neo4j Knowledge Graphs** - Build intelligent agents that can understand, analyze, and interact with graph databases through natural language. Perfect for RAG systems, knowledge graph exploration, and AI-powered document analysis.
 
-![Neo4j Browser - Knowledge Graph Visualization](images/neo4j-browser-screenshot.png)
-
 ## 📑 Table of Contents
 
-- [🌟 What Makes This Special?](#-what-makes-this-special)
-  - [Performance Optimized](#-performance-optimized)
-  - [AI Agent Framework](#-ai-agent-framework)
-  - [Developer Experience](#-developer-experience)
-- [📈 Real-World Results](#-real-world-results)
-- [⚡ Quick Start (5 Minutes)](#-quick-start-5-minutes)
-  - [Prerequisites](#prerequisites)
-  - [1. Clone & Setup](#1-clone--setup)
-  - [2. Start Neo4j Database](#2-start-neo4j-database)
-  - [3. Load Sample Data](#3-load-sample-data)
-  - [4. Test the System](#4-test-the-system)
-  - [5. Explore in Neo4j Browser](#5-explore-in-neo4j-browser)
-- [🏗️ Architecture](#-architecture)
-  - [Core Components](#core-components)
-  - [Graph Structure](#graph-structure)
+- [⚡ Quick Start](#-quick-start-5-minutes)
+- [🏗️ Architecture](#️-architecture)
 - [📊 Neo4j Browser Queries & Analytics](#-neo4j-browser-queries--analytics)
-  - [Pre-built Query Library](#pre-built-query-library)
-  - [Quick Import](#quick-import)
-  - [Available Query Categories](#available-query-categories)
 - [🚀 Advanced Features](#-advanced-features)
-  - [Performance Optimization](#performance-optimization)
-  - [Enterprise Features](#enterprise-features)
-  - [AI Agent Capabilities](#ai-agent-capabilities)
-- [📚 Documentation & Examples](#-documentation--examples)
-- [🧪 Testing & Quality](#-testing--quality)
-- [🛠️ Development](#-development)
+- [📚 Documentation](#-documentation--examples)
+- [🧪 Testing](#-testing--quality)
+- [🛠️ Development](#️-development)
 - [🎯 Use Cases](#-use-cases)
-- [🔗 Related Projects](#-related-projects)
 - [📄 License](#-license)
-- [🤝 Support & Community](#-support--community)
-- [🏆 Acknowledgments](#-acknowledgments)
 
 ## 🌟 What Makes This Special?
 
@@ -208,6 +180,8 @@ The framework includes **50+ pre-built Cypher queries** organized into categorie
 
 ![Neo4j Browser with Imported Queries](images/neo4j-browser-queries.png)
 *Neo4j Browser showing imported custom queries including Quick Stats, Dashboard Overview, PDF Document List, Topic Analysis, and more*
+
+![alt text](images/neo4j-browser.png)
 
 ### Quick Import
 ```bash
@@ -482,9 +456,4 @@ Built with ❤️ using:
 
 ---
 
-## 📊 Repository Stats
-
-![GitHub stars](https://img.shields.io/github/stars/ma3u/neo4j-agentframework?style=social)
-![GitHub forks](https://img.shields.io/github/forks/ma3u/neo4j-agentframework?style=social)
-![GitHub issues](https://img.shields.io/github/issues/ma3u/neo4j-agentframework)
-![GitHub license](https://img.shields.io/github/license/ma3u/neo4j-agentframework)
+![GitHub stars](https://img.shields.io/github/stars/ma3u/neo4j-agentframework?style=social) ![GitHub forks](https://img.shields.io/github/forks/ma3u/neo4j-agentframework?style=social) ![GitHub issues](https://img.shields.io/github/issues/ma3u/neo4j-agentframework) ![GitHub license](https://img.shields.io/github/license/ma3u/neo4j-agentframework)
