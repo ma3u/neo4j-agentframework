@@ -14,11 +14,13 @@ spec:
     maxInactiveRevisions: 1
     secrets:
       - name: bitnet-api-key
-        value: "your-bitnet-api-key"
+        value: "your-bitnet-api-key"  # Get from Azure AI Foundry deployment
       - name: azure-openai-endpoint
-        value: "https://your-openai.openai.azure.com/"
+        value: "https://zaidzaim2000gmail-openai.openai.azure.com/"  # Tenant-specific endpoint
       - name: neo4j-password
-        value: "your-secure-password"
+        value: "zaidzaim2000gmail-neo4j-secure"  # Tenant-specific password
+      - name: azure-client-id
+        value: "your-app-registration-client-id"  # Service principal for tenant
   
   template:
     # Ultra-efficient scaling with BitNet
@@ -59,19 +61,23 @@ spec:
           - name: NEO4J_PASSWORD
             secretRef: neo4j-password
           
-          # BitNet b1.58 Configuration
+          # BitNet b1.58 Configuration (zaidzaim2000gmail tenant)
           - name: BITNET_ENDPOINT
-            value: "https://your-bitnet.azureml.azure.com/"
+            value: "https://bitnet-rag-zaidzaim2000gmail.azureml.azure.com/"
           - name: BITNET_API_KEY
             secretRef: bitnet-api-key
           - name: BITNET_MODEL
             value: "microsoft-bitnet-b1-58-2b-4t"
+          - name: AZURE_TENANT_ID
+            value: "zaidzaim2000gmail"
           
           # Azure OpenAI for embeddings (cost-optimized)
           - name: AZURE_OPENAI_ENDPOINT
             secretRef: azure-openai-endpoint
           - name: EMBEDDING_MODEL
             value: "text-embedding-3-small"  # Most cost-effective
+          - name: AZURE_SUBSCRIPTION_ID
+            value: "your-subscription-id"  # Replace with actual subscription
           
           # Ultra-efficient settings
           - name: MAX_MEMORY_MB

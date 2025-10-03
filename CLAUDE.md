@@ -274,5 +274,235 @@ docker stats neo4j-rag
 - [ ] Add streaming response support
 - [ ] Implement multi-modal embeddings
 - [ ] Add LangChain integration examples
-- [ ] Create Docker Compose setup
-- [ ] Add API server with FastAPI
+- [x] Create Docker Compose setup
+- [x] Add API server with FastAPI
+
+## Azure Deployment
+
+### Overview
+Production-ready deployment to Azure with Microsoft Agent Framework integration, preserving 417x performance improvements.
+
+### Prerequisites
+- Azure CLI installed and authenticated (`az login`)
+- Docker Desktop running
+- Active Azure subscription
+
+### Automated Deployment
+```bash
+cd azure
+chmod +x deploy.sh
+./deploy.sh
+```
+
+### Manual Step-by-Step Deployment
+
+**1. Set Environment Variables**
+```bash
+export RESOURCE_GROUP="rg-neo4j-rag-bitnet"
+export LOCATION="swedencentral"  # or your preferred region
+export REGISTRY_NAME="crneo4jrag$(openssl rand -hex 4)"
+export APP_NAME="neo4j-rag-bitnet"
+```
+
+**2. Create Resource Group**
+```bash
+az group create --name $RESOURCE_GROUP --location $LOCATION
+```
+
+**3. Create Container Registry**
+```bash
+az acr create \
+  --resource-group $RESOURCE_GROUP \
+  --name $REGISTRY_NAME \
+  --sku Basic \
+  --admin-enabled true \
+  --location $LOCATION
+```
+
+**4. Build and Push Docker Image**
+```bash
+# Build in Azure (recommended - faster and more reliable)
+az acr build \
+  --registry $REGISTRY_NAME \
+  --image neo4j-rag-agent:v1.0 \
+  --file azure/Dockerfile.agent \
+  .
+```
+
+**5. Create Container Apps Environment**
+```bash
+az containerapp env create \
+  --name neo4j-rag-env \
+  --resource-group $RESOURCE_GROUP \
+  --location $LOCATION
+```
+
+**6. Deploy Neo4j Database Container**
+```bash
+az containerapp create \
+  --name neo4j-database \
+  --resource-group $RESOURCE_GROUP \
+  --environment neo4j-rag-env \
+  --image neo4j:5.11 \
+  --target-port 7687 \
+  --ingress internal \
+  --env-vars \
+    NEO4J_AUTH=neo4j/YourSecurePassword123! \
+    NEO4J_dbms_memory_heap_max__size=4G \
+    NEO4J_dbms_memory_pagecache_size=2G \
+  --cpu 4.0 \
+  --memory 8Gi \
+  --min-replicas 1 \
+  --max-replicas 1
+```
+
+**7. Deploy RAG Agent Container**
+```bash
+REGISTRY_URL=$(az acr show --name $REGISTRY_NAME --query loginServer -o tsv)
+
+az containerapp create \
+  --name neo4j-rag-agent \
+  --resource-group $RESOURCE_GROUP \
+  --environment neo4j-rag-env \
+  --image $REGISTRY_URL/neo4j-rag-agent:v1.0 \
+  --target-port 8000 \
+  --ingress external \
+  --env-vars \
+    NEO4J_URI=bolt://neo4j-database:7687 \
+    NEO4J_USER=neo4j \
+    NEO4J_PASSWORD=YourSecurePassword123! \
+  --cpu 2.0 \
+  --memory 4Gi \
+  --min-replicas 0 \
+  --max-replicas 10 \
+  --registry-server $REGISTRY_URL
+```
+
+**8. Get Application URL**
+```bash
+APP_URL=$(az containerapp show \
+  --name neo4j-rag-agent \
+  --resource-group $RESOURCE_GROUP \
+  --query properties.configuration.ingress.fqdn \
+  --output tsv)
+
+echo "Application URL: https://$APP_URL"
+```
+
+### What Gets Deployed
+- **Container Registry**: crneo4jrag*.azurecr.io
+- **Container Apps Environment**: With Log Analytics workspace
+- **Neo4j Database**: 4 CPU, 8GB RAM, always-on (1 replica)
+- **RAG Agent Service**: 2 CPU, 4GB RAM, auto-scale (0-10 replicas)
+- **Networking**: Internal (Neo4j) + External HTTPS (Agent)
+
+### Deployment Files
+- `azure/deploy.sh` - Automated deployment script
+- `azure/Dockerfile.agent` - Production container image
+- `azure/app.py` - FastAPI application
+- `azure/agent_service.py` - Agent Framework integration
+- `docs/AZURE_DEPLOYMENT_GUIDE.md` - Detailed guide
+- `docs/AZURE_ARCHITECTURE.md` - Architecture docs
+
+### Performance on Azure
+- Query Response: ~110ms (417x faster preserved)
+- Cache Hit: <1ms (99.9%+ improvement)
+- Auto-scaling: 0-10 instances based on HTTP load
+- Concurrent Requests: High throughput with pooling
+
+### Cost Breakdown
+- Container Apps Environment: ~$50/month
+- Container Registry (Basic): ~$5/month
+- Neo4j Container (4 CPU, 8GB, always-on): ~$200/month
+- Agent Container (2 CPU, 4GB, auto-scale): ~$100-500/month
+- **Estimated Total**: $355-755/month
+
+### Testing Deployment
+```bash
+# Health check
+curl https://$APP_URL/health
+
+# Test query
+curl -X POST https://$APP_URL/query \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is Neo4j?"}'
+
+# View stats
+curl https://$APP_URL/stats
+```
+
+### Management Commands
+```bash
+# View all container apps
+az containerapp list --resource-group $RESOURCE_GROUP --output table
+
+# View logs (follow)
+az containerapp logs show \
+  --name neo4j-rag-agent \
+  --resource-group $RESOURCE_GROUP \
+  --follow
+
+# Scale manually
+az containerapp update \
+  --name neo4j-rag-agent \
+  --resource-group $RESOURCE_GROUP \
+  --min-replicas 2 \
+  --max-replicas 20
+
+# Restart container app
+az containerapp revision restart \
+  --name neo4j-rag-agent \
+  --resource-group $RESOURCE_GROUP
+
+# Delete deployment
+az group delete --name $RESOURCE_GROUP --yes --no-wait
+```
+
+### Monitoring
+```bash
+# View metrics
+az monitor metrics list \
+  --resource $(az containerapp show \
+    --name neo4j-rag-agent \
+    --resource-group $RESOURCE_GROUP \
+    --query id -o tsv) \
+  --metric-names Requests,ResponseTime
+
+# View Log Analytics
+az monitor log-analytics workspace show \
+  --resource-group $RESOURCE_GROUP \
+  --workspace-name workspace-rgneo4jragbitnet*
+```
+
+### Post-Deployment Tasks
+1. **Load Production Data**: Use upload scripts or API
+2. **Configure Backups**: Set up Neo4j backup strategy
+3. **Set Up CI/CD**: GitHub Actions or Azure DevOps
+4. **Configure Alerts**: Set up monitoring alerts
+5. **Security Review**: Implement Key Vault for secrets
+
+### Troubleshooting
+```bash
+# Check container app status
+az containerapp show \
+  --name neo4j-rag-agent \
+  --resource-group $RESOURCE_GROUP \
+  --query properties.runningStatus
+
+# View recent logs
+az containerapp logs show \
+  --name neo4j-rag-agent \
+  --resource-group $RESOURCE_GROUP \
+  --tail 100
+
+# Check Neo4j connectivity
+az containerapp exec \
+  --name neo4j-rag-agent \
+  --resource-group $RESOURCE_GROUP \
+  --command "/bin/sh"
+```
+
+### Complete Documentation
+- 📖 [Detailed Deployment Guide](docs/AZURE_DEPLOYMENT_GUIDE.md)
+- 🏗️ [Architecture Overview](docs/AZURE_ARCHITECTURE.md)
+- 📊 [Integration Summary](AZURE_INTEGRATION_SUMMARY.md)

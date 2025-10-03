@@ -1,0 +1,49 @@
+{
+  "documents": [
+    {
+      "id": "neo4j_intro",
+      "content": "Neo4j is a highly scalable native graph database that leverages data relationships as first-class entities. It provides ACID transactions, advanced graph algorithms, and a powerful query language called Cypher.",
+      "metadata": {
+        "source": "Neo4j Documentation",
+        "category": "database",
+        "author": "Neo4j Team"
+      }
+    },
+    {
+      "id": "rag_architecture",
+      "content": "Retrieval-Augmented Generation (RAG) combines the power of retrieval systems with generative AI models. It retrieves relevant context from a knowledge base and uses it to generate accurate, contextually grounded responses.",
+      "metadata": {
+        "source": "RAG Architecture Guide",
+        "category": "AI",
+        "author": "AI Research Team"
+      }
+    },
+    {
+      "id": "bitnet_efficiency",
+      "content": "BitNet B1.58 achieves remarkable efficiency with 1.58-bit quantization, reducing memory usage by 87% and energy consumption by 96% compared to full-precision models, while maintaining comparable accuracy.",
+      "metadata": {
+        "source": "BitNet Research Paper",
+        "category": "optimization",
+        "author": "Microsoft Research"
+      }
+    },
+    {
+      "id": "azure_container_apps",
+      "content": "Azure Container Apps provides a serverless platform for running containerized applications. It offers automatic scaling, built-in authentication, and seamless integration with other Azure services.",
+      "metadata": {
+        "source": "Azure Documentation",
+        "category": "cloud",
+        "author": "Microsoft Azure Team"
+      }
+    },
+    {
+      "id": "graph_rag_benefits",
+      "content": "Graph-based RAG systems leverage the relationships between documents and concepts to provide more accurate and contextually relevant answers. They excel at multi-hop reasoning and complex query resolution.",
+      "metadata": {
+        "source": "Graph RAG Whitepaper",
+        "category": "AI",
+        "author": "Graph AI Consortium"
+      }
+    }
+  ]
+}
