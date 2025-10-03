@@ -387,131 +387,130 @@ class RAGQueryEngine:
     def __init__(self, neo4j_rag: Neo4jRAG):
         self.rag = neo4j_rag
 
+    def _extract_authors_from_context(self, question_lower: str, context: str) -> str:
+        """
+        Extract author names from context and format the response.
+        """
+        # Enhanced patterns to find author names
+        authors = set()
+
+        # Pattern 1: Names in specific contexts (by, wrote, author)
+        author_context_patterns = [
+            r'by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)',  # "by First Last"
+            r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\s+wrote',  # "Name wrote"
+            r'[Aa]uthor[s]?[:\s]+([^,\n]+)',  # "author: Name"
+            r'written\s+by\s+([^,\n]+)',  # "written by Name"
+        ]
+
+        for pattern in author_context_patterns:
+            matches = re.findall(pattern, context, re.IGNORECASE)
+            authors.update(matches)
+
+        # Pattern 2: Names with ampersands or "and" (co-authors)
+        coauthor_patterns = [
+            r'([A-Z][a-z]+\s+[A-Z][a-z]+)(?:\s*[,&]\s*|\s+and\s+)([A-Z][a-z]+\s+[A-Z][a-z]+)',
+            r'([A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+)(?:\s*[,&]\s*|\s+and\s+)',
+        ]
+
+        for pattern in coauthor_patterns:
+            matches = re.findall(pattern, context)
+            for match in matches:
+                if isinstance(match, tuple):
+                    authors.update([m.strip() for m in match if m.strip()])
+                else:
+                    authors.add(match.strip())
+
+        # Pattern 3: Look for specific known authors
+        specific_authors = [
+            'Bryce Merkl Sasaki', 'Joy Chao', 'Rachel Howard',
+            'Yao Ma', 'Jiliang Tang', 'David Futato', 'Randy Comer',
+            'Kate Dullea', 'Andreas Blumauer', 'Helmut Nagy'
+        ]
+
+        for author in specific_authors:
+            if author in context:
+                authors.add(author)
+
+        # Pattern 4: Look for publishers and organizations
+        publishers = []
+        publisher_patterns = [
+            r"O'Reilly(?:\s+Media)?",
+            r"Manning(?:\s+Publications)?",
+            r"Apress",
+            r"Packt",
+            r"Gartner",
+            r"Curran Associates"
+        ]
+
+        for pattern in publisher_patterns:
+            if re.search(pattern, context, re.IGNORECASE):
+                publishers.append(re.search(pattern, context, re.IGNORECASE).group())
+
+        # Clean up author names
+        authors = {a.strip() for a in authors if a.strip() and len(a.strip()) > 3}
+        # Remove generic terms
+        exclude_terms = {'Common Authors', 'Graph Embedding', 'Deep Learning',
+                        'Book Website', 'Neural Tensor', 'Graph Classification',
+                        'mean  by', 'different things', 'which nodes', 'can be'}
+        authors = authors - exclude_terms
+
+        # Format the response based on what we found
+        if "how many" in question_lower or "how" in question_lower and "author" in question_lower:
+            # This is asking for a count
+            if authors or publishers:
+                response = f"Based on the available data, I found {len(authors)} authors"
+                if publishers:
+                    response += f" and {len(publishers)} publishers/organizations"
+                response += " related to graph databases:\n\n"
+
+                if authors:
+                    author_list = list(authors)[:10]
+                    response += "**Authors:**\n"
+                    for author in author_list:
+                        response += f"- {author}\n"
+
+                if publishers:
+                    response += "\n**Publishers/Organizations:**\n"
+                    for pub in publishers[:5]:
+                        response += f"- {pub}\n"
+
+                return response
+            else:
+                # Try to find any capitalized names as fallback
+                all_names = re.findall(r'\b([A-Z][a-z]+\s+[A-Z][a-z]+)\b', context)
+                all_names = [n for n in all_names if n not in exclude_terms]
+                unique_names = list(set(all_names))[:10]
+                if unique_names:
+                    return f"I found {len(unique_names)} potential authors in the context:\n" + \
+                           "\n".join([f"- {name}" for name in unique_names])
+                else:
+                    return "I couldn't find specific author names in the retrieved context. Try asking for specific books or publications."
+        else:
+            # This is asking WHO the authors are
+            if authors:
+                author_list = list(authors)[:10]
+                return f"The following authors wrote about graph databases:\n" + \
+                       "\n".join([f"- {author}" for author in author_list])
+            else:
+                return "I couldn't find specific author names in the retrieved context."
+
     def _extract_answer(self, question: str, context: str) -> str:
         """
         Extract a direct answer from the context based on the question.
         """
         question_lower = question.lower()
 
-        # Handle "how many" questions
-        if "how many" in question_lower:
+        # First check if this is an author-related question (even with poor grammar)
+        # This catches "How authors do you know?" which should be "How many authors"
+        if "author" in question_lower or "writer" in question_lower:
+            # Try to extract authors from the context
+            return self._extract_authors_from_context(question_lower, context)
+
+        # Handle "how many" questions (non-author)
+        elif "how many" in question_lower:
             # Look for numbers in the context
             numbers = re.findall(r'\b(\d+)\b', context)
-
-            if "author" in question_lower or "writer" in question_lower:
-                # Enhanced patterns to find author names
-                authors = set()
-
-                # Pattern 1: Names in specific contexts (by, wrote, author)
-                author_context_patterns = [
-                    r'by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)',  # "by First Last" or "by First Middle Last"
-                    r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\s+wrote',  # "Name wrote"
-                    r'[Aa]uthor[s]?[:\s]+([^,\n]+)',  # "author: Name" or "authors: Names"
-                    r'written\s+by\s+([^,\n]+)',  # "written by Name"
-                ]
-
-                for pattern in author_context_patterns:
-                    matches = re.findall(pattern, context, re.IGNORECASE)
-                    authors.update(matches)
-
-                # Pattern 2: Names with ampersands or "and" (co-authors)
-                coauthor_patterns = [
-                    r'([A-Z][a-z]+\s+[A-Z][a-z]+)(?:\s*[,&]\s*|\s+and\s+)([A-Z][a-z]+\s+[A-Z][a-z]+)',
-                    r'([A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+)(?:\s*[,&]\s*|\s+and\s+)',  # Three-part names
-                ]
-
-                for pattern in coauthor_patterns:
-                    matches = re.findall(pattern, context)
-                    for match in matches:
-                        if isinstance(match, tuple):
-                            authors.update([m.strip() for m in match if m.strip()])
-                        else:
-                            authors.add(match.strip())
-
-                # Pattern 3: Specific known authors from the debug output
-                specific_authors = [
-                    'Bryce Merkl Sasaki', 'Joy Chao', 'Rachel Howard',
-                    'Yao Ma', 'Jiliang Tang', 'David Futato', 'Randy Comer',
-                    'Kate Dullea'
-                ]
-
-                for author in specific_authors:
-                    if author in context:
-                        authors.add(author)
-
-                # Pattern 4: Look for publishers and organizations
-                publishers = []
-                publisher_patterns = [
-                    r"O'Reilly(?:\s+Media)?",
-                    r"Manning(?:\s+Publications)?",
-                    r"Apress",
-                    r"Packt",
-                    r"Gartner",
-                    r"Curran Associates"
-                ]
-
-                for pattern in publisher_patterns:
-                    if re.search(pattern, context, re.IGNORECASE):
-                        publishers.append(re.search(pattern, context, re.IGNORECASE).group())
-
-                # Pattern 5: Look for book titles that might have authors
-                book_patterns = [
-                    r'book[:\s]+([^,\n]+)',
-                    r'"([^"]+)".*(?:by|author)',
-                    r'([A-Z][^.!?]*(?:Databases|Graphs|Neo4j)[^.!?]*)'
-                ]
-
-                books = []
-                for pattern in book_patterns:
-                    matches = re.findall(pattern, context, re.IGNORECASE)
-                    books.extend(matches[:3])  # Limit to avoid too much noise
-
-                # Clean up author names
-                authors = {a.strip() for a in authors if a.strip() and len(a.strip()) > 3}
-                # Remove generic terms that might have been captured
-                exclude_terms = {'Common Authors', 'Graph Embedding', 'Deep Learning',
-                                'Book Website', 'Neural Tensor', 'Graph Classification'}
-                authors = authors - exclude_terms
-
-                # Combine results
-                total_found = len(authors) + len(publishers)
-
-                if authors or publishers:
-                    response = f"Based on the available data, I found {len(authors)} authors"
-                    if publishers:
-                        response += f" and {len(publishers)} publishers/organizations"
-                    response += " related to graph databases:\n\n"
-
-                    if authors:
-                        author_list = list(authors)[:10]
-                        response += "**Authors:**\n"
-                        for author in author_list:
-                            response += f"- {author}\n"
-
-                    if publishers:
-                        response += "\n**Publishers/Organizations:**\n"
-                        for pub in publishers[:5]:
-                            response += f"- {pub}\n"
-
-                    if books and len(books) > 0:
-                        response += "\n**Related Books/Topics:**\n"
-                        for book in books[:3]:
-                            if len(book) < 100:  # Avoid super long entries
-                                response += f"- {book}\n"
-
-                    return response
-                else:
-                    # Fallback to looking for any capitalized names
-                    all_names = re.findall(r'\b([A-Z][a-z]+\s+[A-Z][a-z]+)\b', context)
-                    unique_names = list(set(all_names))[:10]
-                    if unique_names:
-                        return f"I found {len(unique_names)} potential names in the context: " + \
-                               ", ".join(unique_names)
-                    elif numbers:
-                        return f"I found references to numbers ({', '.join(numbers[:3])}) in the context, " + \
-                               "but couldn't extract specific author names clearly."
-
-            elif numbers:
+            if numbers:
                 # For other "how many" questions, return the found numbers
                 return f"Based on the context, the relevant numbers are: {', '.join(numbers[:5])}"
 
@@ -553,42 +552,8 @@ class RAGQueryEngine:
         # Handle "who" questions (like "who wrote")
         elif "who" in question_lower:
             if "wrote" in question_lower or "author" in question_lower:
-                # Use the same author extraction logic as above
-                authors = set()
-
-                # Look for author names in context
-                author_patterns = [
-                    r'by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)',
-                    r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\s+wrote',
-                    r'[Aa]uthor[s]?[:\s]+([^,\n]+)',
-                    r'written\s+by\s+([^,\n]+)',
-                ]
-
-                for pattern in author_patterns:
-                    matches = re.findall(pattern, context, re.IGNORECASE)
-                    authors.update(matches)
-
-                # Check for specific known authors
-                specific_authors = [
-                    'Bryce Merkl Sasaki', 'Joy Chao', 'Rachel Howard',
-                    'Yao Ma', 'Jiliang Tang', 'David Futato', 'Randy Comer'
-                ]
-
-                for author in specific_authors:
-                    if author in context:
-                        authors.add(author)
-
-                authors = {a.strip() for a in authors if a.strip() and len(a.strip()) > 3}
-
-                if authors:
-                    author_list = list(authors)[:10]
-                    return f"The following authors wrote about graph databases:\n" + \
-                           "\n".join([f"- {author}" for author in author_list])
-                else:
-                    # Look for any book references
-                    books = re.findall(r'book[:\s]+([^,\n]+)', context, re.IGNORECASE)
-                    if books:
-                        return f"I found references to these books: {', '.join(books[:3])}, but couldn't extract specific author names."
+                # Use the author extraction method
+                return self._extract_authors_from_context(question_lower, context)
 
         # Handle "what" questions
         elif "what" in question_lower:
