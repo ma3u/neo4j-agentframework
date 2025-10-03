@@ -61,17 +61,47 @@ docs/.doctrees/
 temp/
 tmp/
 
-# Large data files
+# Large data files (allow sample/knowledge files)
 data/
-*.pdf
 *.csv
-*.json
-*.txt
-!requirements.txt
-!requirements_graphrag.txt
+!knowledge/*.txt
+!knowledge/*.md
+!scripts/*.md
+!scripts/*.cypher
+!scripts/*.py
+!docs/*.md
+!*.md
+
+# Allow only specific PDF patterns for samples
+*.pdf
+!samples/sample_*.pdf
 
 # Exclude sensitive information
 secrets/
 credentials/
 *.key
 *.pem
+
+# Model files and embeddings cache
+models/
+.cache/
+embeddings_cache/
+
+# Performance and profiling files
+*.prof
+*.pstats
+
+# Test outputs
+test_outputs/
+test_results/
+
+# Docker
+docker-compose.override.yml
+
+# Backup files
+*.bak
+*.backup
+
+# Local configuration overrides
+config.local.py
+settings.local.py
