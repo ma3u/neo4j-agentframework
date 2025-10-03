@@ -14,11 +14,15 @@ reportlab>=4.0.0  # Optional: for creating test PDFs
 # Microsoft Agent Framework
 agent-framework
 azure-ai-projects
-azure-identity
+azure-identity>=1.16.1  # Security: CVE fix for elevation of privilege
 
 # Web framework for Azure deployment
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
+
+# Security: Pin secure versions to fix vulnerabilities
+cryptography>=43.0.1  # Fixes OpenSSL vulnerabilities, NULL pointer, Bleichenbacher attack
+requests>=2.32.4  # Fixes .netrc credentials leak and verify=False issues
 
 # Monitoring and observability
 opentelemetry-api
