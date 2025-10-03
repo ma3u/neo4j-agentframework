@@ -14,31 +14,12 @@ services:
       - NEO4J_AUTH=neo4j/password
 
       # Memory Configuration (Production Optimized)
-      - NEO4J_dbms_memory_heap_initial__size=2G
-      - NEO4J_dbms_memory_heap_max__size=4G
-      - NEO4J_dbms_memory_pagecache_size=2G
-
-      # Connection Pool Settings
-      - NEO4J_dbms_connector_bolt_thread__pool__min__size=5
-      - NEO4J_dbms_connector_bolt_thread__pool__max__size=400
-      - NEO4J_dbms_connector_bolt_thread__pool__keep__alive=5m
-
-      # Query Performance
-      - NEO4J_dbms_query_cache_size=1000
-      - NEO4J_dbms_logs_query_enabled=INFO
-      - NEO4J_dbms_logs_query_threshold=1s
-
-      # Transaction Settings
-      - NEO4J_dbms_transaction_timeout=60s
-      - NEO4J_dbms_transaction_concurrent_maximum=1000
+      - NEO4J_server_memory_heap_initial__size=2G
+      - NEO4J_server_memory_heap_max__size=4G
+      - NEO4J_server_memory_pagecache_size=2G
 
       # Security Settings
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
-
-      # Performance Monitoring
-      - NEO4J_metrics_enabled=true
-      - NEO4J_metrics_csv_enabled=true
-      - NEO4J_metrics_csv_interval=30s
 
     volumes:
       - neo4j_data:/data

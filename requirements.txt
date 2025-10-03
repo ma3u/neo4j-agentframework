@@ -37,6 +37,11 @@ prometheus-client>=0.19.0
 docling>=2.55.0
 pypdfium2>=4.30.0
 
+# Local development dependencies (needed for src/neo4j_rag.py imports)
+sentence-transformers>=2.2.2  # Embedding generation for local dev
+torch>=2.0.0  # Required by sentence-transformers
+transformers>=4.30.0  # Required by sentence-transformers
+
 # ================================
 # BitNet Efficiency Achievements:
 # ================================

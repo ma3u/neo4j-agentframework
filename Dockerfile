@@ -12,12 +12,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Copy requirements (BitNet-optimized)
+# Copy requirements (Full dependencies for local development)
 COPY requirements.txt .
 
-# Install ultra-minimal dependencies
-# NOTE: Removed torch (~2GB), transformers (~1GB), sentence-transformers (~500MB)
-# Total savings: 5GB+ using Azure API endpoints instead
+# Install full dependencies (needed for src imports)
+# For production Azure deployment, use azure/Dockerfile.bitnet with requirements-bitnet.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
