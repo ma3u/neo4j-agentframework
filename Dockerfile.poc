@@ -1,0 +1,51 @@
+# Ultra-Lightweight POC Dockerfile for Neo4j RAG with Azure OpenAI
+# Optimized for minimal image size and runtime resource usage
+
+FROM python:3.11-slim as base
+
+# Install only essential system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user for security
+RUN useradd --create-home --shell /bin/bash app
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements first for better layer caching
+COPY requirements-poc.txt .
+
+# Install Python dependencies with minimal extras
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements-poc.txt \
+    && pip cache purge
+
+# Copy source code
+COPY src/ ./src/
+COPY azure/ ./azure/
+
+# Create minimal config
+RUN echo '{"embedding_model": "azure-openai", "cache_size": 100}' > config.json
+
+# Switch to non-root user
+USER app
+
+# Expose port
+EXPOSE 8000
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+# Start the application with minimal resource usage
+CMD ["python", "-m", "uvicorn", "src.main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--workers", "1", \
+     "--loop", "asyncio", \
+     "--log-level", "info", \
+     "--access-log", \
+     "--no-use-colors"]
