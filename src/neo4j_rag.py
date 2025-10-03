@@ -384,8 +384,22 @@ class RAGQueryEngine:
     Optimized query engine with better performance characteristics
     """
 
-    def __init__(self, neo4j_rag: Neo4jRAG):
+    def __init__(self, neo4j_rag: Neo4jRAG, use_llm: bool = True):
         self.rag = neo4j_rag
+        self.use_llm = use_llm
+
+        # Try to initialize LLM handler if requested
+        if self.use_llm:
+            try:
+                from .llm_handler import LLMHandler
+                self.llm_handler = LLMHandler(preferred_backend="auto")
+                logger.info("LLM handler initialized for answer generation")
+            except Exception as e:
+                logger.warning(f"Could not initialize LLM handler: {e}. Using fallback extraction.")
+                self.use_llm = False
+                self.llm_handler = None
+        else:
+            self.llm_handler = None
 
     def _extract_authors_from_context(self, question_lower: str, context: str) -> str:
         """
@@ -593,8 +607,22 @@ class RAGQueryEngine:
                 'doc_id': result['doc_id']
             })
 
-        # Extract a direct answer from the context
-        answer = self._extract_answer(question, context) if context else "No relevant information found in the knowledge base."
+        # Generate answer using LLM if available, otherwise use fallback extraction
+        if context:
+            if self.use_llm and self.llm_handler:
+                try:
+                    answer = self.llm_handler.generate_answer(question, context)
+                    if not answer:
+                        # If LLM fails, use fallback extraction
+                        answer = self._extract_answer(question, context)
+                except Exception as e:
+                    logger.warning(f"LLM generation failed: {e}. Using fallback extraction.")
+                    answer = self._extract_answer(question, context)
+            else:
+                # Use the pattern-based extraction as fallback
+                answer = self._extract_answer(question, context)
+        else:
+            answer = "No relevant information found in the knowledge base."
 
         query_time = time.time() - start_time
 
