@@ -10,6 +10,40 @@
 
 ![Neo4j Browser - Knowledge Graph Visualization](images/neo4j-browser-screenshot.png)
 
+## 📑 Table of Contents
+
+- [🌟 What Makes This Special?](#-what-makes-this-special)
+  - [Performance Optimized](#-performance-optimized)
+  - [AI Agent Framework](#-ai-agent-framework)
+  - [Developer Experience](#-developer-experience)
+- [📈 Real-World Results](#-real-world-results)
+- [⚡ Quick Start (5 Minutes)](#-quick-start-5-minutes)
+  - [Prerequisites](#prerequisites)
+  - [1. Clone & Setup](#1-clone--setup)
+  - [2. Start Neo4j Database](#2-start-neo4j-database)
+  - [3. Load Sample Data](#3-load-sample-data)
+  - [4. Test the System](#4-test-the-system)
+  - [5. Explore in Neo4j Browser](#5-explore-in-neo4j-browser)
+- [🏗️ Architecture](#-architecture)
+  - [Core Components](#core-components)
+  - [Graph Structure](#graph-structure)
+- [📊 Neo4j Browser Queries & Analytics](#-neo4j-browser-queries--analytics)
+  - [Pre-built Query Library](#pre-built-query-library)
+  - [Quick Import](#quick-import)
+  - [Available Query Categories](#available-query-categories)
+- [🚀 Advanced Features](#-advanced-features)
+  - [Performance Optimization](#performance-optimization)
+  - [Enterprise Features](#enterprise-features)
+  - [AI Agent Capabilities](#ai-agent-capabilities)
+- [📚 Documentation & Examples](#-documentation--examples)
+- [🧪 Testing & Quality](#-testing--quality)
+- [🛠️ Development](#-development)
+- [🎯 Use Cases](#-use-cases)
+- [🔗 Related Projects](#-related-projects)
+- [📄 License](#-license)
+- [🤝 Support & Community](#-support--community)
+- [🏆 Acknowledgments](#-acknowledgments)
+
 ## 🌟 What Makes This Special?
 
 ### 🚀 **Performance Optimized**
@@ -167,54 +201,107 @@ Chunk Nodes
 
 ---
 
-## 📊 Rich Analytics & Insights
+## 📊 Neo4j Browser Queries & Analytics
 
-### Pre-built Neo4j Browser Queries
-The framework includes 50+ pre-built Cypher queries ready to import into Neo4j Browser.
+### Pre-built Query Library
+The framework includes **50+ pre-built Cypher queries** organized into categories and ready to import into Neo4j Browser. These queries have been tested with real data (32 documents, 29,129 chunks) and provide comprehensive analytics capabilities.
 
-**Quick Import:**
+![Neo4j Browser with Imported Queries](images/neo4j-browser-queries.png)
+*Neo4j Browser showing imported custom queries including Quick Stats, Dashboard Overview, PDF Document List, Topic Analysis, and more*
+
+### Quick Import
 ```bash
 # Automatically creates HTML import helper with 10 essential queries
 python scripts/upload_queries_to_browser.py
 ```
 
+This command will:
+- ✅ Test all queries against your database
+- 📝 Generate an interactive HTML import page
+- 🌐 Open it in your browser for easy copy-paste
+- 📊 Provide 10 essential queries ready to use
+
 ### Available Query Categories
 
-**📈 Dashboard Overview**
-- Document and chunk statistics
-- Embedding coverage analysis
-- Content size and distribution
-- Processing performance metrics
+#### Core Analytics Queries (Imported as Favorites)
 
-**📚 Content Analysis**
-- PDF document inventory with metrics
-- Topic distribution and clustering
-- Author and publisher analysis
-- Knowledge area coverage mapping
+**1. 🅿️ Quick Stats**
+- Simple document and chunk counts
+- Instant overview in table format
+- Perfect for quick health checks
 
-**🔍 Advanced Search**
-- Semantic similarity exploration
-- Cross-document knowledge connections
-- Keyword density and frequency analysis
-- Content quality assessment
+**2. 📊 Dashboard Overview**
+- Comprehensive system statistics
+- Documents, chunks, embeddings, coverage
+- Content size and quality metrics
 
-**🎨 Graph Visualizations**
-- Document-chunk relationship networks
-- Category and topic clustering
-- Content similarity networks
-- Knowledge gap identification
+**3. 📄 PDF Document List**
+- All PDF documents with metadata
+- Chunk counts, file sizes, categories
+- Upload dates and processing stats
 
-### Sample Analytics Results
-```cypher
-// Get comprehensive system overview
-MATCH (d:Document)
-OPTIONAL MATCH (d)-[:HAS_CHUNK]->(c:Chunk)
-RETURN
-    COUNT(DISTINCT d) as `📚 Documents`,
-    COUNT(c) as `📝 Chunks`,
-    ROUND(AVG(SIZE(c.text))) as `📏 Avg Chunk Size`,
-    ROUND(SUM(SIZE(d.content))/1000000.0, 1) + ' MB' as `💾 Total Content`
+**4. 🏻 Topic Analysis**
+- Knowledge topic distribution
+- Automatic categorization (Neo4j, RAG, ML, etc.)
+- Chunk count by topic area
+
+**5. 🗂️ Publisher Analysis**
+- Content sources breakdown
+- O'Reilly, Manning, arXiv, Neo4j Official
+- Average document sizes by publisher
+
+**6. 🔍 Content Search**
+- Configurable text search
+- Preview matching chunks
+- Source document tracking
+
+**7. 🎨 Graph Visualization**
+- Document-chunk relationships
+- Best viewed in graph mode
+- Interactive network exploration
+
+**8. ✅ Data Quality Check**
+- Integrity verification
+- Orphaned documents detection
+- Chunk size distribution analysis
+
+**9. 🔗 Cross-Document Knowledge**
+- Shared concepts between documents
+- Knowledge overlap analysis
+- Concept frequency mapping
+
+**10. 📊 Chunk Size Distribution**
+- Size category breakdown
+- Quality assessment metrics
+- Content optimization insights
+
+### Sample Query Results
+
+**Quick Stats Output:**
 ```
+Documents: 32
+Chunks: 29,129
+```
+
+**Cross-Document Knowledge Analysis:**
+```
+🧠 Shared Concept    📚 Document Count
+"graph"             18
+"knowledge"         17
+"vector"            11
+"neo4j"            10
+"rag"               9
+```
+
+### Full Query Collection
+
+The complete collection includes **50+ additional queries** in `scripts/neo4j_content_analysis.cypher`:
+- Performance monitoring queries
+- Advanced search patterns
+- Data quality metrics
+- Timeline analysis
+- Memory usage tracking
+- And much more!
 
 ---
 
