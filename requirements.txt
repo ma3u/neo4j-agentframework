@@ -10,3 +10,18 @@ tiktoken
 docling>=2.55.0
 pypdfium2>=4.30.0
 reportlab>=4.0.0  # Optional: for creating test PDFs
+
+# Microsoft Agent Framework
+agent-framework
+azure-ai-projects
+azure-identity
+
+# Web framework for Azure deployment
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Monitoring and observability
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+prometheus-client
