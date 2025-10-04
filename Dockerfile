@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY src/ ./src/
-COPY azure/ ./azure/
+COPY azure_deploy/ ./azure_deploy/
 COPY scripts/ ./scripts/
 COPY knowledge/ ./knowledge/
 
@@ -45,4 +45,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 EXPOSE 8000
 
 # Run ultra-efficient BitNet FastAPI app
-CMD ["python", "-m", "uvicorn", "azure.app_bitnet:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+CMD ["python", "-m", "uvicorn", "azure_deploy.app_bitnet:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
