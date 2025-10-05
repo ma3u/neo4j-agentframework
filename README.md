@@ -4,6 +4,24 @@
 
 ---
 
+## 📑 Table of Contents
+
+- [Overview](#-overview)
+- [Architecture](#architecture)
+- [Key Benefits](#key-benefits)
+- [Quick Start](#-quick-start)
+- [Usage](#-usage)
+- [Configuration](#-configuration)
+- [Azure Deployment](#-azure-deployment)
+- [Performance Benchmarks](#-performance-benchmarks)
+- [Documentation](#-documentation)
+- [Development](#-development)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Support](#-support)
+
+---
+
 ## 📋 Overview
 
 This project provides a complete production-ready RAG (Retrieval-Augmented Generation) system combining:
@@ -313,27 +331,62 @@ Total Pipeline: 2050-5080ms
 
 ## 📚 Documentation
 
-### Quick Start
-- [**📖 Documentation Index**](docs/README.md) - Complete documentation map
-- [**🚀 Quick Start Guide**](docs/README-QUICKSTART.md) - Complete developer journey (local → Azure)
-- [**🧪 Local Testing Guide**](docs/LOCAL-TESTING-GUIDE.md) - Comprehensive testing procedures
+> **Complete documentation index**: [docs/README.md](docs/README.md)
 
-### Deployment
-- [**☁️ Azure Deployment Guide**](docs/AZURE_DEPLOYMENT_GUIDE.md) - Detailed Azure deployment steps
-- [**🏗️ Azure Architecture**](docs/AZURE_ARCHITECTURE.md) - Architecture documentation
-- [**🚢 Basic Deployment**](docs/DEPLOYMENT.md) - Quick deployment reference
+### 🚀 Getting Started
+| Document | Description |
+|----------|-------------|
+| [**Quick Start Guide**](docs/README-QUICKSTART.md) | Complete developer journey (local → Azure) |
+| [**Local Testing Guide**](docs/LOCAL-TESTING-GUIDE.md) | Comprehensive testing procedures |
+| [**RAG Testing Guide**](docs/RAG-TESTING-GUIDE.md) | RAG-specific testing procedures |
+| [**User Guide**](docs/USER_GUIDE.md) | End-user documentation |
 
-### Technical Deep-Dive
-- [**🏗️ System Architecture**](docs/ARCHITECTURE.md) - Complete architecture with Mermaid diagrams
-- [**⚡ BitNet Success Story**](docs/BITNET-SUCCESS.md) - BitNet build & optimization
-- [**📊 Performance Analysis**](docs/performance_analysis.md) - Benchmarks & metrics
-- [**📋 Implementation Status**](docs/IMPLEMENTATION-STATUS.md) - Current features & roadmap
+### ☁️ Deployment & Operations
+| Document | Description |
+|----------|-------------|
+| [**Azure Deployment Guide**](docs/AZURE_DEPLOYMENT_GUIDE.md) | Detailed Azure deployment steps |
+| [**Azure Architecture**](docs/AZURE_ARCHITECTURE.md) | Azure architecture documentation |
+| [**Basic Deployment**](docs/DEPLOYMENT.md) | Quick deployment reference |
+| [**BitNet Deployment**](docs/BITNET_DEPLOYMENT_GUIDE.md) | BitNet-specific deployment |
 
-### Additional Resources
-- [**👥 Contributing Guide**](docs/CONTRIBUTING.md) - How to contribute
-- [**🔒 Security Policy**](docs/SECURITY.md) - Security guidelines
-- [**📖 User Guide**](docs/USER_GUIDE.md) - End-user documentation
-- [**🤖 API Documentation**](http://localhost:8000/docs) - Interactive API docs (when running)
+### 🏗️ Technical Documentation
+| Document | Description |
+|----------|-------------|
+| [**System Architecture**](docs/ARCHITECTURE.md) | Complete architecture with 17 Mermaid diagrams |
+| [**BitNet Success Story**](docs/BITNET-SUCCESS.md) | BitNet build journey & lessons learned |
+| [**LLM Setup Guide**](docs/LLM_SETUP.md) | LLM configuration and setup |
+| [**Performance Analysis**](docs/performance_analysis.md) | Detailed benchmarks & metrics |
+
+### 🛠️ Setup & Configuration
+| Document | Description |
+|----------|-------------|
+| [**Neo4j Browser Guide**](docs/NEO4J_BROWSER_GUIDE.md) | Neo4j Browser setup and usage |
+| [**Knowledge Base Setup**](docs/KNOWLEDGE_BASE_SETUP.md) | Knowledge base download and configuration |
+| [**Browser Setup Guides**](docs/browser-setup/) | Detailed browser configuration |
+
+### 📋 Project Management
+| Document | Description |
+|----------|-------------|
+| [**Implementation Status**](docs/IMPLEMENTATION-STATUS.md) | Current features & progress |
+| [**Next Steps & Roadmap**](docs/NEXT-STEPS.md) | Future improvements |
+
+### 🤝 Contributing & Governance
+| Document | Description |
+|----------|-------------|
+| [**Contributing Guide**](docs/CONTRIBUTING.md) | How to contribute |
+| [**Security Policy**](docs/SECURITY.md) | Security guidelines & reporting |
+| [**Claude Code Guide**](CLAUDE.md) | AI assistant guidance |
+
+### 📦 Archive & Historical
+| Document | Description |
+|----------|-------------|
+| [**Archive Documentation**](docs/archive/) | Historical references & summaries |
+| [**Cost Optimization**](docs/azure/cost-optimized-deployment.md) | Azure cost optimization strategies |
+
+### 🔗 Live Resources
+- [**🤖 API Documentation**](http://localhost:8000/docs) - Interactive API docs (when running locally)
+- [**GitHub Repository**](https://github.com/ma3u/neo4j-agentframework) - Source code & issues
+- [**Release Notes**](https://github.com/ma3u/neo4j-agentframework/releases) - Version history
 
 ---
 
