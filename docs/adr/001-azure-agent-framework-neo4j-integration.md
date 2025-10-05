@@ -873,3 +873,129 @@ async def detailed_health():
 **Next Steps**: Team review and approval
 **Implementation**: Pending decision approval
 **Last Updated**: 2025-10-05
+
+---
+
+## 🆕 Update: Neo4j Official MCP Servers Discovery
+
+**Date**: 2025-10-05
+**Status**: Recommended approach updated
+
+### Critical Discovery
+
+**Neo4j provides production-ready MCP servers**: [neo4j-contrib/mcp-neo4j](https://github.com/neo4j-contrib/mcp-neo4j)
+
+**Available for Immediate Reuse:**
+1. ✅ `mcp-neo4j-cypher` - Natural language to Cypher
+2. ✅ `mcp-neo4j-memory` - Knowledge graph memory
+3. ✅ `mcp-neo4j-cloud-aura-api` - Aura management
+4. ✅ `mcp-neo4j-data-modeling` - Data modeling
+
+**Deployment Capabilities:**
+- Containerized with Docker support
+- Azure Container Apps ready
+- Auto-scaling and load balancing
+- HTTP/SSE/STDIO transports
+
+### Microsoft Agent Framework MCP Support Confirmed
+
+**Can Microsoft Agent Framework Create MCP Servers?** ✅ **YES!**
+
+**Official Support (2025)**:
+- C# MCP SDK for building servers and clients
+- Agent Framework can expose agents as MCP tools
+- Integration with Azure AI Foundry, GitHub, Copilot Studio
+- Microsoft working with MCP Steering Committee on security
+
+**Implementation Example**:
+```csharp
+// Expose AIAgent as MCP tool
+var mcpTool = new McpServerTool(myAgent);
+mcpServer.RegisterTool(mcpTool);
+```
+
+### Revised Recommendation
+
+**Hybrid Approach with Neo4j MCP Reuse:**
+
+```
+MCP Server Container Architecture:
+┌─────────────────────────────────────────┐
+│  Neo4j Official MCP Servers (REUSE):    │
+│  ✅ mcp-neo4j-cypher         (Week 0)   │
+│  ✅ mcp-neo4j-memory         (Week 0)   │
+│  ✅ mcp-neo4j-aura-api       (Week 0)   │
+│  ✅ mcp-neo4j-data-modeling  (Week 0)   │
+├─────────────────────────────────────────┤
+│  Custom MCP Tool (BUILD):               │
+│  🔨 mcp-neo4j-rag            (Week 1)   │
+│     Built with MS Agent Framework       │
+│     - Vector search operations          │
+│     - Document upload (Docling)         │
+│     - Hybrid search                     │
+│     - Performance statistics            │
+│     - BitNet LLM integration            │
+└─────────────────────────────────────────┘
+```
+
+**Key Benefits:**
+- ✅ **80% less development** - Reuse 4 production-ready servers
+- ✅ **Week 1 instead of Week 3** - Immediate deployment
+- ✅ **Production-ready** - Neo4j battle-tested servers
+- ✅ **Best of both** - Neo4j expertise + MS Agent Framework
+- ✅ **Reduced risk** - Only custom code is RAG-specific
+
+**MCP Server Deployment:**
+- **Container**: Separate optional Azure Container App
+- **Resources**: 1 CPU, 1GB RAM
+- **Scaling**: 0-3 replicas (scale-to-zero enabled)
+- **Cost**: $25-75/month (only when active)
+- **Ports**: 3000 (HTTP/SSE)
+- **Image Size**: ~200MB (minimal)
+- **Deployment**: Local Docker AND Azure Container Apps
+
+### Updated Implementation Timeline
+
+**Phase 1: MCP Server** (1 week - REDUCED from 3 weeks!)
+
+**Days 1-2**: Deploy Neo4j Official MCP Servers
+- [ ] Pull neo4j-contrib/mcp-neo4j Docker images
+- [ ] Configure for Azure Container Apps
+- [ ] Test Cypher, Memory, Aura, Modeling tools
+- [ ] Verify Claude Desktop integration
+
+**Days 3-5**: Build Custom RAG MCP Tool with MS Agent Framework
+- [ ] Scaffold MCP tool using MS Agent Framework SDK
+- [ ] Implement vector search MCP method
+- [ ] Implement document upload MCP method  
+- [ ] Implement hybrid search MCP method
+- [ ] Implement stats/performance MCP method
+- [ ] Add BitNet LLM integration
+
+**Days 6-7**: Integration & Deployment
+- [ ] Combine Neo4j MCP + custom RAG MCP in one container
+- [ ] Azure Container Apps deployment
+- [ ] Load testing and performance validation
+- [ ] Documentation and examples
+
+**Phase 2 & 3**: Unchanged (Agent Framework + HTTP API)
+
+### Impact on Decision
+
+**Original Recommendation**: Build all MCP tools from scratch
+**Updated Recommendation**: Reuse Neo4j MCP + build 1 custom tool
+
+**Time Savings**: 2 weeks (67% reduction in Phase 1)
+**Code Reduction**: 80% less custom MCP code
+**Risk Reduction**: Leverage Neo4j's production-tested servers
+**Maintenance**: Only maintain RAG-specific MCP tool
+
+### Architecture Updates
+
+See updated diagrams with MCP Server container in:
+- `docs/AZURE_ARCHITECTURE.md` - Azure deployment with MCP container
+- `docs/ARCHITECTURE.md` - System architecture with MCP layer
+
+**Discussion**: https://github.com/ma3u/neo4j-agentframework/discussions/5
+**Issue**: https://github.com/ma3u/neo4j-agentframework/issues/4
+

@@ -65,6 +65,10 @@ graph TB
                 subgraph NEO4J["Neo4j Database Container"]
                     NEO4J_DB["🗄️ Neo4j 5.15<br/>━━━━━━━━━━━━━━<br/>Port: 7687 (Internal)<br/>Port: 7474 (Browser)<br/>CPU: 4 cores<br/>Memory: 8GB<br/>Replicas: 1 (Always-on)<br/>━━━━━━━━━━━━━━<br/>Heap: 4GB<br/>PageCache: 2GB<br/>Vector Indexes<br/>Full-text Indexes"]
                 end
+
+                subgraph MCP["MCP Server Container (Optional)"]
+                    MCP_APP["🔌 MCP Server<br/>━━━━━━━━━━━━━━<br/>Port: 3000 (External/Internal)<br/>CPU: 1 core<br/>Memory: 1GB<br/>Replicas: 0-3<br/>━━━━━━━━━━━━━━<br/>Neo4j Cypher MCP<br/>Knowledge Graph Memory<br/>RAG Operations MCP<br/>Aura Management MCP<br/>━━━━━━━━━━━━━━<br/>Transport: HTTP/SSE<br/>Protocol: MCP 1.0"]
+                end
             end
 
             subgraph MONITOR_SG["📈 Monitoring & Logging"]
@@ -101,6 +105,8 @@ graph TB
     AGENT_APP -->|HTTP| RAG_APP
     RAG_APP <-->|Bolt 7687| NEO4J_DB
     RAG_APP -->|HTTP| BITNET_APP
+    MCP_APP <-->|Bolt 7687| NEO4J_DB
+    MCP_APP -->|HTTP| RAG_APP
 
     %% Security & Secrets
     AGENT_APP -.->|Get Secrets| KEYVAULT
@@ -112,11 +118,13 @@ graph TB
     AGENT_APP -->|Logs| LOG_ANALYTICS
     RAG_APP -->|Logs| LOG_ANALYTICS
     BITNET_APP -->|Logs| LOG_ANALYTICS
+    MCP_APP -->|Logs| LOG_ANALYTICS
     NEO4J_DB -->|Logs| LOG_ANALYTICS
 
     AGENT_APP -->|Telemetry| APP_INSIGHTS
     RAG_APP -->|Telemetry| APP_INSIGHTS
     BITNET_APP -->|Telemetry| APP_INSIGHTS
+    MCP_APP -->|Telemetry| APP_INSIGHTS
 
     %% Storage
     NEO4J_DB -.->|Backups| BLOB_STORAGE
@@ -141,9 +149,12 @@ graph TB
     class ACR,DOMAIN,HTTPS azureClass
     class AGENT_APP,RAG_APP containerClass
     class BITNET_APP aiClass
+    class MCP_APP mcpClass
     class NEO4J_DB dbClass
     class LOG_ANALYTICS,APP_INSIGHTS monitorClass
     class KEYVAULT,MANAGED_ID securityClass
+
+    classDef mcpClass fill:#fff0f5,stroke:#9c27b0,stroke-width:2px
 ```
 
 ---
@@ -730,14 +741,15 @@ graph TB
 |-----------|-----|--------|----------|---------------------|
 | **RAG Service** | 2 | 4GB | 0-10 | $100-500 |
 | **BitNet LLM** | 2 | 2GB | 1-3 | $50-150 |
+| **MCP Server (Optional)** | 1 | 1GB | 0-3 | $25-75 |
 | **Neo4j Database** | 4 | 8GB | 1 (always-on) | $200 |
-| **Agent Service** | 2 | 4GB | 0-10 | $100-500 |
+| **Agent Service (Optional)** | 2 | 4GB | 0-10 | $0-500 |
 | **Container Apps Env** | - | - | - | $50 |
 | **Container Registry** | - | - | - | $5 |
 | **Log Analytics** | - | - | - | $25-100 |
 | **Blob Storage** | - | - | - | $10-50 |
 | **Azure AI (Optional)** | - | - | - | $0-200 |
-| **Total** | - | - | - | **$540-1,755/month** |
+| **Total** | - | - | - | **$465-1,830/month** |
 
 **Cost Optimization Strategies:**
 1. **Scale to Zero**: Agent & RAG services scale to 0 when idle
@@ -975,3 +987,192 @@ User → Agent Framework → RAG Tools → Neo4j
 **Last Updated**: 2025-10-05
 **Version**: 2.0 (Updated with Docling + BitNet)
 **Status**: Production Ready ✅
+
+### 4. MCP Server Container (Optional)
+
+```mermaid
+graph TB
+    subgraph MCPContainer["MCP Server Container (1 CPU, 1GB)"]
+        subgraph Server["MCP Server Core"]
+            HTTPServer[HTTP/SSE Server<br/>Port 3000]
+            MCPProtocol[MCP Protocol Handler<br/>━━━━━━━━━━━━━━<br/>Tool discovery<br/>Method execution<br/>Error handling]
+        end
+
+        subgraph Tools["MCP Tools"]
+            CypherTool[Cypher Query Tool<br/>━━━━━━━━━━━━━━<br/>NL → Cypher<br/>Query validation<br/>Result formatting]
+            MemoryTool[Graph Memory Tool<br/>━━━━━━━━━━━━━━<br/>Entity tracking<br/>Relationship storage<br/>Session persistence]
+            RAGTool[RAG Operations Tool<br/>━━━━━━━━━━━━━━<br/>Vector search<br/>Document upload<br/>Hybrid search]
+            AuraTool[Aura Management Tool<br/>━━━━━━━━━━━━━━<br/>Instance mgmt<br/>Backup/restore<br/>Configuration]
+        end
+
+        subgraph Integration["Neo4j Integration"]
+            Driver[Neo4j Driver<br/>Bolt connection]
+            RAGClient[RAG Service Client<br/>HTTP connection]
+        end
+    end
+
+    Client[MCP Client<br/>Claude/VS Code/Custom] -->|MCP Protocol| HTTPServer
+    HTTPServer -->|Route| MCPProtocol
+    MCPProtocol -->|Discover| CypherTool
+    MCPProtocol -->|Execute| MemoryTool
+    MCPProtocol -->|Execute| RAGTool
+    MCPProtocol -->|Execute| AuraTool
+
+    CypherTool -->|Connect| Driver
+    MemoryTool -->|Connect| Driver
+    RAGTool -->|HTTP| RAGClient
+    AuraTool -->|Connect| Driver
+
+    Driver -.->|Bolt| Neo4j_External[(Neo4j)]
+    RAGClient -.->|HTTP| RAG_External[RAG Service]
+
+    style HTTPServer fill:#fff0f5
+    style MCPProtocol fill:#f3e5f5
+    style CypherTool fill:#e1f5ff
+    style RAGTool fill:#c8e6c9
+```
+
+**Container Image**: `mcp-neo4j:v1.0`
+**Base**: Node.js 20-alpine or Python 3.11-slim
+**Size**: ~200MB (minimal)
+
+**Key Features:**
+- Model Context Protocol 1.0 server implementation
+- HTTP and SSE transport support
+- Dynamic tool discovery
+- Multiple MCP tools (4 servers in one container)
+
+**MCP Tools Provided:**
+
+1. **Cypher Query Tool** (`mcp-neo4j-cypher`)
+   - Natural language to Cypher translation
+   - Query validation and safety checks
+   - Result formatting and visualization
+   - Error handling with helpful messages
+
+2. **Knowledge Graph Memory Tool** (`mcp-neo4j-memory`)
+   - Persistent memory across AI sessions
+   - Entity and relationship tracking
+   - Conversation context storage
+   - Memory retrieval and summarization
+
+3. **RAG Operations Tool** (`mcp-neo4j-rag`)
+   - Vector search via RAG service
+   - Document upload with Docling
+   - Hybrid search capabilities
+   - Performance statistics
+
+4. **Aura Management Tool** (`mcp-neo4j-aura`)
+   - Instance creation and deletion
+   - Backup and restore operations
+   - Configuration management
+   - Monitoring and alerts
+
+**Environment Variables:**
+```bash
+NEO4J_URI=bolt://neo4j-database:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=<from-key-vault>
+RAG_SERVICE_URL=http://rag-service:8000
+MCP_TRANSPORT=http
+MCP_PORT=3000
+```
+
+**Deployment Options:**
+- **Local**: Docker container alongside Neo4j and RAG
+- **Azure**: Container App with auto-scaling (0-3 replicas)
+- **Kubernetes**: Deployment with service mesh
+
+---
+
+## MCP Server Integration Findings
+
+### Neo4j Official MCP Servers (Reusable!)
+
+**Repository**: [neo4j-contrib/mcp-neo4j](https://github.com/neo4j-contrib/mcp-neo4j)
+**Status**: ✅ Production-ready, actively maintained
+**License**: Open source (Apache 2.0)
+
+**Available MCP Servers:**
+1. `mcp-neo4j-cypher` - Natural language to Cypher
+2. `mcp-neo4j-memory` - Knowledge graph memory
+3. `mcp-neo4j-cloud-aura-api` - Aura instance management
+4. `mcp-neo4j-data-modeling` - Graph data modeling
+
+**Deployment Capabilities:**
+- ✅ Containerized (Docker support)
+- ✅ Cloud-ready (AWS ECS, Azure Container Apps)
+- ✅ Auto-scaling and load balancing support
+- ✅ Multiple transport modes (STDIO, SSE, HTTP)
+
+**For RAG Use Cases:**
+- ✅ Knowledge graph memory for conversation context
+- ✅ Natural language query translation
+- ✅ Graph data modeling for knowledge structures
+- ⚠️ **Custom RAG operations needed** (vector search, document upload)
+
+### Microsoft Agent Framework & MCP
+
+**Can MS Agent Framework Create MCP Servers?** ✅ **YES!**
+
+**Official Support** (2025):
+- Microsoft announced broad MCP support across agent platforms
+- C# MCP SDK available for building servers and clients
+- Agent Framework can expose agents as MCP tools
+- Integration with GitHub, Copilot Studio, Azure AI Foundry
+
+**Implementation Methods:**
+
+1. **Expose Agent as MCP Tool**:
+   ```csharp
+   // Wrap AIAgent in McpServerTool
+   var mcpTool = new McpServerTool(myAgent);
+   mcpServer.RegisterTool(mcpTool);
+   ```
+
+2. **Azure AI Agent Service Integration**:
+   - MCP creates common language for AI models to use agents
+   - Dynamic access to knowledge and tools
+   - First-party support across Microsoft platforms
+
+3. **Copilot Studio MCP Support**:
+   - Add AI apps and agents to Copilot Studio via MCP
+   - Few-click integration
+   - Standardized protocol
+
+**Security & Production Readiness**:
+- Microsoft working with Anthropic and MCP Steering Committee
+- Meeting enterprise security requirements
+- Production-grade support planned
+
+### Recommendation Update
+
+**Use Neo4j Official MCP Servers + Custom RAG MCP Tool**
+
+```
+┌─────────────────────────────────────────┐
+│         MCP Server Container            │
+├─────────────────────────────────────────┤
+│  Neo4j Official MCP Servers (Reuse):    │
+│  ✅ mcp-neo4j-cypher                    │
+│  ✅ mcp-neo4j-memory                    │
+│  ✅ mcp-neo4j-aura-api                  │
+│  ✅ mcp-neo4j-data-modeling             │
+├─────────────────────────────────────────┤
+│  Custom MCP Tool (Build with MS Agent): │
+│  🔨 mcp-neo4j-rag (NEW)                 │
+│     - Vector search via RAG service     │
+│     - Document upload with Docling      │
+│     - Hybrid search operations          │
+│     - Performance statistics            │
+│     - BitNet LLM integration            │
+└─────────────────────────────────────────┘
+```
+
+**Benefits:**
+- ✅ Reuse Neo4j's production-ready MCP servers
+- ✅ Only build custom RAG-specific MCP tool
+- ✅ Use Microsoft Agent Framework to create custom MCP tool
+- ✅ Leverage both ecosystems (Neo4j + Microsoft)
+- ✅ Reduced development time (80% less custom code)
+

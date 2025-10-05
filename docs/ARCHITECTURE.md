@@ -76,7 +76,16 @@ graph TB
         LlamaEngine -->|Generate| Answer[Generated Answer<br/>2-5s inference]
     end
 
-    subgraph "Azure Integration Layer (Optional)"
+    subgraph "MCP Integration Layer (Optional)"
+        MCPServer[MCP Server<br/>Model Context Protocol]
+        MCPTools[MCP Tools<br/>━━━━━━━━━━━━━━<br/>Cypher Query<br/>Graph Memory<br/>RAG Operations<br/>Aura Management]
+
+        MCPServer -->|Expose| MCPTools
+        MCPTools -->|Access| Context
+        MCPTools -->|Access| Neo4j
+    end
+
+    subgraph "Azure Agent Layer (Optional)"
         Answer -->|Optional| AgentFramework
         AgentFramework[Azure AI Agent<br/>Microsoft Agent Framework]
         AzureAI[Azure AI Foundry<br/>GPT-4o-mini]
@@ -87,6 +96,7 @@ graph TB
         AzureAI -->|Enhanced Response| FinalResponse[Final Response]
     end
 
+    UserQuery -.->|MCP Protocol| MCPServer
     UserQuery -.->|Direct| AgentFramework
     HybridSearch -->|Stats| Cache
 
@@ -94,6 +104,7 @@ graph TB
     style Neo4j fill:#4db8ff,stroke:#0066cc,stroke-width:2px
     style BitNet fill:#ffcccc,stroke:#cc0000,stroke-width:2px
     style AgentFramework fill:#ccffcc,stroke:#00cc00,stroke-width:2px
+    style MCPServer fill:#fff0f5,stroke:#9c27b0,stroke-width:2px
     style Cache fill:#ffffcc,stroke:#cccc00,stroke-width:2px
 ```
 

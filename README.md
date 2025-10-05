@@ -163,6 +163,9 @@ curl http://localhost:8000/stats
 - **Neo4j Browser**: http://localhost:7474 (neo4j/password)
 - **Monitoring Dashboard**: http://localhost:3000 (admin/optimized-rag-2024)
 
+![NEO4J UI](image.png)
+Neo4J Browser with sample data loaded (Cypher queries)
+
 ### API Endpoints
 
 #### Core Operations
