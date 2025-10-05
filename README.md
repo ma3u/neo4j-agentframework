@@ -235,20 +235,24 @@ NEO4J_URI=bolt://neo4j-rag:7687
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=password
 
-# Local Embeddings (No Azure required)
-EMBEDDING_MODEL=all-MiniLM-L6-v2
+# Embeddings (Local - Zero Cost)
+EMBEDDING_MODEL=all-MiniLM-L6-v2  # SentenceTransformers (384-dim, free)
 EMBEDDING_CACHE_SIZE=20000
+# Alternative: text-embedding-3-small (Azure OpenAI, 1536-dim, paid)
+# See docs/EMBEDDINGS.md for comparison
 
-# Native BitNet.cpp
+# Native BitNet.cpp (87% Memory Reduction)
 BITNET_MODE=native_cpp_optimized
 BITNET_MODEL_PATH=/app/bitnet/BitNet/models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf
 BITNET_BINARY_PATH=/app/bitnet/BitNet/build/bin/llama-cli
 
-# Performance
+# Performance Optimization
 TORCH_THREADS=2
 OMP_NUM_THREADS=2
 PERFORMANCE_PROFILING=enabled
 ```
+
+**Embedding Options**: See [docs/EMBEDDINGS.md](docs/EMBEDDINGS.md) for detailed comparison
 
 ### Docker Compose Profiles
 
@@ -356,6 +360,7 @@ Total Pipeline: 2050-5080ms
 | Document | Description |
 |----------|-------------|
 | [**System Architecture**](docs/ARCHITECTURE.md) | Complete architecture with 17 Mermaid diagrams |
+| [**Embeddings Guide**](docs/EMBEDDINGS.md) | Embedding models (all-MiniLM-L6-v2 vs Azure OpenAI) |
 | [**BitNet Success Story**](docs/BITNET-SUCCESS.md) | BitNet build journey & lessons learned |
 | [**LLM Setup Guide**](docs/LLM_SETUP.md) | LLM configuration and setup |
 | [**Performance Analysis**](docs/performance_analysis.md) | Detailed benchmarks & metrics |

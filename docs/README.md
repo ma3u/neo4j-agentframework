@@ -29,6 +29,7 @@
 | Document | Description | Audience |
 |----------|-------------|----------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | **Complete system architecture with Mermaid diagrams** | **Architects & Engineers** |
+| [EMBEDDINGS.md](EMBEDDINGS.md) | **Embedding models guide (SentenceTransformers vs Azure OpenAI)** | **ML Engineers & Developers** |
 | [BITNET-SUCCESS.md](BITNET-SUCCESS.md) | BitNet build success story & lessons | ML Engineers |
 | [LLM_SETUP.md](LLM_SETUP.md) | LLM configuration and setup | ML Engineers |
 | [performance_analysis.md](performance_analysis.md) | Performance benchmarks & analysis | Performance Engineers |
