@@ -8,7 +8,6 @@ uvicorn[standard]==0.24.0
 # Azure integrations (replaces ALL local ML dependencies)
 azure-identity==1.19.0  # Updated for security fix
 openai==1.3.7  # Azure OpenAI for embeddings
-requests==2.32.3  # Updated for security fixes (CVE-2024-35195, etc.)
 
 # Neo4j database (lightweight)
 neo4j==5.15.0
@@ -25,7 +24,8 @@ python-dotenv==1.0.0  # Environment management
 structlog==23.2.0
 
 # Security (minimal)
-cryptography==43.0.3  # Updated for security fixes (CVE-2024-0056, CVE-2024-26130, etc.)
+cryptography==44.0.1  # Updated to latest secure version (fixes all CVEs including low severity)
+requests==2.32.4  # Updated to latest secure version (fixes CVE-2024-47081)
 
 # BitNet Efficiency Achievements:
 # ================================

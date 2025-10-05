@@ -215,3 +215,13 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
 ---
 
 **Made with ❤️ for efficient AI systems**
+
+### Browser & Setup Guides
+- [NEO4J_BROWSER_GUIDE.md](NEO4J_BROWSER_GUIDE.md) - Neo4j Browser setup and usage
+- [KNOWLEDGE_BASE_SETUP.md](KNOWLEDGE_BASE_SETUP.md) - Knowledge base download and setup
+- [browser-setup/](browser-setup/) - Detailed browser configuration guides
+
+### Archive & Historical Documents
+- [archive/](archive/) - Archived documentation and historical references
+- [azure/cost-optimized-deployment.md](azure/cost-optimized-deployment.md) - Cost optimization strategies
+
