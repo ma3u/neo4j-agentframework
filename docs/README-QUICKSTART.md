@@ -991,11 +991,19 @@ az monitor metrics list \
 
 ## 📚 Additional Resources
 
-- **Azure Deployment Guide**: [neo4j-rag-demo/docs/AZURE_DEPLOYMENT_GUIDE.md](neo4j-rag-demo/docs/AZURE_DEPLOYMENT_GUIDE.md)
-- **BitNet Native Guide**: [README-BitNet-Native.md](README-BitNet-Native.md)
-- **BitNet Deployment**: [neo4j-rag-demo/azure_deploy/BITNET_DEPLOYMENT_GUIDE.md](neo4j-rag-demo/azure_deploy/BITNET_DEPLOYMENT_GUIDE.md)
-- **Architecture Docs**: [neo4j-rag-demo/docs/AZURE_ARCHITECTURE.md](neo4j-rag-demo/docs/AZURE_ARCHITECTURE.md)
-- **Project CLAUDE.md**: [neo4j-rag-demo/CLAUDE.md](neo4j-rag-demo/CLAUDE.md)
+### Documentation
+- [**📖 Documentation Index**](README.md) - Complete documentation map
+- [**☁️ Azure Deployment Guide**](AZURE_DEPLOYMENT_GUIDE.md) - Detailed Azure deployment
+- [**🏗️ Azure Architecture**](AZURE_ARCHITECTURE.md) - Architecture documentation
+- [**⚡ BitNet Deployment Guide**](BITNET_DEPLOYMENT_GUIDE.md) - BitNet-specific deployment
+- [**🧪 Local Testing Guide**](LOCAL-TESTING-GUIDE.md) - Comprehensive testing
+- [**📋 Implementation Status**](IMPLEMENTATION-STATUS.md) - Current progress
+
+### Project Resources
+- [**🤖 Claude Code Guide**](../CLAUDE.md) - AI assistant guidance
+- [**📖 Main README**](../README.md) - Project overview
+- [**👥 Contributing**](CONTRIBUTING.md) - How to contribute
+- [**🔒 Security**](SECURITY.md) - Security policies
 
 ---
 

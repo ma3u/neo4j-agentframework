@@ -287,3 +287,14 @@ curl -X POST http://localhost:8000/query \
 **Build Credit**: Based on [ajsween/bitnet-b1-58-arm-docker](https://github.com/ajsween/bitnet-b1-58-arm-docker)
 **Model**: [microsoft/BitNet-b1.58-2B-4T-gguf](https://huggingface.co/microsoft/BitNet-b1.58-2B-4T-gguf)
 **Framework**: [Microsoft BitNet](https://github.com/microsoft/BitNet)
+
+---
+
+## 📚 Related Documentation
+
+- [**📖 Documentation Index**](README.md) - Complete documentation map
+- [**⚡ BitNet Deployment Guide**](BITNET_DEPLOYMENT_GUIDE.md) - Deployment steps
+- [**🚀 Quick Start Guide**](README-QUICKSTART.md) - Complete setup journey
+- [**🧪 Local Testing Guide**](LOCAL-TESTING-GUIDE.md) - Testing BitNet
+- [**🔧 LLM Setup**](LLM_SETUP.md) - LLM configuration
+- [**📖 Main README**](../README.md) - Project overview

@@ -210,11 +210,19 @@ docker-compose -f scripts/docker-compose.optimized.yml up -d --build
 
 ## References
 
+### Official Documentation
 - [BitNet Official Repo](https://github.com/microsoft/BitNet)
 - [Neo4j Documentation](https://neo4j.com/docs/)
 - [SentenceTransformers](https://www.sbert.net/)
 
+### Related Documentation
+- [**📖 Documentation Index**](README.md) - Complete documentation map
+- [**☁️ Azure Deployment Guide**](AZURE_DEPLOYMENT_GUIDE.md) - Detailed Azure deployment
+- [**🚀 Quick Start Guide**](README-QUICKSTART.md) - Complete setup journey
+- [**🧪 Local Testing Guide**](LOCAL-TESTING-GUIDE.md) - Testing procedures
+- [**⚡ BitNet Success**](BITNET-SUCCESS.md) - BitNet build details
+
 ---
 
 **Status**: ✅ Deployment successful, pipeline tested and working
-**Date**: 2025-10-04
+**Date**: 2025-10-05

@@ -632,6 +632,18 @@ time curl -s -X POST http://localhost:8000/query -H 'Content-Type: application/j
 
 ---
 
-**Last Updated**: 2025-10-04
+---
+
+## 📚 Related Documentation
+
+- [**📖 Documentation Index**](README.md) - Complete documentation map
+- [**🚀 Quick Start Guide**](README-QUICKSTART.md) - Complete setup journey
+- [**🧪 RAG Testing Guide**](RAG-TESTING-GUIDE.md) - RAG-specific testing
+- [**🚢 Deployment Guide**](DEPLOYMENT.md) - Production deployment
+- [**📊 Performance Analysis**](performance_analysis.md) - Detailed benchmarks
+
+---
+
+**Last Updated**: 2025-10-05
 **Status**: All tests passing ✅
 **Performance**: 417x improvement confirmed ⚡

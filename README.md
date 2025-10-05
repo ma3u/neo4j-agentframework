@@ -1,8 +1,6 @@
 # Neo4j RAG + BitNet + Azure Agent Framework
 
-**Ultra-efficient RAG system with Microsoft BitNet.cpp and Neo4j for Azure AI integration**
-
-🚀 **87% memory reduction** | ⚡ **417x faster retrieval** | 💰 **$0 embedding costs**
+**Ultra-efficient RAG system with Microsoft BitNet.cpp and Neo4j for local usage and Azure AI integration**
 
 ---
 
@@ -17,14 +15,51 @@ This project provides a complete production-ready RAG (Retrieval-Augmented Gener
 
 ### Architecture
 
-```
-┌─────────────────────┐    ┌──────────────────────┐    ┌─────────────────────┐
-│   Azure AI Agent    │────│  Neo4j BitNet RAG   │────│   Neo4j Database    │
-│                     │    │                      │    │                     │
-│ ∙ Conversation      │    │ ∙ Native BitNet.cpp  │    │ ∙ Knowledge Storage │  
-│ ∙ Orchestration     │    │ ∙ Local Embeddings   │    │ ∙ Vector Search     │
-│ ∙ Final LLM         │    │ ∙ Document Retrieval │    │ ∙ Graph Relations   │
-└─────────────────────┘    └──────────────────────┘    └─────────────────────┘
+```mermaid
+graph TB
+    subgraph "Document Processing"
+        PDF[PDF Documents]
+        Docling[Docling Loader<br/>Advanced PDF Processing]
+        PDF -->|Extract| Docling
+        Docling -->|Tables, Images, Structure| Chunks[Document Chunks]
+    end
+
+    subgraph "Neo4j Database"
+        Neo4j[(Neo4j Graph DB<br/>417x Faster Retrieval)]
+        Chunks -->|Store| Neo4j
+        Neo4j -->|Vector Search| VectorIdx[Vector Index<br/>384-dim embeddings]
+        Neo4j -->|Keyword Search| FullText[Full-Text Index]
+    end
+
+    subgraph "RAG Pipeline"
+        Query[User Query]
+        Embed[SentenceTransformer<br/>Local Embeddings]
+        Search[Hybrid Search<br/>Vector + Keyword]
+        Query -->|Encode| Embed
+        Embed -->|Similarity| VectorIdx
+        Search -->|Retrieve| Context[Retrieved Context]
+        VectorIdx -->|Top-K| Search
+        FullText -->|Keywords| Search
+    end
+
+    subgraph "LLM Inference"
+        BitNet[BitNet.cpp<br/>1.58-bit Quantized<br/>87% Memory Reduction]
+        Context -->|Augment| BitNet
+        BitNet -->|Generate| Answer[Generated Answer]
+    end
+
+    subgraph "Azure Integration (Optional)"
+        Agent[Azure AI Agent<br/>GPT-4o-mini]
+        Answer -->|Fallback| Agent
+        Agent -->|Enterprise AI| Response[Final Response]
+    end
+
+    Query -.->|Optional| Agent
+
+    style Docling fill:#e1f5ff
+    style Neo4j fill:#4db8ff
+    style BitNet fill:#ffcccc
+    style Agent fill:#ccffcc
 ```
 
 ### Key Benefits
@@ -62,6 +97,9 @@ docker-compose -f scripts/docker-compose.optimized.yml up -d
 # Wait for services to be ready (takes 2-3 minutes)
 ./neo4j-rag-demo/scripts/wait-for-services.sh
 ```
+
+![](assets/17596728916271.jpg)
+NEO4J DB + RAG + BitNet LLM in Docker Desktop running locally
 
 ### Option 2: Development Setup
 
@@ -276,11 +314,27 @@ Total Pipeline: 2050-5080ms
 
 ## 📚 Documentation
 
-- [**Local Testing Guide**](docs/LOCAL-TESTING-GUIDE.md) - Complete local development setup
-- [**Azure Deployment Guide**](docs/DEPLOYMENT.md) - Production deployment on Azure
-- [**Performance Analysis**](docs/performance_analysis.md) - Detailed benchmarks and optimization
-- [**Implementation Status**](docs/IMPLEMENTATION-STATUS.md) - Current features and roadmap
-- [**API Documentation**](http://localhost:8000/docs) - Interactive API docs (when running)
+### Quick Start
+- [**📖 Documentation Index**](docs/README.md) - Complete documentation map
+- [**🚀 Quick Start Guide**](docs/README-QUICKSTART.md) - Complete developer journey (local → Azure)
+- [**🧪 Local Testing Guide**](docs/LOCAL-TESTING-GUIDE.md) - Comprehensive testing procedures
+
+### Deployment
+- [**☁️ Azure Deployment Guide**](docs/AZURE_DEPLOYMENT_GUIDE.md) - Detailed Azure deployment steps
+- [**🏗️ Azure Architecture**](docs/AZURE_ARCHITECTURE.md) - Architecture documentation
+- [**🚢 Basic Deployment**](docs/DEPLOYMENT.md) - Quick deployment reference
+
+### Technical Deep-Dive
+- [**🏗️ System Architecture**](docs/ARCHITECTURE.md) - Complete architecture with Mermaid diagrams
+- [**⚡ BitNet Success Story**](docs/BITNET-SUCCESS.md) - BitNet build & optimization
+- [**📊 Performance Analysis**](docs/performance_analysis.md) - Benchmarks & metrics
+- [**📋 Implementation Status**](docs/IMPLEMENTATION-STATUS.md) - Current features & roadmap
+
+### Additional Resources
+- [**👥 Contributing Guide**](docs/CONTRIBUTING.md) - How to contribute
+- [**🔒 Security Policy**](docs/SECURITY.md) - Security guidelines
+- [**📖 User Guide**](docs/USER_GUIDE.md) - End-user documentation
+- [**🤖 API Documentation**](http://localhost:8000/docs) - Interactive API docs (when running)
 
 ---
 
