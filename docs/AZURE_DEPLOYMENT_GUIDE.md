@@ -2,6 +2,65 @@
 
 This guide provides step-by-step instructions for deploying your optimized Neo4j RAG system to Azure using Microsoft Agent Framework.
 
+---
+
+## 🚀 Quick Deploy (Automated)
+
+**Use the automated deployment script:**
+
+```bash
+# Complete deployment with one command
+./scripts/azure-deploy-complete.sh
+```
+
+**What it deploys:**
+- Resource Group
+- Azure Container Registry
+- Azure OpenAI (GPT-4o-mini) - NOT BitNet, this is the fallback LLM
+- Container Apps Environment
+- Neo4j Database Container
+- RAG Service Container
+- BitNet LLM Container
+- Agent Service Container
+
+**Time**: ~70 minutes
+**Script**: [`scripts/azure-deploy-complete.sh`](../scripts/azure-deploy-complete.sh)
+
+---
+
+## 🧹 Cleanup Duplicate Resources
+
+**If you've run deployment multiple times**, you may have duplicate Container Registries:
+
+```bash
+# Remove duplicate registries (saves $15/month)
+./scripts/azure-cleanup-duplicate-registries.sh
+```
+
+**Script**: [`scripts/azure-cleanup-duplicate-registries.sh`](../scripts/azure-cleanup-duplicate-registries.sh)
+
+---
+
+## 📋 Deployment Scripts Reference
+
+| Script | Purpose | Location |
+|--------|---------|----------|
+| [`azure-deploy-complete.sh`](../scripts/azure-deploy-complete.sh) | **Complete automated deployment** | `scripts/` |
+| [`azure-cleanup-duplicate-registries.sh`](../scripts/azure-cleanup-duplicate-registries.sh) | Remove duplicate registries | `scripts/` |
+| [`deploy.sh`](../neo4j-rag-demo/azure_deploy/deploy.sh) | RAG service deployment | `neo4j-rag-demo/azure_deploy/` |
+| [`deploy_bitnet.sh`](../neo4j-rag-demo/azure_deploy/deploy_bitnet.sh) | BitNet service deployment | `neo4j-rag-demo/azure_deploy/` |
+
+**Python Modules**:
+| File | Purpose | Location |
+|------|---------|----------|
+| [`app.py`](../neo4j-rag-demo/azure_deploy/app.py) | Main FastAPI application | `neo4j-rag-demo/azure_deploy/` |
+| [`agent_service.py`](../neo4j-rag-demo/azure_deploy/agent_service.py) | Agent Framework service | `neo4j-rag-demo/azure_deploy/` |
+| [`bitnet_llm.py`](../neo4j-rag-demo/azure_deploy/bitnet_llm.py) | BitNet client | `neo4j-rag-demo/azure_deploy/` |
+| [`config.py`](../neo4j-rag-demo/azure_deploy/config.py) | Configuration management | `neo4j-rag-demo/azure_deploy/` |
+| [`neo4j_rag_agent_tools.py`](../neo4j-rag-demo/src/azure_agent/neo4j_rag_agent_tools.py) | Agent tools for RAG | `neo4j-rag-demo/src/azure_agent/` |
+
+---
+
 ## 🎯 Deployment Overview
 
 **What We're Deploying:**
@@ -541,3 +600,81 @@ For additional support or questions about this deployment, refer to:
 - [Neo4j Production Deployment Guide](https://neo4j.com/docs/operations-manual/current/deployment/)
 
 **Performance Optimized** • **Production Ready** • **Azure Native**
+---
+
+## 📦 Container Images & Dockerfiles
+
+### Docker Images Reference
+
+| Service | Dockerfile | Purpose | Base Image | Size |
+|---------|------------|---------|------------|------|
+| **RAG Service** | [`neo4j-rag-demo/Dockerfile.local`](../neo4j-rag-demo/Dockerfile.local) | RAG API with SentenceTransformers | python:3.11-slim | ~2GB |
+| **BitNet LLM** | [`scripts/Dockerfile.bitnet-final`](../scripts/Dockerfile.bitnet-final) | Real BitNet.cpp inference | ubuntu:22.04 | ~3.2GB |
+| **BitNet (Alternative)** | [`scripts/Dockerfile.bitnet-real`](../scripts/Dockerfile.bitnet-real) | Alternative BitNet build | ubuntu:22.04 | ~3.2GB |
+| **Agent Service** | [`neo4j-rag-demo/azure_deploy/Dockerfile.agent`](../neo4j-rag-demo/azure_deploy/Dockerfile.agent) | Agent Framework | python:3.11-slim | ~1.5GB |
+| **BitNet (Azure)** | [`neo4j-rag-demo/azure_deploy/Dockerfile.bitnet`](../neo4j-rag-demo/azure_deploy/Dockerfile.bitnet) | BitNet for Azure | ubuntu:22.04 | ~3.2GB |
+
+### Build Scripts
+
+**Build all images locally:**
+```bash
+# RAG Service
+docker build -f neo4j-rag-demo/Dockerfile.local \
+  -t neo4j-rag:v1.0 \
+  neo4j-rag-demo
+
+# BitNet LLM (Real inference - 30 min build)
+docker build -f scripts/Dockerfile.bitnet-final \
+  -t bitnet-llm:v1.0 \
+  .
+
+# Agent Service  
+docker build -f neo4j-rag-demo/azure_deploy/Dockerfile.agent \
+  -t neo4j-agent:v1.0 \
+  neo4j-rag-demo
+```
+
+---
+
+## 🔗 Related Scripts and Tools
+
+### Deployment Automation
+
+**Primary Scripts:**
+- [`scripts/azure-deploy-complete.sh`](../scripts/azure-deploy-complete.sh) - Complete deployment (recommended)
+- [`neo4j-rag-demo/azure_deploy/deploy.sh`](../neo4j-rag-demo/azure_deploy/deploy.sh) - RAG service only
+- [`neo4j-rag-demo/azure_deploy/deploy_bitnet.sh`](../neo4j-rag-demo/azure_deploy/deploy_bitnet.sh) - BitNet service only
+
+**Cleanup Scripts:**
+- [`scripts/azure-cleanup-duplicate-registries.sh`](../scripts/azure-cleanup-duplicate-registries.sh) - Remove duplicates
+
+### Application Code
+
+**FastAPI Applications:**
+- [`neo4j-rag-demo/azure_deploy/app.py`](../neo4j-rag-demo/azure_deploy/app.py) - Main RAG API
+- [`neo4j-rag-demo/azure_deploy/agent_service.py`](../neo4j-rag-demo/azure_deploy/agent_service.py) - Agent orchestration
+- [`neo4j-rag-demo/azure_deploy/app_bitnet.py`](../neo4j-rag-demo/azure_deploy/app_bitnet.py) - BitNet API wrapper
+
+**Integration Modules:**
+- [`neo4j-rag-demo/azure_deploy/bitnet_llm.py`](../neo4j-rag-demo/azure_deploy/bitnet_llm.py) - BitNet client library
+- [`neo4j-rag-demo/azure_deploy/config.py`](../neo4j-rag-demo/azure_deploy/config.py) - Configuration management
+- [`neo4j-rag-demo/src/azure_agent/neo4j_rag_agent_tools.py`](../neo4j-rag-demo/src/azure_agent/neo4j_rag_agent_tools.py) - Agent RAG tools
+
+---
+
+## ⚠️ Important: Resource Naming Clarification
+
+**`neo4j-rag-bitnet-ai`** Azure OpenAI Resource:
+- ❌ **NOT BitNet.cpp** - This is Azure OpenAI!
+- ✅ **IS GPT-4o-mini** - Fallback/alternative LLM
+- ✅ **Purpose**: Azure AI Assistant backend
+- ✅ **Role**: Optional enhancement to BitNet
+
+**BitNet.cpp** (Actual 1.58-bit LLM):
+- ✅ Runs in Container App: `bitnet-llm`
+- ✅ Built from: `scripts/Dockerfile.bitnet-final`
+- ✅ 87% memory reduction
+- ✅ Primary LLM for inference
+
+See [Resource Naming Guide](AZURE_RESOURCE_NAMING.md) for details.
+
