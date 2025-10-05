@@ -1,0 +1,245 @@
+version: '3.8'
+
+services:
+  # Neo4j database optimized for performance
+  neo4j-rag-optimized:
+    image: neo4j:5.15-community
+    restart: unless-stopped
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+      - neo4j_plugins:/plugins
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PLUGINS=["apoc", "graph-data-science"]
+      
+      # Performance optimizations
+      - NEO4J_dbms_memory_heap_initial_size=1G
+      - NEO4J_dbms_memory_heap_max_size=2G
+      - NEO4J_dbms_memory_pagecache_size=1G
+      - NEO4J_dbms_query_cache_size=10000
+      
+      # Security and procedures
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*,gds.*
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      
+      # Vector search optimizations
+      - NEO4J_dbms_tx_log_rotation_retention_policy=1G size
+      - NEO4J_dbms_checkpoint_interval_time=300s
+      
+    healthcheck:
+      test: ["CMD-SHELL", "neo4j status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - optimized-rag-network
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 2G
+
+  # Ultra-High-Performance BitNet RAG Service
+  bitnet-optimized-rag:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+      args:
+        - EMBEDDING_CACHE_SIZE=20000
+        - TORCH_THREADS=2
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistent model cache
+      - bitnet_models:/app/bitnet/BitNet/models
+      - embedding_cache:/app/models/embeddings
+      - optimization_logs:/app/logs
+      # Shared memory for IPC performance
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 512M
+    environment:
+      # Neo4j connection
+      - NEO4J_URI=bolt://neo4j-rag-optimized:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=password
+      
+      # Performance optimizations
+      - EMBEDDING_CACHE_SIZE=20000
+      - TORCH_THREADS=2
+      - OMP_NUM_THREADS=2
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONHASHSEED=1
+      
+      # Native BitNet.cpp paths
+      - BITNET_MODE=native_cpp_optimized
+      - BITNET_MODEL_PATH=/app/bitnet/BitNet/models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf
+      - BITNET_BINARY_PATH=/app/bitnet/BitNet/build/bin/llama-cli
+      - BITNET_NATIVE=true
+      
+      # Zero external dependencies
+      - AZURE_OPENAI_DEPENDENCY=NONE
+      - LOCAL_ONLY=true
+      
+      # Performance monitoring
+      - PERFORMANCE_PROFILING=enabled
+      - LOG_LEVEL=INFO
+      
+    depends_on:
+      neo4j-rag-optimized:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health && python -c \"import requests; r=requests.get('http://localhost:8000/health'); exit(0 if r.json().get('avg_response_time_ms', 1000) < 100 else 1)\""]
+      interval: 60s
+      timeout: 30s
+      start_period: 300s  # Allow time for optimization setup
+      retries: 3
+    networks:
+      - optimized-rag-network
+    
+    # Resource allocation optimized for performance
+    deploy:
+      resources:
+        limits:
+          memory: 4G      # Increased for caching and models
+          cpus: '2.0'     # Dedicated CPU cores
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+    
+    # CPU affinity and priority (if supported)
+    sysctls:
+      - net.core.somaxconn=65535
+      - net.ipv4.tcp_max_syn_backlog=65535
+    
+    # Ulimits for high performance
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+
+  # Performance monitoring dashboard
+  performance-monitor:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana-config:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=optimized-rag-2024
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/performance.json
+    networks:
+      - optimized-rag-network
+    profiles:
+      - monitoring
+
+  # Metrics collector for performance analysis
+  prometheus-optimized:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus-optimized.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=24h'  # Optimized for performance monitoring
+      - '--storage.tsdb.retention.size=1GB'
+      - '--query.max-concurrency=50'
+      - '--web.enable-lifecycle'
+    networks:
+      - optimized-rag-network
+    profiles:
+      - monitoring
+
+  # Load testing service
+  load-tester:
+    build:
+      context: .
+      dockerfile: Dockerfile.loadtest
+    restart: "no"
+    volumes:
+      - ./load-test-results:/app/results
+    environment:
+      - TARGET_URL=http://bitnet-optimized-rag:8000
+      - TEST_DURATION=300s
+      - CONCURRENT_USERS=10
+      - TARGET_RPS=50
+    networks:
+      - optimized-rag-network
+    profiles:
+      - testing
+    depends_on:
+      - bitnet-optimized-rag
+
+volumes:
+  # Neo4j data with performance optimizations
+  neo4j_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /var/lib/neo4j-optimized/data
+  neo4j_logs:
+    driver: local
+  neo4j_import:
+    driver: local
+  neo4j_plugins:
+    driver: local
+    
+  # BitNet.cpp optimized model storage
+  bitnet_models:
+    driver: local
+    driver_opts:
+      type: tmpfs  # Use RAM for ultra-fast model access
+      device: tmpfs
+      o: size=2g,uid=1000
+    
+  # High-performance embedding cache
+  embedding_cache:
+    driver: local
+    driver_opts:
+      type: tmpfs  # RAM-based cache for maximum speed
+      device: tmpfs
+      o: size=1g,uid=1000
+    
+  # Performance and optimization logs
+  optimization_logs:
+    driver: local
+    
+  # Monitoring data
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  optimized-rag-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 9000  # Jumbo frames for performance
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16

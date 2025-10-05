@@ -1,0 +1,60 @@
+# Multi-stage Dockerfile for Neo4j RAG Agent with Microsoft Agent Framework
+# Optimized for Azure Container Apps deployment
+
+FROM python:3.11-slim as base
+
+# Set environment variables for production
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+WORKDIR /app
+
+# Copy requirements and install dependencies
+COPY requirements.txt .
+
+# Install Python dependencies including Agent Framework
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir \
+        agent-framework \
+        azure-ai-projects \
+        azure-identity \
+        fastapi \
+        uvicorn[standard] \
+        prometheus-client \
+        opentelemetry-api \
+        opentelemetry-sdk \
+        opentelemetry-instrumentation-fastapi
+
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Copy application source code
+COPY src/ ./src/
+COPY azure_deploy/app.py ./app.py
+
+# Set ownership to non-root user
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Production command
+CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

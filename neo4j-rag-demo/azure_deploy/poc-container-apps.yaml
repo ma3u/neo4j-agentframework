@@ -1,0 +1,223 @@
+# Ultra-Low Cost POC Azure Container Apps Configuration
+# Optimized for minimal resource usage and cost (estimated $30-75/month)
+
+apiVersion: app/v1
+kind: ContainerApp
+metadata:
+  name: neo4j-rag-agent-poc
+  namespace: default
+spec:
+  # Scale to zero for maximum cost savings
+  configuration:
+    activeRevisionsMode: Single
+    maxInactiveRevisions: 1
+    secrets:
+      - name: neo4j-password
+        value: "your-secure-password"
+      - name: azure-openai-endpoint
+        value: "https://your-openai.openai.azure.com/"
+  
+  template:
+    # Ultra-minimal scaling for POC workloads
+    scale:
+      minReplicas: 0  # Scale to zero when idle = no cost!
+      maxReplicas: 2  # Handle small bursts
+      rules:
+        - name: http-scaling
+          http:
+            metadata:
+              concurrentRequests: "10"  # Low concurrency for POC
+    
+    containers:
+      - name: neo4j-rag-agent
+        image: your-acr.azurecr.io/neo4j-rag-agent:poc
+        
+        # Ultra-minimal resources for POC
+        resources:
+          requests:
+            cpu: "0.25"      # Quarter CPU core
+            memory: "512Mi"  # 512MB RAM
+          limits:
+            cpu: "0.5"       # Half CPU core max
+            memory: "1Gi"    # 1GB RAM max
+        
+        # Environment optimized for Azure OpenAI embeddings
+        env:
+          - name: NEO4J_URI
+            value: "bolt://neo4j-poc:7687"
+          - name: NEO4J_USER
+            value: "neo4j"
+          - name: NEO4J_PASSWORD
+            secretRef: neo4j-password
+          - name: AZURE_OPENAI_ENDPOINT
+            secretRef: azure-openai-endpoint
+          - name: EMBEDDING_MODEL
+            value: "azure-openai"  # Use Azure OpenAI instead of local
+          - name: EMBEDDING_DEPLOYMENT
+            value: "text-embedding-ada-002"
+          - name: LOG_LEVEL
+            value: "INFO"
+          - name: CACHE_SIZE
+            value: "100"  # Small cache for POC
+          - name: MAX_CHUNK_SIZE
+            value: "200"  # Smaller chunks = lower embedding costs
+        
+        # Health checks for auto-scaling
+        probes:
+          liveness:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readiness:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+        
+        ports:
+          - containerPort: 8000
+            name: http
+
+---
+# Neo4j Database Container - Minimal Configuration for POC
+apiVersion: app/v1
+kind: ContainerApp
+metadata:
+  name: neo4j-poc
+spec:
+  configuration:
+    activeRevisionsMode: Single
+    secrets:
+      - name: neo4j-password
+        value: "your-secure-password"
+  
+  template:
+    # Always-on but minimal for database persistence
+    scale:
+      minReplicas: 1
+      maxReplicas: 1
+    
+    containers:
+      - name: neo4j
+        image: neo4j:5.15-community  # Community edition for POC
+        
+        # Minimal Neo4j resources
+        resources:
+          requests:
+            cpu: "0.25"      # Quarter CPU
+            memory: "512Mi"  # 512MB RAM
+          limits:
+            cpu: "0.5"       # Half CPU max
+            memory: "1Gi"    # 1GB RAM max
+        
+        # Neo4j configuration optimized for low resource usage
+        env:
+          - name: NEO4J_AUTH
+            value: "neo4j/your-secure-password"
+          - name: NEO4J_PLUGINS
+            value: '["apoc"]'
+          # Memory-optimized settings for POC
+          - name: NEO4J_dbms_memory_heap_initial__size
+            value: "256m"
+          - name: NEO4J_dbms_memory_heap_max__size
+            value: "512m"
+          - name: NEO4J_dbms_memory_pagecache_size
+            value: "128m"
+          # Connection pool settings for POC
+          - name: NEO4J_dbms_connector_bolt_thread_pool_max__size
+            value: "2"
+          - name: NEO4J_dbms_connector_http_thread_pool_max__size
+            value: "2"
+          # Disable unused features for cost savings
+          - name: NEO4J_dbms_security_procedures_unrestricted
+            value: "apoc.*"
+          - name: NEO4J_dbms_logs_debug_level
+            value: "WARN"  # Reduce logging overhead
+        
+        # Persistent storage (minimal size)
+        volumeMounts:
+          - name: neo4j-data
+            mountPath: /data
+        
+        ports:
+          - containerPort: 7687
+            name: bolt
+          - containerPort: 7474
+            name: http
+    
+    # Minimal persistent volume for POC data
+    volumes:
+      - name: neo4j-data
+        persistentVolumeClaim:
+          claimName: neo4j-poc-pvc
+
+---
+# Minimal Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: neo4j-poc-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi  # Minimal storage for POC
+  storageClassName: managed-premium-retain
+
+---
+# Cost Monitoring and Alerting Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cost-monitoring-config
+data:
+  cost-alert.json: |
+    {
+      "name": "Neo4j RAG POC Cost Alert",
+      "description": "Alert when monthly costs exceed POC budget",
+      "severity": "3",
+      "enabled": true,
+      "condition": {
+        "allOf": [
+          {
+            "field": "total_cost",
+            "equals": "greater_than",
+            "value": 100.0,
+            "timeAggregation": "monthly"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "actionType": "email",
+          "details": {
+            "to": ["admin@company.com"],
+            "subject": "Neo4j RAG POC Cost Alert - Budget Exceeded"
+          }
+        }
+      ]
+    }
+
+---
+# Ultra-Minimal Application Insights Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: appinsights-config
+data:
+  sampling.json: |
+    {
+      "sampling": {
+        "percentage": 10.0,
+        "maxTelemetryItemsPerSecond": 5
+      },
+      "telemetry": {
+        "enableRequestTrackingInSystemModules": false,
+        "enableDependencyTrackingInSystemModules": false,
+        "enablePerformanceCounters": false
+      }
+    }

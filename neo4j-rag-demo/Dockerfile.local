@@ -1,0 +1,46 @@
+# 100% Local RAG Development Dockerfile
+# Uses SentenceTransformer for embeddings - NO Azure credentials required!
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install dependencies (includes sentence-transformers, torch, transformers)
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY src/ ./src/
+COPY app_local.py .
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/logs /app/models
+
+# Download embedding model during build (improves startup time)
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONPATH=/app
+ENV NEO4J_URI=bolt://neo4j:7687
+ENV NEO4J_USER=neo4j
+ENV NEO4J_PASSWORD=password
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Run local RAG app (no Azure required!)
+CMD ["python", "-m", "uvicorn", "app_local:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

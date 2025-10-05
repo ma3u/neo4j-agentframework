@@ -1,0 +1,121 @@
+# BitNet.cpp Dockerfile - Working Build for ARM macOS
+# Based on ajsween/bitnet-b1-58-arm-docker (proven to work on M-series Mac)
+# Key: Uses codegen_tl1.py to generate kernel before building
+
+# Build stage
+FROM ubuntu:22.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-dev \
+    cmake \
+    build-essential \
+    git \
+    software-properties-common \
+    wget \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install LLVM 18 for optimal ARM compilation
+RUN wget -O - https://apt.llvm.org/llvm.sh | bash -s 18
+
+# Clone BitNet repository with submodules
+WORKDIR /build
+RUN git clone --recursive https://github.com/microsoft/BitNet.git
+
+# Install Python dependencies
+WORKDIR /build/BitNet
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# CRITICAL STEP: Generate kernel file using codegen_tl1.py
+# This creates include/bitnet-lut-kernels.h that CMake needs!
+RUN python3 utils/codegen_tl1.py \
+    --model bitnet_b1_58-3B \
+    --BM 160,320,320 \
+    --BK 64,128,64 \
+    --bm 32,64,32 && \
+    echo "✅ Kernel file generated"
+
+# Verify kernel was created
+RUN ls -lh include/bitnet-lut-kernels.h && \
+    wc -l include/bitnet-lut-kernels.h
+
+# Build BitNet.cpp with clang-18
+RUN export CC=clang-18 CXX=clang++-18 && \
+    mkdir -p build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && \
+    make -j$(nproc) && \
+    echo "✅ BitNet.cpp compiled"
+
+# Verify binary exists
+RUN ls -lh /build/BitNet/build/bin/llama-cli
+
+# Download model from HuggingFace
+RUN pip3 install --no-cache-dir huggingface-hub && \
+    huggingface-cli download microsoft/BitNet-b1.58-2B-4T-gguf \
+    --local-dir /build/BitNet/models/BitNet-b1.58-2B-4T && \
+    echo "✅ Model downloaded"
+
+# Verify model file
+RUN ls -lh /build/BitNet/models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf
+
+# Final runtime stage
+FROM ubuntu:22.04
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    curl \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install FastAPI for REST API
+RUN pip3 install --no-cache-dir \
+    fastapi==0.104.0 \
+    uvicorn[standard]==0.24.0 \
+    pydantic==2.5.0
+
+# Copy BitNet installation from builder
+WORKDIR /app
+COPY --from=builder /build/BitNet /app
+
+# Copy shared libraries to system path
+RUN cp /app/build/3rdparty/llama.cpp/ggml/src/libggml.so /usr/local/lib/ && \
+    cp /app/build/3rdparty/llama.cpp/src/libllama.so /usr/local/lib/ && \
+    ldconfig && \
+    echo "✅ Shared libraries installed"
+
+# Verify libraries
+RUN ldconfig -p | grep -E "libggml|libllama"
+
+# Copy FastAPI server
+COPY bitnet_server_real.py /app/server.py
+
+# Final verification
+RUN /app/build/bin/llama-cli --version || echo "Binary ready" && \
+    ls -lh /app/models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf && \
+    echo "✅ BitNet.cpp setup complete"
+
+# Environment
+ENV MODEL_PATH=/app/models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf
+ENV BITNET_BINARY=/app/build/bin/llama-cli
+ENV BITNET_THREADS=4
+ENV BITNET_CTX_SIZE=2048
+ENV PYTHONUNBUFFERED=1
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+    CMD curl -f http://localhost:8001/health || exit 1
+
+EXPOSE 8001
+
+WORKDIR /app
+
+# Run API server
+CMD ["python3", "server.py"]

@@ -1,0 +1,150 @@
+# Azure Container Apps deployment configuration
+# Optimized for BitNet B1.58 + Neo4j RAG (Ultra-Low Cost)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neo4j-rag-bitnet
+  namespace: neo4j-agent
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: neo4j-rag-bitnet
+  template:
+    metadata:
+      labels:
+        app: neo4j-rag-bitnet
+    spec:
+      containers:
+      # BitNet LLM Container (using bitnet.cpp)
+      - name: bitnet-llm
+        image: ${CONTAINER_REGISTRY}/bitnet-llm:latest
+        resources:
+          requests:
+            cpu: "1"
+            memory: "512Mi"  # BitNet only needs 0.4GB
+          limits:
+            cpu: "2"
+            memory: "1Gi"
+        env:
+        - name: MODEL_PATH
+          value: "/models/bitnet-b1-58-2b"
+        - name: INFERENCE_MODE
+          value: "cpu"
+        - name: QUANTIZATION
+          value: "1.58bit"
+        ports:
+        - containerPort: 8001
+          name: llm
+        volumeMounts:
+        - name: models
+          mountPath: /models
+
+      # Neo4j RAG Service Container
+      - name: neo4j-rag
+        image: ${CONTAINER_REGISTRY}/neo4j-rag:latest
+        resources:
+          requests:
+            cpu: "0.5"
+            memory: "512Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+        env:
+        - name: NEO4J_URI
+          value: "bolt://neo4j-service:7687"
+        - name: NEO4J_USER
+          valueFrom:
+            secretKeyRef:
+              name: neo4j-credentials
+              key: username
+        - name: NEO4J_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: neo4j-credentials
+              key: password
+        - name: LLM_BACKEND
+          value: "bitnet"
+        - name: BITNET_URL
+          value: "http://localhost:8001"
+        ports:
+        - containerPort: 8000
+          name: api
+
+      # Neo4j Database (embedded mode for cost savings)
+      - name: neo4j-embedded
+        image: neo4j:5.11-community
+        resources:
+          requests:
+            cpu: "0.5"
+            memory: "512Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+        env:
+        - name: NEO4J_AUTH
+          value: "neo4j/password"
+        - name: NEO4J_server_memory_heap_max__size
+          value: "512M"
+        - name: NEO4J_server_memory_pagecache_size
+          value: "256M"
+        ports:
+        - containerPort: 7687
+          name: bolt
+        volumeMounts:
+        - name: neo4j-data
+          mountPath: /data
+
+      volumes:
+      - name: models
+        persistentVolumeClaim:
+          claimName: bitnet-models-pvc
+      - name: neo4j-data
+        persistentVolumeClaim:
+          claimName: neo4j-data-pvc
+
+---
+# Service configuration
+apiVersion: v1
+kind: Service
+metadata:
+  name: neo4j-rag-service
+spec:
+  selector:
+    app: neo4j-rag-bitnet
+  ports:
+  - port: 80
+    targetPort: 8000
+    name: http
+  - port: 7687
+    targetPort: 7687
+    name: bolt
+  type: LoadBalancer
+
+---
+# Autoscaling configuration
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: neo4j-rag-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: neo4j-rag-bitnet
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

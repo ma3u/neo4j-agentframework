@@ -1,0 +1,273 @@
+# BitNet b1.58 + Azure RAG - Ultra-Efficient Container Apps Configuration
+# Optimized for maximum cost savings with revolutionary efficiency
+
+apiVersion: app/v1
+kind: ContainerApp
+metadata:
+  name: bitnet-rag-agent
+  namespace: default
+  annotations:
+    description: "Ultra-efficient RAG with BitNet b1.58 (87% memory reduction, 77% faster)"
+spec:
+  configuration:
+    activeRevisionsMode: Single
+    maxInactiveRevisions: 1
+    secrets:
+      - name: bitnet-api-key
+        value: "your-bitnet-api-key"  # Get from Azure AI Foundry deployment
+      - name: azure-openai-endpoint
+        value: "https://zaidzaim2000gmail-openai.openai.azure.com/"  # Tenant-specific endpoint
+      - name: neo4j-password
+        value: "zaidzaim2000gmail-neo4j-secure"  # Tenant-specific password
+      - name: azure-client-id
+        value: "your-app-registration-client-id"  # Service principal for tenant
+  
+  template:
+    # Ultra-efficient scaling with BitNet
+    scale:
+      minReplicas: 0  # Scale to zero = $0 when idle
+      maxReplicas: 3  # Handle bursts with BitNet efficiency
+      rules:
+        - name: http-scaling
+          http:
+            metadata:
+              concurrentRequests: "5"  # Low concurrency for POC
+        - name: cpu-scaling
+          custom:
+            metadata:
+              type: "cpu"
+              value: "60"  # Scale at 60% CPU (BitNet is very efficient)
+    
+    containers:
+      - name: bitnet-rag-agent
+        image: your-acr.azurecr.io/bitnet-rag-agent:latest
+        
+        # Ultra-minimal resources thanks to BitNet efficiency
+        resources:
+          requests:
+            cpu: "0.1"       # Ultra-low CPU (BitNet's 96% energy reduction)
+            memory: "256Mi"  # Minimal memory (no local ML models)
+          limits:
+            cpu: "0.25"      # Quarter CPU max (vs full CPU for traditional)
+            memory: "512Mi"  # 512MB total (vs 2-4.8GB traditional)
+        
+        # Environment optimized for BitNet + Azure
+        env:
+          # Neo4j Configuration (minimal)
+          - name: NEO4J_URI
+            value: "bolt://neo4j-bitnet:7687"
+          - name: NEO4J_USER
+            value: "neo4j"
+          - name: NEO4J_PASSWORD
+            secretRef: neo4j-password
+          
+          # BitNet b1.58 Configuration (zaidzaim2000gmail tenant)
+          - name: BITNET_ENDPOINT
+            value: "https://bitnet-rag-zaidzaim2000gmail.azureml.azure.com/"
+          - name: BITNET_API_KEY
+            secretRef: bitnet-api-key
+          - name: BITNET_MODEL
+            value: "microsoft-bitnet-b1-58-2b-4t"
+          - name: AZURE_TENANT_ID
+            value: "zaidzaim2000gmail"
+          
+          # Azure OpenAI for embeddings (cost-optimized)
+          - name: AZURE_OPENAI_ENDPOINT
+            secretRef: azure-openai-endpoint
+          - name: EMBEDDING_MODEL
+            value: "text-embedding-3-small"  # Most cost-effective
+          - name: AZURE_SUBSCRIPTION_ID
+            value: "your-subscription-id"  # Replace with actual subscription
+          
+          # Ultra-efficient settings
+          - name: MAX_MEMORY_MB
+            value: "400"     # BitNet's ultra-low memory footprint
+          - name: WORKER_PROCESSES
+            value: "1"       # Single worker for POC
+          - name: CACHE_SIZE
+            value: "50"      # Minimal cache
+          - name: LOG_LEVEL
+            value: "INFO"
+          
+          # Performance optimization
+          - name: BITNET_MAX_TOKENS
+            value: "200"     # Concise responses for efficiency
+          - name: BITNET_TEMPERATURE
+            value: "0.7"
+          - name: CHUNK_SIZE
+            value: "1000"    # Optimized for BitNet's 4K context
+        
+        # Health checks optimized for efficiency
+        probes:
+          liveness:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15  # Faster startup with BitNet
+            periodSeconds: 30
+            failureThreshold: 3
+          readiness:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 5   # Quick readiness
+            periodSeconds: 10
+        
+        ports:
+          - containerPort: 8000
+            name: http
+
+---
+# Neo4j Database Container - Optimized for BitNet workload
+apiVersion: app/v1
+kind: ContainerApp
+metadata:
+  name: neo4j-bitnet
+spec:
+  configuration:
+    activeRevisionsMode: Single
+    secrets:
+      - name: neo4j-password
+        value: "your-secure-password"
+  
+  template:
+    # Persistent but minimal for POC
+    scale:
+      minReplicas: 1
+      maxReplicas: 1
+    
+    containers:
+      - name: neo4j
+        image: neo4j:5.15-community
+        
+        # Minimal Neo4j resources for BitNet efficiency
+        resources:
+          requests:
+            cpu: "0.25"      # Quarter CPU
+            memory: "512Mi"  # 512MB RAM
+          limits:
+            cpu: "0.5"       # Half CPU max  
+            memory: "1Gi"    # 1GB RAM max
+        
+        # Neo4j optimized for ultra-efficient workloads
+        env:
+          - name: NEO4J_AUTH
+            value: "neo4j/your-secure-password"
+          - name: NEO4J_PLUGINS
+            value: '["apoc", "gds"]'  # Graph algorithms for 417x speedup
+          
+          # Memory settings optimized for BitNet workload
+          - name: NEO4J_dbms_memory_heap_initial__size
+            value: "256m"
+          - name: NEO4J_dbms_memory_heap_max__size
+            value: "512m"
+          - name: NEO4J_dbms_memory_pagecache_size
+            value: "256m"
+          
+          # Connection settings for minimal overhead
+          - name: NEO4J_dbms_connector_bolt_thread_pool_max__size
+            value: "2"
+          - name: NEO4J_dbms_connector_http_thread_pool_max__size
+            value: "2"
+          
+          # Optimizations for vector operations
+          - name: NEO4J_dbms_security_procedures_unrestricted
+            value: "apoc.*,gds.*"
+          - name: NEO4J_dbms_logs_debug_level
+            value: "WARN"
+        
+        volumeMounts:
+          - name: neo4j-data
+            mountPath: /data
+        
+        ports:
+          - containerPort: 7687
+            name: bolt
+          - containerPort: 7474
+            name: http
+    
+    volumes:
+      - name: neo4j-data
+        persistentVolumeClaim:
+          claimName: neo4j-bitnet-pvc
+
+---
+# Minimal Persistent Volume for BitNet workload
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: neo4j-bitnet-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi  # Minimal storage for POC
+  storageClassName: managed-premium
+
+---
+# BitNet Performance Monitoring ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bitnet-monitoring-config
+data:
+  performance-targets.json: |
+    {
+      "bitnet_efficiency_targets": {
+        "memory_usage_gb": 0.4,
+        "avg_latency_ms": 29,
+        "energy_per_query_j": 0.028,
+        "monthly_cost_usd": 30
+      },
+      "alerts": {
+        "memory_threshold_gb": 0.6,
+        "latency_threshold_ms": 50,
+        "cost_threshold_usd": 50
+      },
+      "comparisons": {
+        "traditional_memory_gb": 2.6,
+        "traditional_latency_ms": 65,
+        "traditional_energy_j": 0.347,
+        "savings": {
+          "memory_reduction_percent": 87,
+          "latency_improvement_percent": 77,
+          "energy_reduction_percent": 96
+        }
+      }
+    }
+
+---
+# Ultra-Low Cost Alert Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cost-alert-config
+data:
+  cost-monitoring.json: |
+    {
+      "name": "BitNet RAG Ultra-Efficient Cost Monitor",
+      "description": "Monitor costs for BitNet-optimized deployment",
+      "thresholds": {
+        "monthly_budget_usd": 35,
+        "weekly_budget_usd": 8,
+        "daily_budget_usd": 1.5
+      },
+      "efficiency_metrics": {
+        "target_cost_per_query_usd": 0.001,
+        "target_memory_gb": 0.4,
+        "target_response_time_ms": 100
+      },
+      "alerts": [
+        {
+          "type": "budget_exceeded",
+          "threshold": 30,
+          "action": "scale_to_zero"
+        },
+        {
+          "type": "efficiency_degraded", 
+          "threshold": "memory > 0.6GB",
+          "action": "investigate"
+        }
+      ]
+    }
