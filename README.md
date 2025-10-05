@@ -25,7 +25,7 @@ graph TB
     end
 
     subgraph "Neo4j Database"
-        Neo4j[(Neo4j Graph DB<br/>417x Faster Retrieval)]
+        Neo4j[(Neo4j Graph DB)]
         Chunks -->|Store| Neo4j
         Neo4j -->|Vector Search| VectorIdx[Vector Index<br/>384-dim embeddings]
         Neo4j -->|Keyword Search| FullText[Full-Text Index]
@@ -66,12 +66,11 @@ graph TB
 
 | Component | Traditional | Our Solution | Improvement |
 |-----------|-------------|--------------|-------------|
-| **Vector DB** | Pinecone/Weaviate | Neo4j | 417x faster retrieval |
+| **Vector DB** | Pinecone/Weaviate | Neo4j | faster retrieval |
 | **Embeddings** | OpenAI API ($50/mo) | SentenceTransformers | $50/month savings |
 | **LLM** | GPT-3.5 (8GB RAM) | BitNet (1.5GB RAM) | 87% memory reduction |
-| **Deployment** | Cloud APIs only | Local + Azure | Full flexibility |
+| **Deployment** | Cloud APIs only | Local + Azure | Full sovereignity and flexibility |
 
-**Total Savings**: $100+/month + 417x retrieval speed + 87% memory reduction
 
 ---
 
