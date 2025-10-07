@@ -1,0 +1,15 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN pip install fastapi uvicorn pydantic
+
+# Copy the API script
+COPY simple_rag_api.py /app/
+
+# Expose port
+EXPOSE 8000
+
+# Run the application
+CMD ["python", "simple_rag_api.py"]

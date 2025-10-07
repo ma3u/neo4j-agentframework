@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neo4j RAG Assistant Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .status.healthy { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        
+        .chat-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafafa;
+            margin-bottom: 20px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user { 
+            background: #007bff; 
+            color: white; 
+            text-align: right;
+            margin-left: 50px;
+        }
+        .assistant { 
+            background: #e9ecef; 
+            color: #333;
+            margin-right: 50px;
+        }
+        .function-call {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            margin: 5px 0;
+            padding: 8px;
+            font-size: 0.9em;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { 
+            background: #6c757d; 
+            cursor: not-allowed; 
+        }
+        
+        .quick-questions {
+            margin: 20px 0;
+        }
+        .quick-question {
+            display: inline-block;
+            margin: 5px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .quick-question:hover {
+            background: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Neo4j RAG Assistant</h1>
+        <p class="subtitle">Testing Azure OpenAI Assistant with Container Apps Integration</p>
+        
+        <div id="status" class="status">Checking system status...</div>
+        
+        <div class="quick-questions">
+            <strong>Quick Questions:</strong><br>
+            <span class="quick-question" onclick="askQuestion('What is Neo4j?')">What is Neo4j?</span>
+            <span class="quick-question" onclick="askQuestion('Check the knowledge base health')">Check health</span>
+            <span class="quick-question" onclick="askQuestion('Get knowledge base statistics')">Get statistics</span>
+            <span class="quick-question" onclick="askQuestion('How many documents are in the knowledge base?')">Document count</span>
+        </div>
+        
+        <div id="chat" class="chat-container">
+            <div class="message assistant">
+                👋 Hello! I'm your Neo4j RAG Assistant. I can search the knowledge base containing 32 documents and 53,344 chunks of information about Neo4j, graph databases, and related topics.
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="messageInput" placeholder="Ask me about Neo4j, graph databases, or anything in the knowledge base..." 
+                   onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()" id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONTAINER_APP_URL = 'https://neo4j-rag-agent.yellowtree-8fdce811.swedencentral.azurecontainerapps.io';
+        
+        async function checkStatus() {
+            try {
+                const response = await fetch(`${CONTAINER_APP_URL}/health`);
+                const data = await response.json();
+                
+                const statusEl = document.getElementById('status');
+                if (data.status === 'healthy') {
+                    statusEl.className = 'status healthy';
+                    statusEl.innerHTML = `✅ System Status: ${data.mode} | ${data.total_documents || 32} documents, ${data.total_chunks || 53344} chunks`;
+                } else {
+                    statusEl.className = 'status error';
+                    statusEl.innerHTML = `⚠️ System Status: ${data.mode} | Limited functionality`;
+                }
+            } catch (error) {
+                const statusEl = document.getElementById('status');
+                statusEl.className = 'status error';
+                statusEl.innerHTML = `❌ Cannot connect to Container Apps: ${error.message}`;
+            }
+        }
+        
+        function askQuestion(question) {
+            document.getElementById('messageInput').value = question;
+            sendMessage();
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Disable send button
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Thinking...';
+            
+            try {
+                // Simulate assistant thinking
+                addMessage('🔧 Searching knowledge base...', 'assistant');
+                
+                // Call the Container Apps API directly
+                const response = await fetch(`${CONTAINER_APP_URL}/search_knowledge_base`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: message,
+                        max_results: 5
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Show function call
+                addFunctionCall('search_knowledge_base', { question: message, max_results: 5 }, data);
+                
+                // Format the response like the assistant would
+                let assistantResponse = `**${data.answer}**\n\n`;
+                
+                if (data.sources && data.sources.length > 0) {
+                    assistantResponse += '**Sources:**\n';
+                    data.sources.forEach((source, i) => {
+                        assistantResponse += `${i + 1}. "${source.text.substring(0, 100)}..." (score: ${source.score})\n`;
+                    });
+                    
+                    assistantResponse += `\n📊 Found ${data.results_found} results in ${Math.round(data.processing_time * 1000)}ms`;
+                } else {
+                    assistantResponse += '\n⚠️ No specific information found in the knowledge base.';
+                }
+                
+                // Add assistant response
+                addMessage(assistantResponse, 'assistant');
+                
+            } catch (error) {
+                addMessage(`❌ Error: ${error.message}`, 'assistant');
+            }
+            
+            // Re-enable send button
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Send';
+        }
+        
+        function addMessage(text, sender) {
+            const chat = document.getElementById('chat');
+            const message = document.createElement('div');
+            message.className = `message ${sender}`;
+            message.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            chat.appendChild(message);
+            chat.scrollTop = chat.scrollHeight;
+        }
+        
+        function addFunctionCall(functionName, args, result) {
+            const chat = document.getElementById('chat');
+            const functionCall = document.createElement('div');
+            functionCall.className = 'function-call';
+            functionCall.innerHTML = `
+                🔧 <strong>Function Call:</strong> ${functionName}<br>
+                📋 <strong>Arguments:</strong> ${JSON.stringify(args)}<br>
+                ✅ <strong>Result:</strong> ${result.results_found} sources found
+            `;
+            chat.appendChild(functionCall);
+            chat.scrollTop = chat.scrollHeight;
+        }
+        
+        // Initialize
+        window.onload = function() {
+            checkStatus();
+        };
+    </script>
+</body>
+</html>

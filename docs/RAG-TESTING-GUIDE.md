@@ -59,7 +59,7 @@ curl http://localhost:8000/health
 }
 
 # Get statistics
-curl http://localhost:8000/stats
+curl http://localhost:8000/stats | jq .
 ```
 
 ### 4. Add a Test Document

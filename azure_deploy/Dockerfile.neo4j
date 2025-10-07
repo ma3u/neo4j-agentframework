@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install fastapi uvicorn pydantic neo4j sentence-transformers torch numpy
+
+# Copy the API script
+COPY neo4j_rag_api.py /app/
+
+# Expose port
+EXPOSE 8000
+
+# Run the application
+CMD ["python", "neo4j_rag_api.py"]

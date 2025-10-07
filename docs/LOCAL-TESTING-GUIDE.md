@@ -46,7 +46,7 @@ curl http://localhost:8000/health | python3 -m json.tool
 
 ```bash
 # Get system statistics
-curl http://localhost:8000/stats | python3 -m json.tool
+curl http://localhost:8000/stats | jq .
 ```
 
 **What to check**:
@@ -581,7 +581,7 @@ docker exec bitnet-llm ls -lh /app/bitnet/BitNet/models/BitNet-b1.58-2B-4T/
 docker stats --no-stream
 
 # Check cache status
-curl http://localhost:8000/stats | python3 -m json.tool | grep cache
+curl http://localhost:8000/stats | jq .
 
 # Restart services to clear cache
 docker-compose -f scripts/docker-compose.optimized.yml restart

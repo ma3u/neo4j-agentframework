@@ -17,9 +17,9 @@ from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 ASSISTANT_ID = "asst_LHQBXYvRhnbFo7KQ7IRbVXRR"
 AZURE_OPENAI_ENDPOINT = os.getenv(
     'AZURE_OPENAI_ENDPOINT',
-    'https://swedencentral.api.cognitive.microsoft.com/'
+    'https://neo4j-rag-bitnet-ai.openai.azure.com/'
 )
-AZURE_OPENAI_API_VERSION = "2024-07-18"
+AZURE_OPENAI_API_VERSION = "2024-10-01-preview"
 
 # Instructions for the assistant
 ASSISTANT_INSTRUCTIONS = """You are an intelligent AI assistant with access to a high-performance Neo4j knowledge base.
