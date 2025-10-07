@@ -282,6 +282,31 @@ cd neo4j-rag-demo
 ./azure_deploy/deploy.sh
 ```
 
+### Configure Azure AI Assistant
+
+**After deployment, configure your Azure AI Assistant to use Neo4j RAG:**
+
+```bash
+# Configure Assistant with Neo4j RAG tools
+python scripts/configure-azure-assistant.py
+```
+
+**What it configures:**
+- ✅ Adds 4 custom tools (search, add document, stats, health)
+- ✅ Updates instructions for Neo4j RAG usage
+- ✅ Sets optimal parameters for knowledge base queries
+- ✅ Enables 417x performance for your Assistant
+
+**Your Assistant**:
+- **ID**: `asst_LHQBXYvRhnbFo7KQ7IRbVXRR`
+- **Name**: Neo4j RAG Assistant (updated from Assistant347)
+- **Model**: gpt-4o-mini
+- **Tools**: 4 Neo4j RAG functions
+
+**Test in playground**: Ask "What is Neo4j?" and verify it searches the knowledge base.
+
+See [ASSISTANT_CONFIGURATION.md](docs/ASSISTANT_CONFIGURATION.md) for detailed setup guide.
+
 ### Azure AI Agent Integration
 
 ```python
