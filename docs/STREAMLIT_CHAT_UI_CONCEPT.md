@@ -36,24 +36,52 @@ A simple, interactive Streamlit-based chat interface for local testing and devel
 ## User Experience Flow
 
 ### Chat Interaction
-```
-User enters question → System searches knowledge base → 
-BitNet generates response → User sees answer with sources → 
-Conversation continues naturally
+```mermaid
+flowchart LR
+    A[👤 User enters question] --> B[🔍 System searches knowledge base]
+    B --> C[🧠 BitNet generates response]
+    C --> D[📝 User sees answer with sources]
+    D --> E[💬 Conversation continues naturally]
+    E --> A
+    
+    style A fill:#e3f2fd
+    style B fill:#fff3e0
+    style C fill:#e8f5e8
+    style D fill:#f3e5f5
+    style E fill:#e1f5fe
 ```
 
 ### Document Upload
-```
-User selects files → System validates formats → 
-Processing begins → Progress shown → 
-Success confirmation → Knowledge base updated
+```mermaid
+flowchart LR
+    A[📁 User selects files] --> B[✅ System validates formats]
+    B --> C[⚙️ Processing begins]
+    C --> D[📊 Progress shown]
+    D --> E[🎉 Success confirmation]
+    E --> F[🗃️ Knowledge base updated]
+    
+    style A fill:#e3f2fd
+    style B fill:#fff3e0
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
+    style E fill:#e8f5e8
+    style F fill:#e8f5e8
 ```
 
 ### System Monitoring
-```
-Dashboard loads → Shows current status → 
-Displays key metrics → Updates in real-time → 
-Alerts on any issues
+```mermaid
+flowchart LR
+    A[📊 Dashboard loads] --> B[🔍 Shows current status]
+    B --> C[📈 Displays key metrics]
+    C --> D[🔄 Updates in real-time]
+    D --> E[🚨 Alerts on any issues]
+    D --> C
+    
+    style A fill:#e3f2fd
+    style B fill:#f3e5f5
+    style C fill:#f3e5f5
+    style D fill:#fff3e0
+    style E fill:#ffebee
 ```
 
 ## Architecture Concept
