@@ -1159,6 +1159,47 @@
 
             <!-- Sidebar -->
             <div class="sidebar">
+                <!-- RAG Configuration -->
+                <div class="sidebarSection">
+                    <div class="sectionTitle">⚙️ RAG Configuration</div>
+
+                    <div class="sliderControl">
+                        <div class="sliderLabel">
+                            <span>Max Results</span>
+                            <span class="sliderValue">5</span>
+                        </div>
+                        <input type="range" class="slider" min="1" max="10" value="5">
+                    </div>
+
+                    <div class="sliderControl">
+                        <div class="sliderLabel">
+                            <span>Similarity Threshold</span>
+                            <span class="sliderValue">0.7</span>
+                        </div>
+                        <input type="range" class="slider" min="0" max="1" step="0.05" value="0.7">
+                    </div>
+                </div>
+
+                <!-- LLM Configuration -->
+                <div class="sidebarSection">
+                    <div class="sectionTitle">🤖 LLM Configuration</div>
+
+                    <div class="toggleControl">
+                        <span class="toggleLabel">Use BitNet LLM</span>
+                        <div class="toggleSwitch active" onclick="this.classList.toggle('active')">
+                            <div class="toggleThumb"></div>
+                        </div>
+                    </div>
+
+                    <div class="sliderControl">
+                        <div class="sliderLabel">
+                            <span>Temperature</span>
+                            <span class="sliderValue">0.7</span>
+                        </div>
+                        <input type="range" class="slider" min="0" max="1" step="0.1" value="0.7">
+                    </div>
+                </div>
+
                 <!-- Document Upload -->
                 <div class="sidebarSection">
                     <div class="sectionTitle">📤 Document Upload</div>
@@ -1213,44 +1254,14 @@
                     </div>
                 </div>
 
-                <!-- RAG Configuration -->
+                <!-- Actions -->
                 <div class="sidebarSection">
-                    <div class="sectionTitle">⚙️ RAG Configuration</div>
+                    <div class="sectionTitle">🔧 Actions</div>
 
-                    <div class="sliderControl">
-                        <div class="sliderLabel">
-                            <span>Max Results</span>
-                            <span class="sliderValue">5</span>
-                        </div>
-                        <input type="range" class="slider" min="1" max="10" value="5">
-                    </div>
-
-                    <div class="sliderControl">
-                        <div class="sliderLabel">
-                            <span>Similarity Threshold</span>
-                            <span class="sliderValue">0.7</span>
-                        </div>
-                        <input type="range" class="slider" min="0" max="1" step="0.05" value="0.7">
-                    </div>
-                </div>
-
-                <!-- LLM Configuration -->
-                <div class="sidebarSection">
-                    <div class="sectionTitle">🤖 LLM Configuration</div>
-
-                    <div class="toggleControl">
-                        <span class="toggleLabel">Use BitNet LLM</span>
-                        <div class="toggleSwitch active" onclick="this.classList.toggle('active')">
-                            <div class="toggleThumb"></div>
-                        </div>
-                    </div>
-
-                    <div class="sliderControl">
-                        <div class="sliderLabel">
-                            <span>Temperature</span>
-                            <span class="sliderValue">0.7</span>
-                        </div>
-                        <input type="range" class="slider" min="0" max="1" step="0.1" value="0.7">
+                    <div class="actionButtons">
+                        <button class="actionButton primary" onclick="openStatsModal()">📊 View Full Statistics</button>
+                        <button class="actionButton secondary">💾 Export Chat</button>
+                        <button class="actionButton tertiary">🔄 Clear Chat</button>
                     </div>
                 </div>
 
@@ -1271,17 +1282,6 @@
                     <div class="checkboxControl">
                         <div class="checkbox" onclick="this.classList.toggle('checked')"></div>
                         <span class="checkboxLabel">Show Timestamps</span>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="sidebarSection">
-                    <div class="sectionTitle">🔧 Actions</div>
-
-                    <div class="actionButtons">
-                        <button class="actionButton primary" onclick="openStatsModal()">📊 View Full Statistics</button>
-                        <button class="actionButton secondary">💾 Export Chat</button>
-                        <button class="actionButton tertiary">🔄 Clear Chat</button>
                     </div>
                 </div>
             </div>
