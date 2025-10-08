@@ -591,6 +591,138 @@
             color: #e0e0e0;
         }
 
+        /* Upload Area */
+        .uploadSection {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .uploadDropzone {
+            border: 2px dashed rgba(250, 250, 250, 0.2);
+            border-radius: 8px;
+            padding: 2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(38, 39, 48, 0.3);
+        }
+
+        .uploadDropzone:hover {
+            border-color: rgba(255, 75, 75, 0.5);
+            background: rgba(255, 75, 75, 0.05);
+        }
+
+        .uploadDropzone.dragover {
+            border-color: #ff4b4b;
+            background: rgba(255, 75, 75, 0.1);
+        }
+
+        .uploadIcon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.6;
+        }
+
+        .uploadText {
+            color: #a0a0a0;
+            font-size: 0.875rem;
+        }
+
+        .uploadQueue {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .uploadItem {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(38, 39, 48, 0.5);
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+
+        .uploadItemIcon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .uploadItemInfo {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .uploadItemName {
+            color: #fafafa;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .uploadItemStatus {
+            color: #a0a0a0;
+            font-size: 0.75rem;
+        }
+
+        .uploadProgress {
+            width: 100%;
+            height: 4px;
+            background: rgba(250, 250, 250, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 0.25rem;
+        }
+
+        .uploadProgressBar {
+            height: 100%;
+            background: #ff4b4b;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .uploadHistory {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .historyItem {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(38, 39, 48, 0.3);
+            border-radius: 6px;
+            font-size: 0.8125rem;
+        }
+
+        .historyIcon {
+            font-size: 1rem;
+        }
+
+        .historyInfo {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .historyName {
+            color: #e0e0e0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .historyTime {
+            color: #808080;
+            font-size: 0.75rem;
+        }
+
         /* Action Buttons */
         .actionButtons {
             display: flex;
@@ -1027,6 +1159,60 @@
 
             <!-- Sidebar -->
             <div class="sidebar">
+                <!-- Document Upload -->
+                <div class="sidebarSection">
+                    <div class="sectionTitle">📤 Document Upload</div>
+
+                    <div class="uploadSection">
+                        <input type="file" id="fileInput" multiple accept=".pdf,.txt,.md,.docx" style="display: none;">
+
+                        <div class="uploadDropzone" id="uploadDropzone" onclick="document.getElementById('fileInput').click()">
+                            <div class="uploadIcon">📁</div>
+                            <div class="uploadText">Click or drag files here</div>
+                            <div class="uploadText" style="font-size: 0.75rem; margin-top: 0.25rem;">
+                                PDF, TXT, MD, DOCX (up to 10MB)
+                            </div>
+                        </div>
+
+                        <div id="uploadQueue" class="uploadQueue" style="display: none;">
+                            <!-- Upload items will be added here dynamically -->
+                        </div>
+
+                        <button class="actionButton primary" id="uploadButton" style="display: none;">
+                            📤 Upload to Knowledge Base
+                        </button>
+
+                        <div style="border-top: 1px solid rgba(250, 250, 250, 0.1); margin-top: 1rem; padding-top: 1rem;">
+                            <div style="font-size: 0.8125rem; color: #a0a0a0; margin-bottom: 0.75rem; font-weight: 500;">
+                                Recent Uploads
+                            </div>
+                            <div class="uploadHistory">
+                                <div class="historyItem">
+                                    <span class="historyIcon">✅</span>
+                                    <div class="historyInfo">
+                                        <div class="historyName">research_paper.pdf</div>
+                                        <div class="historyTime">2 min ago</div>
+                                    </div>
+                                </div>
+                                <div class="historyItem">
+                                    <span class="historyIcon">✅</span>
+                                    <div class="historyInfo">
+                                        <div class="historyName">meeting_notes.txt</div>
+                                        <div class="historyTime">5 min ago</div>
+                                    </div>
+                                </div>
+                                <div class="historyItem">
+                                    <span class="historyIcon">✅</span>
+                                    <div class="historyInfo">
+                                        <div class="historyName">project_docs.md</div>
+                                        <div class="historyTime">1 hour ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- RAG Configuration -->
                 <div class="sidebarSection">
                     <div class="sectionTitle">⚙️ RAG Configuration</div>
@@ -1267,6 +1453,170 @@
                 }
             });
         });
+
+        // File Upload Functionality
+        let uploadQueue = [];
+
+        const fileInput = document.getElementById('fileInput');
+        const uploadDropzone = document.getElementById('uploadDropzone');
+        const uploadQueueElement = document.getElementById('uploadQueue');
+        const uploadButton = document.getElementById('uploadButton');
+
+        // File input change handler
+        fileInput.addEventListener('change', function(e) {
+            handleFiles(e.target.files);
+        });
+
+        // Drag and drop handlers
+        uploadDropzone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        uploadDropzone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        uploadDropzone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            const validTypes = ['.pdf', '.txt', '.md', '.docx'];
+            const maxSize = 10 * 1024 * 1024; // 10MB
+
+            Array.from(files).forEach(file => {
+                const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+
+                if (!validTypes.includes(fileExt)) {
+                    alert(`Invalid file type: ${file.name}. Supported types: PDF, TXT, MD, DOCX`);
+                    return;
+                }
+
+                if (file.size > maxSize) {
+                    alert(`File too large: ${file.name}. Maximum size: 10MB`);
+                    return;
+                }
+
+                uploadQueue.push({
+                    file: file,
+                    status: 'pending',
+                    progress: 0
+                });
+            });
+
+            updateUploadQueue();
+        }
+
+        function updateUploadQueue() {
+            if (uploadQueue.length === 0) {
+                uploadQueueElement.style.display = 'none';
+                uploadButton.style.display = 'none';
+                return;
+            }
+
+            uploadQueueElement.style.display = 'flex';
+            uploadButton.style.display = 'flex';
+
+            uploadQueueElement.innerHTML = uploadQueue.map((item, index) => {
+                const statusIcons = {
+                    'pending': '⏳',
+                    'uploading': '🔄',
+                    'processing': '⚙️',
+                    'completed': '✅',
+                    'error': '❌'
+                };
+
+                const statusTexts = {
+                    'pending': 'Pending',
+                    'uploading': `Uploading ${item.progress}%`,
+                    'processing': 'Processing...',
+                    'completed': 'Uploaded',
+                    'error': 'Failed'
+                };
+
+                return `
+                    <div class="uploadItem">
+                        <span class="uploadItemIcon">${statusIcons[item.status]}</span>
+                        <div class="uploadItemInfo">
+                            <div class="uploadItemName">${item.file.name}</div>
+                            <div class="uploadItemStatus">${statusTexts[item.status]}</div>
+                            ${item.status === 'uploading' ? `
+                                <div class="uploadProgress">
+                                    <div class="uploadProgressBar" style="width: ${item.progress}%"></div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        uploadButton.addEventListener('click', function() {
+            uploadQueue.forEach((item, index) => {
+                if (item.status === 'pending') {
+                    simulateUpload(index);
+                }
+            });
+        });
+
+        function simulateUpload(index) {
+            const item = uploadQueue[index];
+            item.status = 'uploading';
+            item.progress = 0;
+            updateUploadQueue();
+
+            // Simulate upload progress
+            const interval = setInterval(() => {
+                item.progress += 10;
+                updateUploadQueue();
+
+                if (item.progress >= 100) {
+                    clearInterval(interval);
+                    item.status = 'processing';
+                    updateUploadQueue();
+
+                    // Simulate processing
+                    setTimeout(() => {
+                        item.status = 'completed';
+                        updateUploadQueue();
+
+                        // Add to recent uploads
+                        addToRecentUploads(item.file.name);
+
+                        // Check if all uploads are complete
+                        if (uploadQueue.every(i => i.status === 'completed')) {
+                            setTimeout(() => {
+                                uploadQueue = [];
+                                updateUploadQueue();
+                            }, 2000);
+                        }
+                    }, 1500);
+                }
+            }, 300);
+        }
+
+        function addToRecentUploads(filename) {
+            const historyContainer = document.querySelector('.uploadHistory');
+            const newItem = document.createElement('div');
+            newItem.className = 'historyItem';
+            newItem.innerHTML = `
+                <span class="historyIcon">✅</span>
+                <div class="historyInfo">
+                    <div class="historyName">${filename}</div>
+                    <div class="historyTime">Just now</div>
+                </div>
+            `;
+            historyContainer.insertBefore(newItem, historyContainer.firstChild);
+
+            // Keep only last 5 items
+            while (historyContainer.children.length > 5) {
+                historyContainer.removeChild(historyContainer.lastChild);
+            }
+        }
     </script>
 </body>
 </html>
