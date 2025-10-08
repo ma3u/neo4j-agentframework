@@ -33,27 +33,38 @@ This project provides a complete production-ready RAG (Retrieval-Augmented Gener
 
 ### Architecture
 
+#### Sovereign Architecture (100% Local - Zero Dependencies)
+
 ```mermaid
 graph TB
+    subgraph "User Interface"
+        StreamlitUI[🧠 Streamlit Chat UI<br/>Port 8501]
+        WebUI[Web Browser]
+        WebUI -->|Interact| StreamlitUI
+    end
+
     subgraph "Document Processing"
-        PDF[PDF Documents]
+        Upload[📤 Document Upload<br/>PDF, TXT, MD, DOCX]
         Docling[Docling Loader<br/>Advanced PDF Processing]
-        PDF -->|Extract| Docling
+        Upload -->|Files| Docling
         Docling -->|Tables, Images, Structure| Chunks[Document Chunks]
     end
 
     subgraph "Neo4j Database"
-        Neo4j[(Neo4j Graph DB)]
+        Neo4j[(Neo4j Graph DB<br/>Port 7687)]
         Chunks -->|Store| Neo4j
         Neo4j -->|Vector Search| VectorIdx[Vector Index<br/>384-dim embeddings]
         Neo4j -->|Keyword Search| FullText[Full-Text Index]
     end
 
     subgraph "RAG Pipeline"
-        Query[User Query]
+        RAGAPI[RAG Service<br/>Port 8000]
         Embed[SentenceTransformer<br/>Local Embeddings]
         Search[Hybrid Search<br/>Vector + Keyword]
-        Query -->|Encode| Embed
+
+        StreamlitUI -->|Query| RAGAPI
+        StreamlitUI -->|Upload| Upload
+        RAGAPI -->|Encode| Embed
         Embed -->|Similarity| VectorIdx
         Search -->|Retrieve| Context[Retrieved Context]
         VectorIdx -->|Top-K| Search
@@ -61,23 +72,80 @@ graph TB
     end
 
     subgraph "LLM Inference"
-        BitNet[BitNet.cpp<br/>1.58-bit Quantized<br/>87% Memory Reduction]
+        BitNet[BitNet.cpp<br/>Port 8001<br/>1.58-bit Quantized<br/>87% Memory Reduction]
         Context -->|Augment| BitNet
         BitNet -->|Generate| Answer[Generated Answer]
+        Answer -->|Return| StreamlitUI
     end
 
-    subgraph "Azure Integration (Optional)"
-        Agent[Azure AI Agent<br/>GPT-4o-mini]
-        Answer -->|Fallback| Agent
-        Agent -->|Enterprise AI| Response[Final Response]
+    subgraph "Monitoring"
+        Health[🏥 Health Checks]
+        Stats[📊 System Stats]
+        StreamlitUI -->|Monitor| Health
+        StreamlitUI -->|Metrics| Stats
+        Health -->|Check| Neo4j
+        Health -->|Check| RAGAPI
+        Health -->|Check| BitNet
+        Stats -->|Query| RAGAPI
     end
 
-    Query -.->|Optional| Agent
-
+    style StreamlitUI fill:#ff4b4b
     style Docling fill:#e1f5ff
     style Neo4j fill:#4db8ff
     style BitNet fill:#ffcccc
+    style Health fill:#ccffcc
+    style RAGAPI fill:#ffe1cc
+```
+
+#### Azure Cloud Architecture (Enterprise Deployment)
+
+```mermaid
+graph TB
+    subgraph "User Access"
+        Users[👥 Users]
+        Teams[Microsoft Teams]
+        Users -->|Access| Teams
+    end
+
+    subgraph "Azure AI Foundry"
+        Agent[Azure AI Agent<br/>GPT-4o-mini]
+        Teams -->|Chat| Agent
+    end
+
+    subgraph "Azure Container Apps"
+        RAGAPI[RAG Service<br/>Auto-scaling 0-10]
+        BitNetContainer[BitNet.cpp<br/>Container Instance]
+        Agent -->|Query| RAGAPI
+        RAGAPI -->|Inference| BitNetContainer
+    end
+
+    subgraph "Azure Database"
+        CosmosNeo4j[(Azure Cosmos DB<br/>Neo4j API)]
+        RAGAPI -->|Vector Search| CosmosNeo4j
+    end
+
+    subgraph "Document Processing"
+        Storage[Azure Blob Storage]
+        DocIntel[Document Intelligence]
+        Storage -->|Process| DocIntel
+        DocIntel -->|Extract| CosmosNeo4j
+    end
+
+    subgraph "Monitoring & Security"
+        AppInsights[Application Insights]
+        KeyVault[Key Vault]
+        ManagedID[Managed Identity]
+
+        RAGAPI -->|Logs| AppInsights
+        RAGAPI -->|Secrets| KeyVault
+        RAGAPI -->|Auth| ManagedID
+    end
+
     style Agent fill:#ccffcc
+    style RAGAPI fill:#ffe1cc
+    style BitNetContainer fill:#ffcccc
+    style CosmosNeo4j fill:#4db8ff
+    style AppInsights fill:#e1f5ff
 ```
 
 ### Key Benefits
@@ -108,12 +176,21 @@ graph TB
 git clone https://github.com/ma3u/neo4j-agentframework.git
 cd neo4j-agentframework
 
-# Start the optimized system
+# Start the optimized system (Neo4j + RAG + BitNet + Streamlit UI)
 docker-compose -f scripts/docker-compose.optimized.yml up -d
 
 # Wait for services to be ready (takes 2-3 minutes)
 ./neo4j-rag-demo/scripts/wait-for-services.sh
+
+# Access Streamlit Chat UI
+open http://localhost:8501
 ```
+
+**What's Included:**
+- 🗄️ Neo4j Database (ports 7474, 7687)
+- ⚡ RAG Service (port 8000)
+- 🤖 BitNet LLM (port 8001)
+- 🧠 Streamlit Chat UI (port 8501) **[NEW!]**
 
 ![](assets/17596728916271.jpg)
 NEO4J DB + RAG + BitNet LLM in Docker Desktop running locally
@@ -158,10 +235,13 @@ curl http://localhost:8000/stats
 
 ### Web Interfaces
 
+- **🧠 Streamlit Chat UI**: http://localhost:8501 (Interactive chat with RAG) **[NEW!]**
 - **RAG API**: http://localhost:8000
 - **API Documentation**: http://localhost:8000/docs
 - **Neo4j Browser**: http://localhost:7474 (neo4j/password)
 - **Monitoring Dashboard**: http://localhost:3000 (admin/optimized-rag-2024)
+
+> **📱 Streamlit Chat UI**: Full-featured chat interface with document upload, monitoring dashboard, and real-time RAG responses. See [Streamlit App Documentation](neo4j-rag-demo/streamlit_app/README.md) for details.
 
 ![NEO4J UI](image.png)
 Neo4J Browser with sample data loaded (Cypher queries)
@@ -369,6 +449,7 @@ Total Pipeline: 2050-5080ms
 | Document | Description |
 |----------|-------------|
 | [**Quick Start Guide**](docs/README-QUICKSTART.md) | Complete developer journey (local → Azure) |
+| [**Streamlit Chat UI**](neo4j-rag-demo/streamlit_app/README.md) | Interactive chat interface documentation **[NEW!]** |
 | [**Local Testing Guide**](docs/LOCAL-TESTING-GUIDE.md) | Comprehensive testing procedures |
 | [**RAG Testing Guide**](docs/RAG-TESTING-GUIDE.md) | RAG-specific testing procedures |
 | [**User Guide**](docs/USER_GUIDE.md) | End-user documentation |
