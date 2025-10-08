@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neo4j RAG + BitNet Chat - Local Installation</title>
+    <style>
+        /* Global Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(to bottom, #0e1117 0%, #262730 100%);
+            color: #fafafa;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Main App Container */
+        .stApp {
+            max-width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation Bar */
+        .topNav {
+            background: rgba(38, 39, 48, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(250, 250, 250, 0.1);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .appTitle {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #fafafa;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .appTitle .emoji {
+            font-size: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .systemBadge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 208, 132, 0.1);
+            border: 1px solid rgba(0, 208, 132, 0.3);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #00d084;
+        }
+
+        .statusDot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00d084;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 208, 132, 0.7); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(0, 208, 132, 0); }
+        }
+
+        /* Main Content Area */
+        .mainContent {
+            flex: 1;
+            display: flex;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 2rem;
+        }
+
+        /* Chat Container */
+        .chatContainer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .chatWrapper {
+            background: rgba(38, 39, 48, 0.5);
+            border: 1px solid rgba(250, 250, 250, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chatHeader {
+            padding: 1.5rem;
+            background: rgba(38, 39, 48, 0.9);
+            border-bottom: 1px solid rgba(250, 250, 250, 0.1);
+        }
+
+        .chatTitle {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fafafa;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chatMessages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 500px;
+            max-height: 600px;
+        }
+
+        /* Custom Scrollbar */
+        .chatMessages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chatMessages::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .chatMessages::-webkit-scrollbar-thumb {
+            background: rgba(250, 250, 250, 0.2);
+            border-radius: 4px;
+        }
+
+        .chatMessages::-webkit-scrollbar-thumb:hover {
+            background: rgba(250, 250, 250, 0.3);
+        }
+
+        /* Chat Message */
+        .chatMessage {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            animation: messageSlideIn 0.4s ease;
+            position: relative;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chatMessage.user {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.15) 0%, rgba(33, 150, 243, 0.05) 100%);
+            border-left: 3px solid #2196f3;
+        }
+
+        .chatMessage.assistant {
+            background: linear-gradient(135deg, rgba(158, 158, 158, 0.15) 0%, rgba(158, 158, 158, 0.05) 100%);
+            border-left: 3px solid #9e9e9e;
+        }
+
+        .messageAvatar {
+            font-size: 2rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .messageContent {
+            flex: 1;
+        }
+
+        .messageHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .messageName {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #fafafa;
+        }
+
+        .messageTime {
+            font-size: 0.875rem;
+            color: #a0a0a0;
+        }
+
+        .messageText {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+
+        /* Sources Expander */
+        .sourcesExpander {
+            margin-top: 1rem;
+            border: 1px solid rgba(250, 250, 250, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .expanderHeader {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: background 0.2s ease;
+            user-select: none;
+        }
+
+        .expanderHeader:hover {
+            background: rgba(250, 250, 250, 0.05);
+        }
+
+        .expanderIcon {
+            transition: transform 0.3s ease;
+            color: #a0a0a0;
+        }
+
+        .sourcesExpander.open .expanderIcon {
+            transform: rotate(180deg);
+        }
+
+        .expanderContent {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0 1rem;
+        }
+
+        .sourcesExpander.open .expanderContent {
+            max-height: 800px;
+            padding: 1rem;
+        }
+
+        .sourceCard {
+            background: rgba(38, 39, 48, 0.6);
+            border: 1px solid rgba(250, 250, 250, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .sourceCard:hover {
+            transform: translateX(8px);
+            border-color: rgba(33, 150, 243, 0.5);
+            background: rgba(33, 150, 243, 0.1);
+        }
+
+        .sourceTitle {
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: #fafafa;
+            margin-bottom: 0.5rem;
+        }
+
+        .sourceScore {
+            display: inline-block;
+            padding: 0.25rem 0.625rem;
+            background: rgba(0, 208, 132, 0.2);
+            color: #00d084;
+            border-radius: 4px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .sourcePreview {
+            font-size: 0.875rem;
+            color: #b0b0b0;
+            line-height: 1.5;
+        }
+
+        /* Performance Badges */
+        .perfBadges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(250, 250, 250, 0.1);
+        }
+
+        .perfBadge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            background: rgba(0, 208, 132, 0.15);
+            border: 1px solid rgba(0, 208, 132, 0.3);
+            color: #00d084;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        /* Chat Input */
+        .chatInputContainer {
+            padding: 1.5rem;
+            background: rgba(38, 39, 48, 0.9);
+            border-top: 1px solid rgba(250, 250, 250, 0.1);
+        }
+
+        .inputWrapper {
+            display: flex;
+            gap: 0.75rem;
+            align-items: stretch;
+        }
+
+        .chatInput {
+            flex: 1;
+            padding: 1rem 1.25rem;
+            background: rgba(250, 250, 250, 0.05);
+            border: 2px solid rgba(250, 250, 250, 0.1);
+            border-radius: 12px;
+            color: #fafafa;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .chatInput:focus {
+            outline: none;
+            border-color: #ff4b4b;
+            background: rgba(250, 250, 250, 0.08);
+            box-shadow: 0 0 0 3px rgba(255, 75, 75, 0.1);
+        }
+
+        .chatInput::placeholder {
+            color: #808080;
+        }
+
+        .sendButton {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #ff4b4b 0%, #ff6b6b 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .sendButton:hover {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8b8b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 75, 75, 0.3);
+        }
+
+        .sendButton:active {
+            transform: translateY(0);
+        }
+
+        /* Info Stats - Compact Version Below Chat */
+        .infoStats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(38, 39, 48, 0.3);
+            border: 1px solid rgba(250, 250, 250, 0.05);
+            border-radius: 12px;
+        }
+
+        .statItem {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding: 0.75rem;
+            background: rgba(38, 39, 48, 0.5);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .statItem:hover {
+            background: rgba(38, 39, 48, 0.7);
+        }
+
+        .statLabel {
+            font-size: 0.75rem;
+            color: #a0a0a0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .statValue {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fafafa;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .statDelta {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #00d084;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: rgba(38, 39, 48, 0.5);
+            border: 1px solid rgba(250, 250, 250, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        .sidebarSection {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .sectionTitle {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fafafa;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(250, 250, 250, 0.1);
+        }
+
+        /* Slider */
+        .sliderControl {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sliderLabel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: #a0a0a0;
+        }
+
+        .sliderValue {
+            font-weight: 600;
+            color: #fafafa;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(250, 250, 250, 0.1);
+            outline: none;
+            appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ff4b4b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 8px rgba(255, 75, 75, 0.2);
+        }
+
+        /* Toggle Switch */
+        .toggleControl {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toggleLabel {
+            font-size: 0.875rem;
+            color: #fafafa;
+        }
+
+        .toggleSwitch {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: rgba(250, 250, 250, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggleSwitch.active {
+            background: #00d084;
+        }
+
+        .toggleThumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #ffffff;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggleSwitch.active .toggleThumb {
+            transform: translateX(24px);
+        }
+
+        /* Checkbox */
+        .checkboxControl {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(250, 250, 250, 0.3);
+            border-radius: 4px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox.checked {
+            background: #ff4b4b;
+            border-color: #ff4b4b;
+        }
+
+        .checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffffff;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .checkboxLabel {
+            font-size: 0.875rem;
+            color: #e0e0e0;
+        }
+
+        /* Upload Area */
+        .uploadSection {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .uploadDropzone {
+            border: 2px dashed rgba(250, 250, 250, 0.2);
+            border-radius: 8px;
+            padding: 2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(38, 39, 48, 0.3);
+        }
+
+        .uploadDropzone:hover {
+            border-color: rgba(255, 75, 75, 0.5);
+            background: rgba(255, 75, 75, 0.05);
+        }
+
+        .uploadDropzone.dragover {
+            border-color: #ff4b4b;
+            background: rgba(255, 75, 75, 0.1);
+        }
+
+        .uploadIcon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.6;
+        }
+
+        .uploadText {
+            color: #a0a0a0;
+            font-size: 0.875rem;
+        }
+
+        .uploadQueue {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .uploadItem {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(38, 39, 48, 0.5);
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+
+        .uploadItemIcon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .uploadItemInfo {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .uploadItemName {
+            color: #fafafa;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .uploadItemStatus {
+            color: #a0a0a0;
+            font-size: 0.75rem;
+        }
+
+        .uploadProgress {
+            width: 100%;
+            height: 4px;
+            background: rgba(250, 250, 250, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 0.25rem;
+        }
+
+        .uploadProgressBar {
+            height: 100%;
+            background: #ff4b4b;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .uploadHistory {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .historyItem {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(38, 39, 48, 0.3);
+            border-radius: 6px;
+            font-size: 0.8125rem;
+        }
+
+        .historyIcon {
+            font-size: 1rem;
+        }
+
+        .historyInfo {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .historyName {
+            color: #e0e0e0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .historyTime {
+            color: #808080;
+            font-size: 0.75rem;
+        }
+
+        /* Action Buttons */
+        .actionButtons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .actionButton {
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .actionButton.primary {
+            background: linear-gradient(135deg, #ff4b4b 0%, #ff6b6b 100%);
+            color: #ffffff;
+        }
+
+        .actionButton.primary:hover {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8b8b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 75, 75, 0.3);
+        }
+
+        .actionButton.secondary {
+            background: rgba(250, 250, 250, 0.05);
+            color: #fafafa;
+            border: 1px solid rgba(250, 250, 250, 0.1);
+        }
+
+        .actionButton.secondary:hover {
+            background: rgba(250, 250, 250, 0.1);
+            border-color: rgba(250, 250, 250, 0.2);
+        }
+
+        .actionButton.tertiary {
+            background: transparent;
+            color: #a0a0a0;
+            border: 1px solid rgba(250, 250, 250, 0.05);
+            font-weight: 500;
+        }
+
+        .actionButton.tertiary:hover {
+            background: rgba(250, 250, 250, 0.03);
+            color: #c0c0c0;
+        }
+
+        /* Typing Indicator */
+        .typingIndicator {
+            display: flex;
+            gap: 0.375rem;
+            padding: 0.5rem 0;
+        }
+
+        .typingDot {
+            width: 8px;
+            height: 8px;
+            background: #808080;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .typingDot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typingDot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            40% {
+                transform: translateY(-12px);
+                opacity: 1;
+            }
+        }
+
+        /* Statistics Modal */
+        .statsModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .statsModal.open {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .statsContent {
+            background: linear-gradient(135deg, rgba(38, 39, 48, 0.95) 0%, rgba(38, 39, 48, 0.98) 100%);
+            border: 1px solid rgba(250, 250, 250, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 1200px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .statsHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(250, 250, 250, 0.1);
+        }
+
+        .statsTitle {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fafafa;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .closeButton {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(250, 250, 250, 0.05);
+            border: 1px solid rgba(250, 250, 250, 0.1);
+            color: #fafafa;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .closeButton:hover {
+            background: rgba(250, 250, 250, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .statsGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .statCard {
+            background: rgba(38, 39, 48, 0.6);
+            border: 1px solid rgba(250, 250, 250, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .statCard:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 75, 75, 0.3);
+            box-shadow: 0 8px 24px rgba(255, 75, 75, 0.2);
+        }
+
+        .statCardLabel {
+            font-size: 0.875rem;
+            color: #a0a0a0;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .statCardValue {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fafafa;
+            margin-bottom: 0.5rem;
+        }
+
+        .statCardDelta {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #00d084;
+        }
+
+        .statCardDescription {
+            font-size: 0.875rem;
+            color: #808080;
+            line-height: 1.5;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(250, 250, 250, 0.05);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .mainContent {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .topNav {
+                padding: 1rem;
+            }
+
+            .appTitle {
+                font-size: 1.25rem;
+            }
+
+            .mainContent {
+                padding: 1rem;
+            }
+
+            .chatMessages {
+                padding: 1rem;
+                min-height: 300px;
+                max-height: 400px;
+            }
+
+            .sendButton {
+                padding: 1rem;
+            }
+
+            .infoStats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .statsGrid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stApp">
+        <!-- Top Navigation -->
+        <div class="topNav">
+            <div class="appTitle">
+                <span class="emoji">🧠</span>
+                Neo4j RAG + BitNet Chat
+            </div>
+            <div class="systemBadge">
+                <span class="statusDot"></span>
+                System Healthy
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="mainContent">
+            <!-- Chat Container -->
+            <div class="chatContainer">
+                <!-- Chat Wrapper -->
+                <div class="chatWrapper">
+                    <div class="chatHeader">
+                        <div class="chatTitle">💬 Chat History</div>
+                    </div>
+
+                    <div class="chatMessages">
+                        <!-- User Message 1 -->
+                        <div class="chatMessage user">
+                            <div class="messageAvatar">👤</div>
+                            <div class="messageContent">
+                                <div class="messageHeader">
+                                    <span class="messageName">You</span>
+                                    <span class="messageTime">2:45 PM</span>
+                                </div>
+                                <div class="messageText">
+                                    What is BitNet and how does it achieve memory efficiency?
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Assistant Message 1 -->
+                        <div class="chatMessage assistant">
+                            <div class="messageAvatar">🤖</div>
+                            <div class="messageContent">
+                                <div class="messageHeader">
+                                    <span class="messageName">Assistant</span>
+                                    <span class="messageTime">2:45 PM</span>
+                                </div>
+                                <div class="messageText">
+                                    BitNet is an ultra-efficient 1.58-bit ternary quantized language model that achieves 87% memory reduction through innovative ternary quantization (-1, 0, +1) instead of traditional 16-bit floating point representations. This breakthrough allows the model to run efficiently on consumer hardware while maintaining competitive performance.
+                                </div>
+
+                                <!-- Sources Expander -->
+                                <div class="sourcesExpander" onclick="this.classList.toggle('open')">
+                                    <div class="expanderHeader">
+                                        <span>📚 Sources (3)</span>
+                                        <span class="expanderIcon">▼</span>
+                                    </div>
+                                    <div class="expanderContent">
+                                        <div class="sourceCard">
+                                            <div class="sourceTitle">1. bitnet_paper.pdf</div>
+                                            <span class="sourceScore">Score: 0.92</span>
+                                            <div class="sourcePreview">
+                                                BitNet b1.58 achieves 87% memory reduction compared to traditional LLMs through ternary quantization, representing weights as -1, 0, or +1. This approach enables efficient inference on consumer hardware...
+                                            </div>
+                                        </div>
+                                        <div class="sourceCard">
+                                            <div class="sourceTitle">2. efficiency_guide.pdf</div>
+                                            <span class="sourceScore">Score: 0.89</span>
+                                            <div class="sourcePreview">
+                                                Memory efficiency in BitNet is achieved through several optimizations: ternary weight representation, optimized matrix multiplication kernels, and reduced memory bandwidth...
+                                            </div>
+                                        </div>
+                                        <div class="sourceCard">
+                                            <div class="sourceTitle">3. architecture.md</div>
+                                            <span class="sourceScore">Score: 0.84</span>
+                                            <div class="sourcePreview">
+                                                The architecture leverages ARM TL1 optimized kernels and custom SIMD instructions to accelerate ternary operations, resulting in 2-5x speedup...
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Performance Badges -->
+                                <div class="perfBadges">
+                                    <span class="perfBadge">⚡ 29ms</span>
+                                    <span class="perfBadge">💾 0.4GB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User Message 2 -->
+                        <div class="chatMessage user">
+                            <div class="messageAvatar">👤</div>
+                            <div class="messageContent">
+                                <div class="messageHeader">
+                                    <span class="messageName">You</span>
+                                    <span class="messageTime">2:46 PM</span>
+                                </div>
+                                <div class="messageText">
+                                    How does Neo4j improve RAG performance compared to traditional vector databases?
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Assistant Typing -->
+                        <div class="chatMessage assistant">
+                            <div class="messageAvatar">🤖</div>
+                            <div class="messageContent">
+                                <div class="messageHeader">
+                                    <span class="messageName">Assistant</span>
+                                    <span class="messageTime">2:46 PM</span>
+                                </div>
+                                <div class="typingIndicator">
+                                    <span class="typingDot"></span>
+                                    <span class="typingDot"></span>
+                                    <span class="typingDot"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="chatInputContainer">
+                        <div class="inputWrapper">
+                            <input
+                                type="text"
+                                class="chatInput"
+                                placeholder="💬 Ask a question about Neo4j, BitNet, or RAG systems..."
+                                onkeypress="if(event.key === 'Enter') sendMessage()"
+                            >
+                            <button class="sendButton" onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compact Info Stats Below Chat -->
+                <div class="infoStats">
+                    <div class="statItem">
+                        <span class="statLabel">📄 Documents</span>
+                        <span class="statValue">32</span>
+                    </div>
+                    <div class="statItem">
+                        <span class="statLabel">🧩 Chunks</span>
+                        <span class="statValue">29,129</span>
+                        <span class="statDelta">↑ 910/doc</span>
+                    </div>
+                    <div class="statItem">
+                        <span class="statLabel">⚡ Response</span>
+                        <span class="statValue">29ms</span>
+                        <span class="statDelta">↓ 95%</span>
+                    </div>
+                    <div class="statItem">
+                        <span class="statLabel">💾 Memory</span>
+                        <span class="statValue">0.4GB</span>
+                        <span class="statDelta">↓ 87%</span>
+                    </div>
+                    <div class="statItem">
+                        <span class="statLabel">🎯 Cache</span>
+                        <span class="statValue">85%</span>
+                        <span class="statDelta">↑ 15%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- RAG Configuration -->
+                <div class="sidebarSection">
+                    <div class="sectionTitle">⚙️ RAG Configuration</div>
+
+                    <div class="sliderControl">
+                        <div class="sliderLabel">
+                            <span>Max Results</span>
+                            <span class="sliderValue">5</span>
+                        </div>
+                        <input type="range" class="slider" min="1" max="10" value="5">
+                    </div>
+
+                    <div class="sliderControl">
+                        <div class="sliderLabel">
+                            <span>Similarity Threshold</span>
+                            <span class="sliderValue">0.7</span>
+                        </div>
+                        <input type="range" class="slider" min="0" max="1" step="0.05" value="0.7">
+                    </div>
+                </div>
+
+                <!-- LLM Configuration -->
+                <div class="sidebarSection">
+                    <div class="sectionTitle">🤖 LLM Configuration</div>
+
+                    <div class="toggleControl">
+                        <span class="toggleLabel">Use BitNet LLM</span>
+                        <div class="toggleSwitch active" onclick="this.classList.toggle('active')">
+                            <div class="toggleThumb"></div>
+                        </div>
+                    </div>
+
+                    <div class="sliderControl">
+                        <div class="sliderLabel">
+                            <span>Temperature</span>
+                            <span class="sliderValue">0.7</span>
+                        </div>
+                        <input type="range" class="slider" min="0" max="1" step="0.1" value="0.7">
+                    </div>
+                </div>
+
+                <!-- Document Upload -->
+                <div class="sidebarSection">
+                    <div class="sectionTitle">📤 Document Upload</div>
+
+                    <div class="uploadSection">
+                        <input type="file" id="fileInput" multiple accept=".pdf,.txt,.md,.docx" style="display: none;">
+
+                        <div class="uploadDropzone" id="uploadDropzone" onclick="document.getElementById('fileInput').click()">
+                            <div class="uploadIcon">📁</div>
+                            <div class="uploadText">Click or drag files here</div>
+                            <div class="uploadText" style="font-size: 0.75rem; margin-top: 0.25rem;">
+                                PDF, TXT, MD, DOCX (up to 10MB)
+                            </div>
+                        </div>
+
+                        <div id="uploadQueue" class="uploadQueue" style="display: none;">
+                            <!-- Upload items will be added here dynamically -->
+                        </div>
+
+                        <button class="actionButton primary" id="uploadButton" style="display: none;">
+                            📤 Upload to Knowledge Base
+                        </button>
+
+                        <div style="border-top: 1px solid rgba(250, 250, 250, 0.1); margin-top: 1rem; padding-top: 1rem;">
+                            <div style="font-size: 0.8125rem; color: #a0a0a0; margin-bottom: 0.75rem; font-weight: 500;">
+                                Recent Uploads
+                            </div>
+                            <div class="uploadHistory">
+                                <div class="historyItem">
+                                    <span class="historyIcon">✅</span>
+                                    <div class="historyInfo">
+                                        <div class="historyName">research_paper.pdf</div>
+                                        <div class="historyTime">2 min ago</div>
+                                    </div>
+                                </div>
+                                <div class="historyItem">
+                                    <span class="historyIcon">✅</span>
+                                    <div class="historyInfo">
+                                        <div class="historyName">meeting_notes.txt</div>
+                                        <div class="historyTime">5 min ago</div>
+                                    </div>
+                                </div>
+                                <div class="historyItem">
+                                    <span class="historyIcon">✅</span>
+                                    <div class="historyInfo">
+                                        <div class="historyName">project_docs.md</div>
+                                        <div class="historyTime">1 hour ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="sidebarSection">
+                    <div class="sectionTitle">🔧 Actions</div>
+
+                    <div class="actionButtons">
+                        <button class="actionButton primary" onclick="openStatsModal()">📊 View Full Statistics</button>
+                        <button class="actionButton secondary">💾 Export Chat</button>
+                        <button class="actionButton tertiary">🔄 Clear Chat</button>
+                    </div>
+                </div>
+
+                <!-- Display Options -->
+                <div class="sidebarSection">
+                    <div class="sectionTitle">👁️ Display Options</div>
+
+                    <div class="checkboxControl">
+                        <div class="checkbox checked" onclick="this.classList.toggle('checked')"></div>
+                        <span class="checkboxLabel">Show Sources</span>
+                    </div>
+
+                    <div class="checkboxControl">
+                        <div class="checkbox checked" onclick="this.classList.toggle('checked')"></div>
+                        <span class="checkboxLabel">Show Performance</span>
+                    </div>
+
+                    <div class="checkboxControl">
+                        <div class="checkbox" onclick="this.classList.toggle('checked')"></div>
+                        <span class="checkboxLabel">Show Timestamps</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Modal -->
+    <div class="statsModal" id="statsModal">
+        <div class="statsContent">
+            <div class="statsHeader">
+                <h2 class="statsTitle">📊 Full System Statistics</h2>
+                <button class="closeButton" onclick="closeStatsModal()">×</button>
+            </div>
+
+            <div class="statsGrid">
+                <!-- Neo4j Statistics -->
+                <div class="statCard">
+                    <div class="statCardLabel">📄 Total Documents</div>
+                    <div class="statCardValue">32</div>
+                    <div class="statCardDescription">
+                        Documents loaded and indexed in Neo4j database
+                    </div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statCardLabel">🧩 Total Chunks</div>
+                    <div class="statCardValue">29,129</div>
+                    <div class="statCardDelta">↑ 910 avg per document</div>
+                    <div class="statCardDescription">
+                        Text chunks processed with 300 char size and 50 char overlap
+                    </div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statCardLabel">📐 Vector Dimensions</div>
+                    <div class="statCardValue">384</div>
+                    <div class="statCardDescription">
+                        Embedding dimensions using all-MiniLM-L6-v2 model
+                    </div>
+                </div>
+
+                <!-- Performance Statistics -->
+                <div class="statCard">
+                    <div class="statCardLabel">⚡ Avg Response Time</div>
+                    <div class="statCardValue">29ms</div>
+                    <div class="statCardDelta">↓ 95% improvement</div>
+                    <div class="statCardDescription">
+                        From 46s baseline to 29ms with Neo4j optimizations
+                    </div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statCardLabel">🎯 Cache Hit Rate</div>
+                    <div class="statCardValue">85%</div>
+                    <div class="statCardDelta">↑ 15% increase</div>
+                    <div class="statCardDescription">
+                        FIFO cache with 100 entry capacity, thread-safe
+                    </div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statCardLabel">🔄 Queries Processed</div>
+                    <div class="statCardValue">1,247</div>
+                    <div class="statCardDescription">
+                        Total queries since system initialization
+                    </div>
+                </div>
+
+                <!-- Memory Statistics -->
+                <div class="statCard">
+                    <div class="statCardLabel">💾 Memory Usage</div>
+                    <div class="statCardValue">0.4GB</div>
+                    <div class="statCardDelta">↓ 87% reduction</div>
+                    <div class="statCardDescription">
+                        BitNet ternary quantization vs traditional 16-bit models
+                    </div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statCardLabel">💻 RAM Available</div>
+                    <div class="statCardValue">7.2GB</div>
+                    <div class="statCardDescription">
+                        System memory available for operations
+                    </div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statCardLabel">🗄️ Database Size</div>
+                    <div class="statCardValue">342MB</div>
+                    <div class="statCardDescription">
+                        Neo4j database storage including indexes
+                    </div>
+                </div>
+
+                <!-- System Health -->
+                <div class="statCard">
+                    <div class="statCardLabel">🟢 Neo4j Status</div>
+                    <div class="statCardValue">Healthy</div>
+                    <div class="statCardDescription">
+                        Connected to Neo4j 5.11 on localhost:7687
+                    </div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statCardLabel">🤖 BitNet Status</div>
+                    <div class="statCardValue">Active</div>
+                    <div class="statCardDescription">
+                        BitNet.cpp inference engine running on port 8001
+                    </div>
+                </div>
+
+                <div class="statCard">
+                    <div class="statCardLabel">⏱️ Uptime</div>
+                    <div class="statCardValue">12h 34m</div>
+                    <div class="statCardDescription">
+                        System running since startup
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const input = document.querySelector('.chatInput');
+            const message = input.value.trim();
+
+            if (message) {
+                console.log('Sending message:', message);
+                // In a real app, this would send to the backend
+                input.value = '';
+            }
+        }
+
+        function openStatsModal() {
+            document.getElementById('statsModal').classList.add('open');
+        }
+
+        function closeStatsModal() {
+            document.getElementById('statsModal').classList.remove('open');
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeStatsModal();
+            }
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('statsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeStatsModal();
+            }
+        });
+
+        // Auto-scroll chat to bottom
+        const chatMessages = document.querySelector('.chatMessages');
+        if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Update slider values dynamically
+        document.querySelectorAll('.slider').forEach(slider => {
+            slider.addEventListener('input', function() {
+                const valueSpan = this.parentElement.querySelector('.sliderValue');
+                if (valueSpan) {
+                    valueSpan.textContent = this.value;
+                }
+            });
+        });
+
+        // File Upload Functionality
+        let uploadQueue = [];
+
+        const fileInput = document.getElementById('fileInput');
+        const uploadDropzone = document.getElementById('uploadDropzone');
+        const uploadQueueElement = document.getElementById('uploadQueue');
+        const uploadButton = document.getElementById('uploadButton');
+
+        // File input change handler
+        fileInput.addEventListener('change', function(e) {
+            handleFiles(e.target.files);
+        });
+
+        // Drag and drop handlers
+        uploadDropzone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        uploadDropzone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        uploadDropzone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            const validTypes = ['.pdf', '.txt', '.md', '.docx'];
+            const maxSize = 10 * 1024 * 1024; // 10MB
+
+            Array.from(files).forEach(file => {
+                const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+
+                if (!validTypes.includes(fileExt)) {
+                    alert(`Invalid file type: ${file.name}. Supported types: PDF, TXT, MD, DOCX`);
+                    return;
+                }
+
+                if (file.size > maxSize) {
+                    alert(`File too large: ${file.name}. Maximum size: 10MB`);
+                    return;
+                }
+
+                uploadQueue.push({
+                    file: file,
+                    status: 'pending',
+                    progress: 0
+                });
+            });
+
+            updateUploadQueue();
+        }
+
+        function updateUploadQueue() {
+            if (uploadQueue.length === 0) {
+                uploadQueueElement.style.display = 'none';
+                uploadButton.style.display = 'none';
+                return;
+            }
+
+            uploadQueueElement.style.display = 'flex';
+            uploadButton.style.display = 'flex';
+
+            uploadQueueElement.innerHTML = uploadQueue.map((item, index) => {
+                const statusIcons = {
+                    'pending': '⏳',
+                    'uploading': '🔄',
+                    'processing': '⚙️',
+                    'completed': '✅',
+                    'error': '❌'
+                };
+
+                const statusTexts = {
+                    'pending': 'Pending',
+                    'uploading': `Uploading ${item.progress}%`,
+                    'processing': 'Processing...',
+                    'completed': 'Uploaded',
+                    'error': 'Failed'
+                };
+
+                return `
+                    <div class="uploadItem">
+                        <span class="uploadItemIcon">${statusIcons[item.status]}</span>
+                        <div class="uploadItemInfo">
+                            <div class="uploadItemName">${item.file.name}</div>
+                            <div class="uploadItemStatus">${statusTexts[item.status]}</div>
+                            ${item.status === 'uploading' ? `
+                                <div class="uploadProgress">
+                                    <div class="uploadProgressBar" style="width: ${item.progress}%"></div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        uploadButton.addEventListener('click', function() {
+            uploadQueue.forEach((item, index) => {
+                if (item.status === 'pending') {
+                    simulateUpload(index);
+                }
+            });
+        });
+
+        function simulateUpload(index) {
+            const item = uploadQueue[index];
+            item.status = 'uploading';
+            item.progress = 0;
+            updateUploadQueue();
+
+            // Simulate upload progress
+            const interval = setInterval(() => {
+                item.progress += 10;
+                updateUploadQueue();
+
+                if (item.progress >= 100) {
+                    clearInterval(interval);
+                    item.status = 'processing';
+                    updateUploadQueue();
+
+                    // Simulate processing
+                    setTimeout(() => {
+                        item.status = 'completed';
+                        updateUploadQueue();
+
+                        // Add to recent uploads
+                        addToRecentUploads(item.file.name);
+
+                        // Check if all uploads are complete
+                        if (uploadQueue.every(i => i.status === 'completed')) {
+                            setTimeout(() => {
+                                uploadQueue = [];
+                                updateUploadQueue();
+                            }, 2000);
+                        }
+                    }, 1500);
+                }
+            }, 300);
+        }
+
+        function addToRecentUploads(filename) {
+            const historyContainer = document.querySelector('.uploadHistory');
+            const newItem = document.createElement('div');
+            newItem.className = 'historyItem';
+            newItem.innerHTML = `
+                <span class="historyIcon">✅</span>
+                <div class="historyInfo">
+                    <div class="historyName">${filename}</div>
+                    <div class="historyTime">Just now</div>
+                </div>
+            `;
+            historyContainer.insertBefore(newItem, historyContainer.firstChild);
+
+            // Keep only last 5 items
+            while (historyContainer.children.length > 5) {
+                historyContainer.removeChild(historyContainer.lastChild);
+            }
+        }
+    </script>
+</body>
+</html>
