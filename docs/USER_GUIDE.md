@@ -2,8 +2,20 @@
 
 Complete guide for using the ultra-efficient BitNet b1.58 RAG system with Neo4j.
 
+## 🎨 Interactive Demo
+
+**[View Live Streamlit Chat Interface →](https://ma3u.github.io/neo4j-agentframework/)**
+
+Explore the interactive mockup of our Streamlit-based chat interface featuring:
+- Real-time chat with RAG-powered responses
+- Source document tracking and exploration
+- Performance metrics and system health monitoring
+- Configurable RAG and LLM settings
+- Local-first design (no cloud costs)
+
 ## 📋 Table of Contents
 
+- [Interactive Demo](#interactive-demo)
 - [Quick Start](#quick-start)
 - [Local Development](#local-development)
 - [Azure Deployment](#azure-deployment)
@@ -141,7 +153,7 @@ curl -X POST http://localhost:8000/query \
 ### System Stats
 
 ```bash
-curl http://localhost:8000/stats
+curl http://localhost:8000/stats | jq .
 ```
 
 **Response:**

@@ -120,7 +120,7 @@ EOF
 
 2. **Check Database Stats**
 ```bash
-curl http://localhost:8000/stats | python3 -m json.tool
+curl http://localhost:8000/stats | jq .
 # Expected: 32+ documents, 100+ chunks
 ```
 
