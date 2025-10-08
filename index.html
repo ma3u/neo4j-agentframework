@@ -440,6 +440,193 @@
             color: #00d084;
         }
 
+        /* Service Health Section */
+        .serviceHealth {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(38, 39, 48, 0.3);
+            border: 1px solid rgba(250, 250, 250, 0.05);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .serviceCard {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: rgba(38, 39, 48, 0.5);
+            border-radius: 8px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .serviceCard.healthy {
+            border-left-color: #00d084;
+        }
+
+        .serviceCard.warning {
+            border-left-color: #ffc107;
+        }
+
+        .serviceCard.error {
+            border-left-color: #ff4b4b;
+        }
+
+        .serviceCard:hover {
+            background: rgba(38, 39, 48, 0.7);
+        }
+
+        .serviceHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .serviceName {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #fafafa;
+        }
+
+        .serviceStatus {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .serviceStatus.healthy {
+            color: #00d084;
+        }
+
+        .serviceStatus.warning {
+            color: #ffc107;
+        }
+
+        .serviceStatus.error {
+            color: #ff4b4b;
+        }
+
+        .serviceStatusDot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .serviceStatus.healthy .serviceStatusDot {
+            background: #00d084;
+        }
+
+        .serviceStatus.warning .serviceStatusDot {
+            background: #ffc107;
+        }
+
+        .serviceStatus.error .serviceStatusDot {
+            background: #ff4b4b;
+        }
+
+        .serviceMetric {
+            font-size: 0.75rem;
+            color: #a0a0a0;
+        }
+
+        .serviceMetricValue {
+            color: #fafafa;
+            font-weight: 600;
+        }
+
+        /* Chart Container */
+        .chartContainer {
+            background: rgba(38, 39, 48, 0.6);
+            border: 1px solid rgba(250, 250, 250, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chartTitle {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fafafa;
+            margin-bottom: 1rem;
+        }
+
+        .chartPlaceholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(255, 75, 75, 0.05) 0%, rgba(0, 208, 132, 0.05) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chartLine {
+            position: absolute;
+            bottom: 20%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg,
+                #ff4b4b 0%,
+                #ff6b6b 20%,
+                #ffc107 40%,
+                #00d084 60%,
+                #00d084 100%);
+            filter: drop-shadow(0 0 8px rgba(0, 208, 132, 0.5));
+        }
+
+        .chartLine::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 80px;
+            bottom: 0;
+            background: linear-gradient(to top,
+                rgba(0, 208, 132, 0.1),
+                transparent);
+        }
+
+        /* Query Analytics */
+        .queryAnalytics {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .queryItem {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(38, 39, 48, 0.4);
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .queryTime {
+            color: #808080;
+            font-size: 0.75rem;
+            font-family: Monaco, monospace;
+        }
+
+        .queryText {
+            flex: 1;
+            color: #e0e0e0;
+        }
+
+        .queryMetric {
+            color: #00d084;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
         /* Sidebar */
         .sidebar {
             width: 320px;
@@ -1128,6 +1315,57 @@
                     </div>
                 </div>
 
+                <!-- Service Health Indicators -->
+                <div class="serviceHealth">
+                    <div class="serviceCard healthy">
+                        <div class="serviceHeader">
+                            <span class="serviceName">🗄️ Neo4j</span>
+                            <span class="serviceStatus healthy">
+                                <span class="serviceStatusDot"></span>
+                                Healthy
+                            </span>
+                        </div>
+                        <div class="serviceMetric">
+                            Avg: <span class="serviceMetricValue">45ms</span>
+                        </div>
+                        <div class="serviceMetric">
+                            Port: <span class="serviceMetricValue">7687</span>
+                        </div>
+                    </div>
+
+                    <div class="serviceCard healthy">
+                        <div class="serviceHeader">
+                            <span class="serviceName">⚡ RAG Service</span>
+                            <span class="serviceStatus healthy">
+                                <span class="serviceStatusDot"></span>
+                                Online
+                            </span>
+                        </div>
+                        <div class="serviceMetric">
+                            Avg: <span class="serviceMetricValue">1.2s</span>
+                        </div>
+                        <div class="serviceMetric">
+                            Port: <span class="serviceMetricValue">8000</span>
+                        </div>
+                    </div>
+
+                    <div class="serviceCard warning">
+                        <div class="serviceHeader">
+                            <span class="serviceName">🤖 BitNet LLM</span>
+                            <span class="serviceStatus warning">
+                                <span class="serviceStatusDot"></span>
+                                Loaded
+                            </span>
+                        </div>
+                        <div class="serviceMetric">
+                            Avg: <span class="serviceMetricValue">3.5s</span>
+                        </div>
+                        <div class="serviceMetric">
+                            Port: <span class="serviceMetricValue">8001</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Compact Info Stats Below Chat -->
                 <div class="infoStats">
                     <div class="statItem">
@@ -1398,6 +1636,60 @@
                     <div class="statCardValue">12h 34m</div>
                     <div class="statCardDescription">
                         System running since startup
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Trend Charts -->
+            <div class="chartContainer">
+                <div class="chartTitle">📈 Query Response Time Trend (Last Hour)</div>
+                <div class="chartPlaceholder">
+                    <div class="chartLine"></div>
+                    <div style="position: absolute; bottom: 10px; left: 10px; font-size: 0.75rem; color: #808080;">
+                        12:00 PM
+                    </div>
+                    <div style="position: absolute; bottom: 10px; right: 10px; font-size: 0.75rem; color: #808080;">
+                        1:00 PM
+                    </div>
+                    <div style="position: absolute; top: 10px; left: 10px; font-size: 0.75rem; color: #808080;">
+                        4s
+                    </div>
+                    <div style="position: absolute; top: 50%; left: 10px; font-size: 0.75rem; color: #808080;">
+                        2s
+                    </div>
+                    <div style="position: absolute; bottom: 30px; left: 10px; font-size: 0.75rem; color: #808080;">
+                        0s
+                    </div>
+                </div>
+            </div>
+
+            <div class="chartContainer">
+                <div class="chartTitle">🔍 Query Analytics (Recent Queries)</div>
+                <div class="queryAnalytics">
+                    <div class="queryItem">
+                        <span class="queryTime">2:46 PM</span>
+                        <span class="queryText">How does Neo4j improve RAG performance?</span>
+                        <span class="queryMetric">29ms</span>
+                    </div>
+                    <div class="queryItem">
+                        <span class="queryTime">2:45 PM</span>
+                        <span class="queryText">What is BitNet and how does it achieve memory efficiency?</span>
+                        <span class="queryMetric">32ms</span>
+                    </div>
+                    <div class="queryItem">
+                        <span class="queryTime">2:42 PM</span>
+                        <span class="queryText">Explain vector search in Neo4j</span>
+                        <span class="queryMetric">28ms</span>
+                    </div>
+                    <div class="queryItem">
+                        <span class="queryTime">2:38 PM</span>
+                        <span class="queryText">What are the benefits of ternary quantization?</span>
+                        <span class="queryMetric">45ms</span>
+                    </div>
+                    <div class="queryItem">
+                        <span class="queryTime">2:35 PM</span>
+                        <span class="queryText">How to optimize RAG retrieval?</span>
+                        <span class="queryMetric">31ms</span>
                     </div>
                 </div>
             </div>
