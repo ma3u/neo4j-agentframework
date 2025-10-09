@@ -26,9 +26,9 @@ Transform your documents into an intelligent knowledge base that combines Neo4j'
 
 ## 📋 Overview
 
-A production-ready hybrid RAG system that combines Neo4j's graph database with intelligent retrieval and generation capabilities. The system works both locally for development and testing, and in Azure for enterprise production deployments. Built for flexibility, it delivers 417x faster vector search while maintaining complete data sovereignty and optional cloud scalability.
+A production-ready hybrid RAG system that combines Neo4j's graph database with intelligent retrieval and generation capabilities. The system works both locally for development and testing (with optional BitNet.cpp LLM), and in Azure for enterprise production deployments (using AI Foundry's managed models). Built for flexibility, it delivers 417x faster vector search while maintaining complete data sovereignty locally and enterprise scalability in the cloud.
 
-**Core components**: Neo4j (high-performance graph database), RAG Service (intelligent retrieval), BitNet.cpp (efficient 1.58-bit LLM for local use), and Azure AI Foundry integration (managed AI agents for production).
+**Core components**: Neo4j (graph database + vector search), RAG Service (intelligent retrieval + generation), BitNet.cpp (optional local LLM - development only), Azure AI Foundry (managed AI models for production - GPT-4o, GPT-4o-mini, etc.).
 
 ## Architecture
 
@@ -36,7 +36,7 @@ Two deployment options for maximum flexibility: run everything locally for devel
 
 ### Local Development (100% Sovereign)
 
-Run the complete stack on your laptop with full data control and zero recurring costs. All components containerized with Docker for easy setup and teardown. Perfect for development, testing, demos, and organizations requiring complete data sovereignty.
+Run the complete stack on your laptop with full data control and zero recurring costs, including BitNet.cpp for local LLM inference (optional). All components containerized with Docker for easy setup and teardown. Perfect for development, testing, demos, and organizations requiring complete data sovereignty without external API dependencies.
 
 ```mermaid
 graph TB
@@ -102,7 +102,7 @@ graph TB
 
 ### Azure Cloud Architecture (Enterprise Deployment)
 
-Enterprise production deployment uses Azure Container Apps to host both Neo4j database and RAG service as independently scalable containers, providing the intelligent knowledge base layer. Azure AI Foundry delivers conversational AI as a fully managed SaaS service with GPT-4o-mini agents, eliminating the need to deploy BitNet or Streamlit to the cloud. This clean separation keeps the knowledge base (Neo4j + RAG) in your control while leveraging Microsoft's managed AI infrastructure, resulting in enterprise-grade capabilities at approximately $326/month.
+Enterprise production deployment uses Azure Container Apps to host Neo4j database and RAG service as independently scalable containers, providing the intelligent knowledge base layer. Azure AI Foundry provides the complete AI agent solution with access to GPT-4o, GPT-4o-mini, GPT-3.5-turbo, and other models as a fully managed service - no LLM deployment needed. This architecture deploys only the knowledge base (Neo4j + RAG) to containers while leveraging Azure's managed AI services, delivering enterprise capabilities at approximately $326/month for the knowledge base infrastructure.
 
 ```mermaid
 graph TB
@@ -149,7 +149,7 @@ graph TB
     style KeyVault fill:#fff4cc
 ```
 
-**Note**: BitNet and Streamlit are local development tools only - production uses Azure AI Foundry's managed AI agents with GPT-4o-mini, while Neo4j and RAG Container Apps provide the knowledge base infrastructure.
+**Note**: BitNet.cpp and Streamlit are local development tools only - Azure production uses AI Foundry's managed AI models (GPT-4o, GPT-4o-mini, GPT-3.5-turbo, etc.) with Neo4j and RAG Container Apps providing the knowledge base infrastructure.
 
 ### Key Benefits
 
@@ -185,8 +185,8 @@ The Docker Compose configuration automatically sets up all four services (Neo4j,
 **What's Included:**
 - 🗄️ Neo4j Database (ports 7474, 7687)
 - ⚡ RAG Service (port 8000)
-- 🤖 BitNet LLM (port 8001)
-- 🧠 Streamlit Chat UI (port 8501) **[NEW!]**
+- 🤖 BitNet LLM (port 8001) *optional - local development only*
+- 🧠 Streamlit Chat UI (port 8501) *local development only*
 
 ![](assets/17596728916271.jpg)
 NEO4J DB + RAG + BitNet LLM in Docker Desktop running locally
