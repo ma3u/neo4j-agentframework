@@ -1,6 +1,8 @@
-# Neo4j RAG + BitNet + Azure Agent Framework
+# 🚀 Intelligent Knowledge Base: Neo4j + RAG + AI Agents
 
-**Ultra-efficient RAG system with Microsoft BitNet.cpp and Neo4j for local usage and Azure AI integration**
+**Build production-ready AI that actually remembers and learns - 417x faster vector search with hybrid local/cloud deployment**
+
+Transform your documents into an intelligent knowledge base that combines Neo4j's graph database power with retrieval-augmented generation. Deploy locally for complete control and zero costs, or scale to Azure with enterprise-grade AI agents. Get started in 5 minutes with our Streamlit chat interface and experience AI that truly understands your data.
 
 ---
 
@@ -28,9 +30,13 @@ A production-ready hybrid RAG system that combines Neo4j's graph database with i
 
 **Core components**: Neo4j (high-performance graph database), RAG Service (intelligent retrieval), BitNet.cpp (efficient 1.58-bit LLM for local use), and Azure AI Foundry integration (managed AI agents for production).
 
-### Architecture
+## Architecture
 
-#### Sovereign Architecture (100% Local - Zero Dependencies)
+Two deployment options for maximum flexibility: run everything locally for development with zero external dependencies, or deploy the knowledge base to Azure Container Apps while Azure AI Foundry handles conversational AI as a managed service. Both architectures use the same codebase, enabling seamless transition from development to production.
+
+### Local Development (100% Sovereign)
+
+Run the complete stack on your laptop with full data control and zero recurring costs. All components containerized with Docker for easy setup and teardown. Perfect for development, testing, demos, and organizations requiring complete data sovereignty.
 
 ```mermaid
 graph TB
