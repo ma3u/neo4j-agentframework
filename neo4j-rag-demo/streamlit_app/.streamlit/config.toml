@@ -1,15 +1,36 @@
+# Streamlit Configuration
+# Theme matches mockup design: https://ma3u.github.io/neo4j-agentframework/
+
 [theme]
-primaryColor = "#FF4B4B"
-backgroundColor = "#0E1117"
-secondaryBackgroundColor = "#262730"
-textColor = "#FAFAFA"
+# Base theme
+base = "dark"
+
+# Primary colors (from mockup)
+primaryColor = "#FF4B4B"          # Accent red (buttons, highlights)
+backgroundColor = "#0E1117"        # Main background
+secondaryBackgroundColor = "#262730"  # Cards, sidebar
+textColor = "#FAFAFA"              # Primary text
+
+# Font
 font = "sans serif"
 
 [server]
-port = 8501
-address = "0.0.0.0"
+# Server configuration
 headless = true
-runOnSave = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = true
 
 [browser]
+# Browser configuration
 gatherUsageStats = false
+
+[runner]
+# Performance
+magicEnabled = true
+fastReruns = true
+
+[client]
+# Client configuration
+showErrorDetails = true
+toolbarMode = "minimal"

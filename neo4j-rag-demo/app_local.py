@@ -112,12 +112,46 @@ async def get_stats():
         if not rag_engine:
             raise HTTPException(status_code=503, detail="RAG engine not initialized")
 
-        stats = rag_engine.rag.get_stats()
+        # Get Neo4j stats
+        neo4j_stats = rag_engine.rag.get_stats()
+
+        # Get profiler stats
+        profiler_stats = rag_engine.rag.profiler.get_summary()
+
+        # Get cache stats
+        cache_stats = {
+            "size": len(rag_engine.rag._query_cache),
+            "max_size": 10000,
+            "hits": profiler_stats.get("cache", {}).get("hits", 0),
+            "misses": profiler_stats.get("cache", {}).get("misses", 0)
+        }
+
+        # Calculate cache hit rate
+        total_cache_ops = cache_stats["hits"] + cache_stats["misses"]
+        cache_hit_rate = (cache_stats["hits"] / total_cache_ops * 100) if total_cache_ops > 0 else 0
+
+        # Get memory usage
+        import psutil
+        process = psutil.Process()
+        memory_mb = process.memory_info().rss / 1024 / 1024
+
         return {
-            "model": "SentenceTransformer (all-MiniLM-L6-v2)",
-            "embedding_dimensions": 384,
-            "deployment": "local",
-            "neo4j_stats": stats
+            "status": "healthy",
+            "neo4j_connected": True,
+            "document_count": neo4j_stats.get("documents", 0),
+            "chunk_count": neo4j_stats.get("chunks", 0),
+            "avg_response_time_ms": profiler_stats.get("total_query", {}).get("avg_ms", 0),
+            "cache_hit_rate": round(cache_hit_rate, 1),
+            "memory_mb": round(memory_mb, 1),
+            "performance_optimized": True,
+            "query_stats": profiler_stats,
+            "cache_stats": cache_stats,
+            "profiler_stats": profiler_stats,
+            "system_stats": {
+                "cpu_count": psutil.cpu_count(),
+                "memory_usage_mb": round(memory_mb, 1),
+                "bitnet_available": False  # Update if BitNet is running
+            }
         }
     except Exception as e:
         logger.error(f"Failed to get stats: {e}")

@@ -18,10 +18,34 @@ st.set_page_config(
 )
 
 # API Configuration
-RAG_API_URL = "http://bitnet-optimized-rag:8000"
-# Fallback for local testing outside Docker
-if st.secrets.get("LOCAL_DEV", False):
-    RAG_API_URL = "http://localhost:8000"
+# Try to detect if running in Docker or locally
+import socket
+
+def get_rag_api_url():
+    """Auto-detect RAG API URL"""
+    # Try different possible hostnames in order
+    possible_urls = [
+        "http://localhost:8000",
+        "http://rag-service-optimized:8000",
+        "http://bitnet-optimized-rag:8000",
+        "http://rag-service:8000"
+    ]
+
+    for url in possible_urls:
+        try:
+            response = requests.get(f"{url}/health", timeout=2)
+            if response.ok:
+                print(f"✓ RAG API detected at: {url}")
+                return url
+        except:
+            continue
+
+    # Default to localhost
+    print("⚠ Using default: http://localhost:8000")
+    return "http://localhost:8000"
+
+RAG_API_URL = get_rag_api_url()
+print(f"RAG_API_URL configured as: {RAG_API_URL}")
 
 
 # Session State Initialization
@@ -134,24 +158,51 @@ def render_service_health():
 
     col1, col2, col3 = st.columns(3)
 
-    # Neo4j Health
+    # Neo4j Health - check via RAG service connection status
     with col1:
-        neo4j_health = check_service_health("http://neo4j-rag-optimized:7474")
-        status = "🟢 Healthy" if neo4j_health["status"] == "healthy" else "🔴 Error"
-        st.metric("🗄️ Neo4j", status, f"{neo4j_health.get('response_time', 0):.0f}ms")
+        stats = get_system_stats()
+        neo4j_connected = stats.get("neo4j_connected", False) if stats else False
+
+        if neo4j_connected:
+            status = "🟢 Connected"
+            delta = "Port 7687"
+        else:
+            status = "🔴 Offline"
+            delta = "Port 7687"
+
+        st.metric("🗄️ Neo4j", status, delta)
 
     # RAG Service Health
     with col2:
         rag_health = check_service_health(RAG_API_URL)
-        status = "🟢 Online" if rag_health["status"] == "healthy" else "🔴 Offline"
-        st.metric("⚡ RAG Service", status, f"{rag_health.get('response_time', 0):.0f}ms")
+        if rag_health["status"] == "healthy":
+            status = "🟢 Online"
+            response_ms = rag_health.get('response_time', 0)
+            delta = f"{response_ms:.0f}ms" if response_ms > 0 else "Healthy"
+        else:
+            status = "🔴 Offline"
+            delta = "Port 8000"
 
-    # BitNet Health (check via RAG service)
+        st.metric("⚡ RAG Service", status, delta)
+
+    # BitNet Health - check localhost:8001
     with col3:
-        stats = get_system_stats()
-        bitnet_status = stats.get("bitnet", {}).get("status", "unknown")
-        status_emoji = "🟢" if bitnet_status == "active" else "🟡"
-        st.metric("🤖 BitNet LLM", f"{status_emoji} {bitnet_status.title()}", "Port 8001")
+        bitnet_health = check_service_health("http://localhost:8001")
+        if bitnet_health["status"] == "healthy":
+            status = "🟢 Active"
+            response_ms = bitnet_health.get('response_time', 0)
+            delta = f"{response_ms:.0f}ms" if response_ms > 0 else "Active"
+        else:
+            # Check if BitNet is available via stats
+            bitnet_available = stats.get("system_stats", {}).get("bitnet_available", False) if stats else False
+            if bitnet_available:
+                status = "🟢 Active"
+                delta = "Via API"
+            else:
+                status = "🟡 Offline"
+                delta = "Port 8001"
+
+        st.metric("🤖 BitNet LLM", status, delta)
 
 
 def render_system_stats():
@@ -159,31 +210,42 @@ def render_system_stats():
     stats = get_system_stats()
 
     if not stats:
-        st.warning("Unable to fetch system statistics")
+        st.warning("⚠️ Unable to fetch system statistics - RAG service may be offline")
         return
 
+    # API returns flat structure with document_count, chunk_count, etc.
     col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
-        st.metric("📄 Documents", stats.get("neo4j", {}).get("documents", 0))
+        # Document count
+        doc_count = stats.get("document_count", 0)
+        st.metric("📄 Documents", doc_count)
 
     with col2:
-        chunks = stats.get("neo4j", {}).get("chunks", 0)
-        docs = stats.get("neo4j", {}).get("documents", 1)
-        avg_chunks = chunks / docs if docs > 0 else 0
-        st.metric("🧩 Chunks", f"{chunks:,}", f"↑ {avg_chunks:.0f}/doc")
+        # Chunk count
+        chunk_count = stats.get("chunk_count", 0)
+        docs = doc_count if doc_count > 0 else 1
+        avg_chunks = chunk_count / docs if chunk_count > 0 else 0
+        delta = f"~{avg_chunks:.0f}/doc" if avg_chunks > 0 else None
+        st.metric("🧩 Chunks", f"{chunk_count:,}", delta)
 
     with col3:
-        response_time = stats.get("performance", {}).get("avg_response_time_ms", 0)
-        st.metric("⚡ Response", f"{response_time:.0f}ms", "↓ 95%")
+        # Response time
+        response_time = stats.get("avg_response_time_ms", 0)
+        delta = "↓ Fast" if response_time > 0 and response_time < 200 else None
+        st.metric("⚡ Response", f"{response_time:.0f}ms", delta)
 
     with col4:
-        memory = stats.get("memory", {}).get("usage_gb", 0)
-        st.metric("💾 Memory", f"{memory:.1f}GB", "↓ 87%")
+        # Memory (convert MB to GB)
+        memory_mb = stats.get("memory_mb", 0)
+        memory_gb = memory_mb / 1024
+        st.metric("💾 Memory", f"{memory_gb:.1f}GB", "↓ 87%")
 
     with col5:
-        cache_rate = stats.get("performance", {}).get("cache_hit_rate", 0)
-        st.metric("🎯 Cache", f"{cache_rate*100:.0f}%", "↑ 15%")
+        # Cache hit rate (already as percentage)
+        cache_rate = stats.get("cache_hit_rate", 0)
+        delta = "↑ Good" if cache_rate > 30 else "→ Building"
+        st.metric("🎯 Cache", f"{cache_rate:.0f}%", delta)
 
 
 def render_chat_interface():

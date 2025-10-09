@@ -31,9 +31,13 @@ This project provides a complete production-ready RAG (Retrieval-Augmented Gener
 - **Azure Agent Framework**: Enterprise-grade conversational AI orchestration
 - **Zero External Dependencies**: 100% local operation with optional Azure integration
 
-### Architecture
+## Architecture
 
-#### Sovereign Architecture (100% Local - Zero Dependencies)
+### Local Development Architecture
+
+**Fully containerized local deployment** for development and testing with complete data sovereignty. All components run on localhost using Docker containers: Neo4j provides the graph database and vector search, BitNet.cpp delivers efficient 1.58-bit quantized LLM inference, RAG service orchestrates retrieval and generation, and Streamlit provides an interactive chat interface for testing and demonstration.
+
+#### Components
 
 ```mermaid
 graph TB
@@ -97,56 +101,58 @@ graph TB
     style RAGAPI fill:#ffe1cc
 ```
 
-#### Azure Cloud Architecture (Enterprise Deployment)
+### Azure Cloud Architecture (Enterprise Production)
+
+**Enterprise-grade serverless deployment** using Azure Container Apps for scalable knowledge base services with Microsoft Agent Framework integration. Neo4j and RAG Service run as auto-scaling containers providing the intelligent knowledge layer, while Azure AI Foundry agents (GPT-4o-mini) handle conversational AI as a managed SaaS solution, eliminating the need for BitNet or Streamlit in production.
+
+#### Components
 
 ```mermaid
 graph TB
     subgraph "User Access"
         Users[👥 Users]
-        Teams[Microsoft Teams]
-        Users -->|Access| Teams
+        Teams[Microsoft Teams<br/>Web/Mobile]
+        Users -->|Interact| Teams
     end
 
-    subgraph "Azure AI Foundry"
-        Agent[Azure AI Agent<br/>GPT-4o-mini]
+    subgraph "Azure AI Foundry (SaaS)"
+        Agent[AI Agent Service<br/>GPT-4o-mini<br/>Managed Service]
         Teams -->|Chat| Agent
     end
 
-    subgraph "Azure Container Apps"
-        RAGAPI[RAG Service<br/>Auto-scaling 0-10]
-        BitNetContainer[BitNet.cpp<br/>Container Instance]
-        Agent -->|Query| RAGAPI
-        RAGAPI -->|Inference| BitNetContainer
+    subgraph "Azure Container Apps (Knowledge Base)"
+        Neo4jContainer[Neo4j Database<br/>Container App<br/>2 CPU, 8GB RAM<br/>Persistent Storage]
+        RAGContainer[RAG Service<br/>Container App<br/>4 CPU, 8GB RAM<br/>Auto-scale 1-10]
+
+        Agent -->|Query| RAGContainer
+        RAGContainer -->|Vector Search| Neo4jContainer
     end
 
-    subgraph "Azure Database"
-        CosmosNeo4j[(Azure Cosmos DB<br/>Neo4j API)]
-        RAGAPI -->|Vector Search| CosmosNeo4j
+    subgraph "Azure Storage & Processing"
+        BlobStorage[Azure Blob Storage<br/>Document Repository]
+        BlobStorage -->|Upload| RAGContainer
+        RAGContainer -->|Index| Neo4jContainer
     end
 
-    subgraph "Document Processing"
-        Storage[Azure Blob Storage]
-        DocIntel[Document Intelligence]
-        Storage -->|Process| DocIntel
-        DocIntel -->|Extract| CosmosNeo4j
-    end
+    subgraph "Security & Monitoring"
+        KeyVault[Azure Key Vault<br/>Secrets Management]
+        AppInsights[Application Insights<br/>Logging & Metrics]
+        ManagedID[Managed Identity<br/>Authentication]
 
-    subgraph "Monitoring & Security"
-        AppInsights[Application Insights]
-        KeyVault[Key Vault]
-        ManagedID[Managed Identity]
-
-        RAGAPI -->|Logs| AppInsights
-        RAGAPI -->|Secrets| KeyVault
-        RAGAPI -->|Auth| ManagedID
+        RAGContainer -->|Credentials| KeyVault
+        RAGContainer -->|Telemetry| AppInsights
+        RAGContainer -->|Auth| ManagedID
+        Neo4jContainer -->|Logs| AppInsights
     end
 
     style Agent fill:#ccffcc
-    style RAGAPI fill:#ffe1cc
-    style BitNetContainer fill:#ffcccc
-    style CosmosNeo4j fill:#4db8ff
+    style RAGContainer fill:#ffe1cc
+    style Neo4jContainer fill:#4db8ff
     style AppInsights fill:#e1f5ff
+    style KeyVault fill:#fff4cc
 ```
+
+**Note**: BitNet and Streamlit are local development tools only - production uses Azure AI Foundry's managed AI agents with GPT-4o-mini for conversational AI, while Neo4j and RAG containers provide the intelligent knowledge base layer.
 
 ### Key Benefits
 
