@@ -379,51 +379,13 @@ Query: 20-50ms | Retrieval: 10-30ms | Generation: 2-5s | Total: 2-6s
 
 ## 🛠 Development
 
-### Project Structure
+Well-organized project structure with core RAG implementation in `neo4j-rag-demo/`, deployment scripts in `scripts/`, comprehensive documentation in `docs/`, and native BitNet.cpp integration. The modular design separates concerns: source code, tests, deployment configs, and documentation for easy navigation and maintenance.
 
-```
-├── README.md                    # This file
-├── scripts/                     # Deployment and utility scripts
-│   ├── docker-compose.optimized.yml
-│   ├── azure-deploy-complete.sh
-│   ├── Dockerfile.bitnet-*
-│   └── *.py                    # Helper scripts
-├── neo4j-rag-demo/             # Core RAG implementation
-│   ├── src/                    # Source code
-│   ├── scripts/                # Project-specific scripts
-│   └── tests/                  # Test suite
-├── docs/                       # Documentation
-└── BitNet/                     # Native BitNet.cpp integration
-```
+**Project structure**: See [CLAUDE.md](CLAUDE.md#project-structure) for detailed layout
 
-### Local Development
+**Local development**: Install dependencies, run tests, load data | **Guide**: [Development Guide](CLAUDE.md)
 
-```bash
-# Install dependencies
-cd neo4j-rag-demo
-pip install -r requirements.txt
-
-# Run tests
-python -m pytest tests/
-
-# Load sample data
-python scripts/load_sample_data.py
-
-# Interactive testing
-python tests/interactive_local_api_test.py
-```
-
-### Adding Documents
-
-```bash
-# Via Python script
-python neo4j-rag-demo/scripts/upload_pdfs_to_neo4j.py /path/to/your/pdfs/
-
-# Via API
-curl -X POST "http://localhost:8000/add-documents" \
-  -H "Content-Type: application/json" \
-  -d '{"documents": [{"id": "doc1", "content": "Your content"}]}'
-```
+**Adding documents**: Via Streamlit UI, Python scripts, or REST API | **Details**: [API Documentation](neo4j-rag-demo/README.md)
 
 ---
 
