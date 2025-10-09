@@ -189,8 +189,8 @@ The Docker Compose configuration automatically sets up all four services (Neo4j,
 4. Access Neo4j Browser: [http://localhost:7474](http://localhost:7474) (neo4j/password)
 5. Open Chat: [http://localhost:8501](http://localhost:8501)
 
-![Chat UI](image-2.png)
-[Mockup](https://ma3u.github.io/neo4j-agentframework/) of Streamlit Chat UI with document upload and monitoring dashboard
+![Neo4j RAG Streamlit UI Mockup](docs/images/neo4j-rag-streamlit-ui-mockup.png)
+*[Interactive Mockup](https://ma3u.github.io/neo4j-agentframework/) - Streamlit Chat UI with document upload and monitoring dashboard*
 
 **What's Included:**
 - 🗄️ Neo4j Database (ports 7474, 7687)
@@ -198,8 +198,8 @@ The Docker Compose configuration automatically sets up all four services (Neo4j,
 - 🤖 BitNet LLM (port 8001) *optional - local development only*
 - 🧠 Streamlit Chat UI (port 8501) *local development only*
 
-![](assets/17596728916271.jpg)
-NEO4J DB + RAG + BitNet LLM in Docker Desktop running locally
+![Neo4j RAG Docker Desktop Containers](docs/images/neo4j-rag-docker-desktop-containers.jpg)
+*Neo4j Database + RAG Service + BitNet LLM running in Docker Desktop*
 
 ### Option 2: Development Setup
 
@@ -250,8 +250,8 @@ After starting the services, multiple web interfaces become available for differ
 
 > **📱 Streamlit Chat UI**: Full-featured chat interface with document upload, monitoring dashboard, and real-time RAG responses. See [Streamlit App Documentation](neo4j-rag-demo/streamlit_app/README.md) for details.
 
-![NEO 4J](image-3.png)
-Neo4J Browser with sample data loaded (Cypher queries)
+![Neo4j Graph Database Browser](docs/images/neo4j-graph-database-browser.png)
+*Neo4j Browser with sample data and Cypher query interface*
 
 ### API Endpoints
 
