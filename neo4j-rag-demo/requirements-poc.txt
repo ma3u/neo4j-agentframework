@@ -13,7 +13,7 @@ openai==1.3.7  # Azure OpenAI support
 neo4j==5.15.0
 
 # Lightweight text processing (replaces heavy transformers)
-langchain-text-splitters==0.0.1  # Only text splitting, no models
+langchain-text-splitters==1.0.0a1  # Only text splitting, no models
 tiktoken==0.5.2  # Fast tokenization
 
 # Essential utilities
