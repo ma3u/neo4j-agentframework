@@ -287,28 +287,7 @@ See [ASSISTANT_CONFIGURATION.md](docs/ASSISTANT_CONFIGURATION.md) for detailed s
 
 ### Azure AI Agent Integration
 
-```python
-# Example integration with Azure AI Agent
-import requests
-
-def query_rag_service(question: str, max_results: int = 5):
-    """Query the RAG service from Azure AI Agent"""
-    response = requests.post(
-        "http://bitnet-rag:8000/query",
-        json={"question": question, "max_results": max_results}
-    )
-    return response.json()
-
-# In your Azure AI Agent
-rag_context = query_rag_service("What is graph database?")
-agent_response = azure_openai_client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {"role": "system", "content": f"Context: {rag_context['answer']}"},
-        {"role": "user", "content": user_question}
-    ]
-)
-```
+See [Azure AI Integration Guide](docs/AZURE_CLOUD_ARCHITECTURE.md) for Python integration examples
 
 ---
 
@@ -330,12 +309,8 @@ agent_response = azure_openai_client.chat.completions.create(
 - **Savings**: 85-90%
 
 ### Benchmark Results
-```
-Query Processing: 20-50ms
-Document Retrieval: 10-30ms  
-BitNet Generation: 2000-5000ms
-Total Pipeline: 2050-5080ms
-```
+
+Query: 20-50ms | Retrieval: 10-30ms | Generation: 2-5s | Total: 2-6s
 
 ---
 
