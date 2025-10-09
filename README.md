@@ -24,12 +24,9 @@
 
 ## 📋 Overview
 
-This project provides a complete production-ready RAG (Retrieval-Augmented Generation) system combining:
+A production-ready hybrid RAG system that combines Neo4j's graph database with intelligent retrieval and generation capabilities. The system works both locally for development and testing, and in Azure for enterprise production deployments. Built for flexibility, it delivers 417x faster vector search while maintaining complete data sovereignty and optional cloud scalability.
 
-- **Neo4j**: High-performance graph database for knowledge storage and vector search
-- **BitNet.cpp**: Microsoft's 1.58-bit quantized LLM for efficient inference
-- **Azure Agent Framework**: Enterprise-grade conversational AI orchestration
-- **Zero External Dependencies**: 100% local operation with optional Azure integration
+**Core components**: Neo4j (high-performance graph database), RAG Service (intelligent retrieval), BitNet.cpp (efficient 1.58-bit LLM for local use), and Azure AI Foundry integration (managed AI agents for production).
 
 ### Architecture
 
@@ -249,13 +246,11 @@ See [API Documentation](neo4j-rag-demo/README.md) and [CLAUDE.md](CLAUDE.md) for
 
 ## 🔧 Configuration
 
-### Environment Variables
+Flexible configuration through environment variables for Neo4j connection, embedding models, and BitNet optimization settings. Docker Compose profiles enable different deployment modes: basic system for development, monitoring profile with Grafana/Prometheus for performance analysis, and testing profile for load testing. All settings are documented with sensible defaults that work out of the box.
 
-`NEO4J_URI`, `NEO4J_PASSWORD`, `EMBEDDING_MODEL`, `BITNET_MODE` - See [Configuration Guide](CLAUDE.md#configuration)
+**Environment**: `NEO4J_URI`, `NEO4J_PASSWORD`, `EMBEDDING_MODEL`, `BITNET_MODE` | **Guide**: [Configuration](CLAUDE.md#configuration)
 
-### Docker Profiles
-
-Basic: `docker-compose up -d` | With monitoring: `--profile monitoring` | With testing: `--profile testing`
+**Docker Profiles**: Basic: `docker-compose up -d` | Monitoring: `--profile monitoring` | Testing: `--profile testing`
 
 ---
 
@@ -293,30 +288,21 @@ See [Azure AI Integration Guide](docs/AZURE_CLOUD_ARCHITECTURE.md) for Python in
 
 ## 📊 Performance Benchmarks
 
-### Memory Usage
-- **Traditional RAG**: 8-16GB RAM
-- **BitNet RAG**: 1.5GB RAM
-- **Improvement**: 87% reduction
+Significant improvements across memory usage, response times, and costs through intelligent optimization and quantization. BitNet's 1.58-bit quantization reduces memory by 87% while maintaining answer quality, enabling deployment on consumer hardware. Vector search optimizations achieve 417x speed improvements over baseline implementations through connection pooling, intelligent caching, and parallel processing.
 
-### Response Times
-- **Vector Search**: <50ms (local embeddings)
-- **BitNet Inference**: 2-5 seconds
-- **Total Response**: 2-6 seconds
+**Memory**: Traditional 8-16GB → BitNet 1.5GB (87% reduction)
 
-### Cost Comparison
-- **Traditional**: $100+/month (APIs + hosting)
-- **BitNet RAG**: $15-30/month (hosting only)
-- **Savings**: 85-90%
+**Speed**: Vector search 46s → 110ms (417x faster), Total response 5-10s → 2-6s (sub-second with cache)
 
-### Benchmark Results
-
-Query: 20-50ms | Retrieval: 10-30ms | Generation: 2-5s | Total: 2-6s
+**Cost**: Traditional $100+/month → BitNet $15-30/month (85-90% savings), Azure deployment ~$326/month
 
 ---
 
 ## 📚 Documentation
 
-> **Complete documentation index**: [docs/README.md](docs/README.md)
+Comprehensive documentation covering everything from quick start guides to detailed Azure deployment procedures. Organized into getting started guides, deployment and operations manuals, technical architecture documentation, and testing procedures. Each guide is self-contained with clear examples and troubleshooting sections.
+
+**Complete index**: [docs/README.md](docs/README.md)
 
 ### 🚀 Getting Started
 | Document | Description |
@@ -391,11 +377,7 @@ Well-organized project structure with core RAG implementation in `neo4j-rag-demo
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+Contributions welcome through pull requests following the standard GitHub workflow. Fork the repository, create a feature branch, make changes with tests, and submit a PR for review. See [CLAUDE.md](CLAUDE.md) for development guidelines, project structure, and coding standards to ensure consistency across the codebase.
 
 ---
 
