@@ -171,20 +171,9 @@ graph TB
 
 ### Option 1: Ultra-Efficient Setup (Recommended)
 
-```bash
-# Clone the repository
-git clone https://github.com/ma3u/neo4j-agentframework.git
-cd neo4j-agentframework
-
-# Start the optimized system (Neo4j + RAG + BitNet + Streamlit UI)
-docker-compose -f scripts/docker-compose.optimized.yml up -d
-
-# Wait for services to be ready (takes 2-3 minutes)
-./neo4j-rag-demo/scripts/wait-for-services.sh
-
-# Access Streamlit Chat UI
-open http://localhost:8501
-```
+1. Clone: `git clone https://github.com/ma3u/neo4j-agentframework.git`
+2. Start: `docker-compose -f scripts/docker-compose.optimized.yml up -d`
+3. Open: [http://localhost:8501](http://localhost:8501)
 
 **What's Included:**
 - 🗄️ Neo4j Database (ports 7474, 7687)
@@ -248,41 +237,9 @@ Neo4J Browser with sample data loaded (Cypher queries)
 
 ### API Endpoints
 
-#### Core Operations
-```bash
-# Query the RAG system
-POST /query
-{
-  "question": "Your question here",
-  "max_results": 5
-}
+**Core Operations**: `POST /query`, `POST /add-documents`, `GET /health`, `GET /stats`
 
-# Add documents
-POST /add-documents
-{
-  "documents": [
-    {
-      "id": "doc1",
-      "content": "Document content...",
-      "metadata": {"source": "manual"}
-    }
-  ]
-}
-
-# Get system health and performance
-GET /health
-GET /stats
-GET /model-info
-```
-
-#### Azure AI Integration
-```bash
-# Integration guide
-GET /azure-ai-agent-integration
-
-# Performance comparison
-GET /model-comparison
-```
+**Documentation**: See [http://localhost:8000/docs](http://localhost:8000/docs) for interactive API documentation
 
 ### Python Usage
 
