@@ -100,7 +100,9 @@ graph TB
     style RAGAPI fill:#ffe1cc
 ```
 
-#### Azure Cloud Architecture (Enterprise Deployment)
+### Azure Cloud Architecture (Enterprise Deployment)
+
+Enterprise production deployment leverages Azure Container Apps to host Neo4j database and RAG service as auto-scaling containers, eliminating infrastructure management overhead. Azure AI Foundry provides conversational AI agents as a managed SaaS service using GPT-4o-mini, removing the need to deploy or manage BitNet or Streamlit in the cloud. This hybrid approach delivers enterprise features (managed identity, auto-scaling, monitoring) while keeping monthly costs around $326 by deploying only the essential knowledge base layer.
 
 ```mermaid
 graph TB
