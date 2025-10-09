@@ -1,0 +1,54 @@
+# Exclude Git repository data
+.git
+.gitignore
+.gitattributes
+
+# Exclude source files (not needed at runtime)
+*.cpp
+*.h
+*.c
+*.cc
+*.hpp
+
+# Exclude build artifacts
+*.o
+*.a
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Exclude documentation
+*.md
+docs/
+README*
+LICENSE
+CHANGELOG
+
+# Exclude Python source (keep only compiled)
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Exclude tests
+tests/
+test_*
+*_test.py
+
+# Exclude development files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Exclude CI/CD
+.github/
+.gitlab-ci.yml
+
+# Keep only runtime essentials:
+# - Compiled binaries (build/bin/)
+# - Shared libraries (*.so)
+# - Model files (*.gguf)
+# - Server scripts (server.py)
