@@ -243,22 +243,7 @@ Neo4J Browser with sample data loaded (Cypher queries)
 
 ### Python Usage
 
-```python
-from src.neo4j_rag import Neo4jRAG, RAGQueryEngine
-
-# Initialize
-rag = Neo4jRAG()
-engine = RAGQueryEngine(rag)
-
-# Query
-result = engine.query("What is Neo4j?", max_results=3)
-print(f"Answer: {result['answer']}")
-print(f"Sources: {result['sources']}")
-
-# Get statistics
-stats = rag.get_stats()
-print(f"Documents: {stats['documents']}, Chunks: {stats['chunks']}")
-```
+See [API Documentation](neo4j-rag-demo/README.md) and [CLAUDE.md](CLAUDE.md) for Python code examples
 
 ---
 
@@ -266,43 +251,11 @@ print(f"Documents: {stats['documents']}, Chunks: {stats['chunks']}")
 
 ### Environment Variables
 
-```bash
-# Neo4j Connection
-NEO4J_URI=bolt://neo4j-rag:7687
-NEO4J_USER=neo4j
-NEO4J_PASSWORD=password
+`NEO4J_URI`, `NEO4J_PASSWORD`, `EMBEDDING_MODEL`, `BITNET_MODE` - See [Configuration Guide](CLAUDE.md#configuration)
 
-# Embeddings (Local - Zero Cost)
-EMBEDDING_MODEL=all-MiniLM-L6-v2  # SentenceTransformers (384-dim, free)
-EMBEDDING_CACHE_SIZE=20000
-# Alternative: text-embedding-3-small (Azure OpenAI, 1536-dim, paid)
-# See docs/EMBEDDINGS.md for comparison
+### Docker Profiles
 
-# Native BitNet.cpp (87% Memory Reduction)
-BITNET_MODE=native_cpp_optimized
-BITNET_MODEL_PATH=/app/bitnet/BitNet/models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf
-BITNET_BINARY_PATH=/app/bitnet/BitNet/build/bin/llama-cli
-
-# Performance Optimization
-TORCH_THREADS=2
-OMP_NUM_THREADS=2
-PERFORMANCE_PROFILING=enabled
-```
-
-**Embedding Options**: See [docs/EMBEDDINGS.md](docs/EMBEDDINGS.md) for detailed comparison
-
-### Docker Compose Profiles
-
-```bash
-# Basic system
-docker-compose -f scripts/docker-compose.optimized.yml up -d
-
-# With monitoring
-docker-compose -f scripts/docker-compose.optimized.yml --profile monitoring up -d
-
-# With load testing
-docker-compose -f scripts/docker-compose.optimized.yml --profile testing up -d
-```
+Basic: `docker-compose up -d` | With monitoring: `--profile monitoring` | With testing: `--profile testing`
 
 ---
 
@@ -310,23 +263,11 @@ docker-compose -f scripts/docker-compose.optimized.yml --profile testing up -d
 
 ### Quick Azure Deployment
 
-```bash
-# Deploy to Azure Container Apps
-./scripts/azure-deploy-complete.sh
-
-# Or use the guided setup
-cd neo4j-rag-demo
-./azure_deploy/deploy.sh
-```
+Run `./scripts/azure-deploy-enterprise.sh` to deploy Neo4j + RAG Container Apps
 
 ### Configure Azure AI Assistant
 
-**After deployment, configure your Azure AI Assistant to use Neo4j RAG:**
-
-```bash
-# Configure Assistant with Neo4j RAG tools
-python scripts/configure-azure-assistant.py
-```
+After deployment, configure your AI Assistant: `python scripts/configure-azure-assistant.py`
 
 **What it configures:**
 - ✅ Adds 4 custom tools (search, add document, stats, health)
