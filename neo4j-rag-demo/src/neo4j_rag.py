@@ -1,6 +1,8 @@
 """
 Optimized Neo4j RAG (Retrieval-Augmented Generation) Implementation
 Addresses performance bottlenecks identified in the original implementation
+
+Updated to support secure Neo4j Aura credentials via Azure Key Vault
 """
 
 import os
@@ -17,6 +19,14 @@ import threading
 import warnings
 import re
 
+# Import Azure Key Vault configuration (optional)
+try:
+    from .azure_keyvault_config import AuraConfig
+    AURA_CONFIG_AVAILABLE = True
+except ImportError:
+    AURA_CONFIG_AVAILABLE = False
+    logging.debug("AuraConfig not available - using direct credentials")
+
 # Suppress Neo4j notifications
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 logging.getLogger('neo4j').setLevel(logging.ERROR)
@@ -32,21 +42,50 @@ logger = logging.getLogger(__name__)
 class Neo4jRAG:
     """
     Optimized Neo4j-based RAG system with performance improvements
+    
+    Supports both local development and Azure cloud deployment:
+    - Local: Uses direct URI/username/password
+    - Cloud: Uses Azure Key Vault with Managed Identity
     """
 
-    def __init__(self, uri: str = "bolt://localhost:7687",
-                 username: str = "neo4j",
-                 password: str = "password",
-                 max_pool_size: int = 10):
+    def __init__(self, uri: str = None,
+                 username: str = None,
+                 password: str = None,
+                 max_pool_size: int = 10,
+                 use_azure_keyvault: bool = None):
         """
         Initialize optimized Neo4j RAG system
 
         Args:
-            uri: Neo4j connection URI
-            username: Neo4j username
-            password: Neo4j password
+            uri: Neo4j connection URI (optional if using Azure Key Vault)
+            username: Neo4j username (optional if using Azure Key Vault)
+            password: Neo4j password (optional if using Azure Key Vault)
             max_pool_size: Maximum connection pool size
+            use_azure_keyvault: Force use of Azure Key Vault (auto-detected if None)
         """
+        # Auto-detect Azure Key Vault usage
+        if use_azure_keyvault is None:
+            use_azure_keyvault = (
+                AURA_CONFIG_AVAILABLE and 
+                os.getenv("AZURE_KEY_VAULT_NAME") is not None
+            )
+        
+        # Get credentials from Azure Key Vault or use provided values
+        if use_azure_keyvault and AURA_CONFIG_AVAILABLE:
+            logger.info("🔐 Using Azure Key Vault for credentials")
+            aura_config = AuraConfig()
+            creds = aura_config.get_credentials_dict()
+            uri = uri or creds['uri']
+            username = username or creds['username']
+            password = password or creds['password']
+            logger.info(f"✅ Connected to: {uri}")
+        else:
+            # Fallback to environment variables or defaults
+            uri = uri or os.getenv("NEO4J_URI", "bolt://localhost:7687")
+            username = username or os.getenv("NEO4J_USERNAME", "neo4j")
+            password = password or os.getenv("NEO4J_PASSWORD", "password")
+            logger.info(f"📝 Using direct credentials for: {uri}")
+        
         # Use connection pooling for better performance
         self.driver = GraphDatabase.driver(
             uri, 
