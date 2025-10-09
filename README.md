@@ -153,6 +153,8 @@ graph TB
 
 ### Key Benefits
 
+Comparing our solution against traditional RAG implementations shows significant advantages in cost, performance, and flexibility. Using Neo4j instead of specialized vector databases provides both vector search and graph capabilities in one system. Local embeddings and BitNet quantization eliminate expensive API calls while delivering comparable quality. The hybrid deployment model provides sovereignty for development and scalability for production.
+
 | Component | Traditional | Our Solution | Improvement |
 |-----------|-------------|--------------|-------------|
 | **Vector DB** | Pinecone/Weaviate | Neo4j | faster retrieval |
@@ -173,6 +175,8 @@ graph TB
 - x86_64 or ARM64 architecture
 
 ### Option 1: Ultra-Efficient Setup (Recommended)
+
+The Docker Compose configuration automatically sets up all four services (Neo4j, RAG, BitNet, Streamlit) with optimized memory settings, connection pooling, and intelligent caching. Everything runs locally on your machine with no external API calls or dependencies. Simply start the containers and access the Streamlit UI to begin chatting with your knowledge base immediately.
 
 1. Clone: `git clone https://github.com/ma3u/neo4j-agentframework.git`
 2. Start: `docker-compose -f scripts/docker-compose.optimized.yml up -d`
@@ -227,6 +231,8 @@ curl http://localhost:8000/stats
 
 ### Web Interfaces
 
+After starting the services, multiple web interfaces become available for different purposes: Streamlit for end-user chat interactions, RAG API for programmatic access, Neo4j Browser for database inspection and Cypher queries, and Grafana for performance monitoring. Each interface serves a specific role in development, testing, and operation of the knowledge base system.
+
 - **🧠 Streamlit Chat UI**: http://localhost:8501 (Interactive chat with RAG) **[NEW!]**
 - **RAG API**: http://localhost:8000
 - **API Documentation**: http://localhost:8000/docs
@@ -264,9 +270,13 @@ Flexible configuration through environment variables for Neo4j connection, embed
 
 ### Quick Azure Deployment
 
+The automated deployment script creates all necessary Azure resources including Container Apps for Neo4j and RAG, Key Vault for secrets, Application Insights for monitoring, and configures networking between components. The entire process takes about 30 minutes and sets up a production-ready environment with auto-scaling and managed identity authentication.
+
 Run `./scripts/azure-deploy-enterprise.sh` to deploy Neo4j + RAG Container Apps
 
 ### Configure Azure AI Assistant
+
+After deploying the knowledge base, integrate it with your Azure AI Foundry agent by running the configuration script. This adds custom tools for searching the knowledge base, uploading documents, and retrieving statistics. Your AI agent can then leverage the 417x performance improvements for instant, grounded responses.
 
 After deployment, configure your AI Assistant: `python scripts/configure-azure-assistant.py`
 
@@ -311,6 +321,9 @@ Comprehensive documentation covering everything from quick start guides to detai
 **Complete index**: [docs/README.md](docs/README.md)
 
 ### 🚀 Getting Started
+
+Essential guides to get you up and running quickly, from complete developer journey to specific testing procedures. Each guide is self-contained with prerequisites, step-by-step instructions, and troubleshooting sections. Start with the Quick Start Guide for the fastest path to a working system.
+
 | Document | Description |
 |----------|-------------|
 | [**Quick Start Guide**](docs/README-QUICKSTART.md) | Complete developer journey (local → Azure) |
@@ -320,6 +333,9 @@ Comprehensive documentation covering everything from quick start guides to detai
 | [**User Guide**](docs/USER_GUIDE.md) | End-user documentation |
 
 ### ☁️ Deployment & Operations
+
+Detailed guides for deploying to Azure Container Apps with comprehensive coverage of architecture decisions, security configuration, and operational procedures. Includes both automated deployment scripts and manual step-by-step instructions. Each guide explains cost considerations, scaling strategies, and monitoring setup for production environments.
+
 | Document | Description |
 |----------|-------------|
 | [**Azure Deployment Guide**](docs/AZURE_DEPLOYMENT_GUIDE.md) | Detailed Azure deployment steps |
@@ -328,6 +344,9 @@ Comprehensive documentation covering everything from quick start guides to detai
 | [**BitNet Deployment**](docs/BITNET_DEPLOYMENT_GUIDE.md) | BitNet-specific deployment |
 
 ### 🏗️ Technical Documentation
+
+Deep technical documentation covering system architecture, performance optimization strategies, and component integration details. Includes 17 Mermaid diagrams visualizing system flows, embedding model comparisons, and the complete BitNet build journey with lessons learned. Essential reading for understanding implementation decisions and optimization techniques.
+
 | Document | Description |
 |----------|-------------|
 | [**System Architecture**](docs/ARCHITECTURE.md) | Complete architecture with 17 Mermaid diagrams |
