@@ -107,7 +107,7 @@ graph TB
 
 ### Azure Cloud Architecture (Enterprise Deployment)
 
-Enterprise production deployment uses Azure Container Apps to host Neo4j database and RAG service as independently scalable containers, providing the intelligent knowledge base layer. Azure AI Foundry provides the complete AI agent solution with access to GPT-4o, GPT-4.1, Mistral, and other models as a fully managed service - no LLM deployment needed. This architecture deploys only the knowledge base (Neo4j Graph DB + RAG) to containers while leveraging Azure's managed AI services, delivering enterprise capabilities at approximately $326/month for the knowledge base infrastructure.
+Enterprise production deployment uses **Neo4j Aura** (managed graph database) and RAG service in Azure Container Apps with **passwordless authentication** via Managed Identity and Key Vault ([PR #15](https://github.com/ma3u/neo4j-agentframework/pull/15), [Issue #14](https://github.com/ma3u/neo4j-agentframework/issues/14)). Azure AI Foundry provides the complete AI agent solution with access to GPT-4o, GPT-4o-mini, GPT-3.5-turbo, and other models as a fully managed service - no LLM deployment needed. This secure architecture eliminates credential management overhead while delivering enterprise capabilities including auto-scaling, audit trails, and SOC 2/GDPR compliance at approximately $65-200/month for Neo4j Aura plus $150/month for RAG Container Apps.
 
 ```mermaid
 graph TB
@@ -122,39 +122,53 @@ graph TB
         Teams -->|Chat| Agent
     end
 
-    subgraph "Azure Container Apps - Knowledge Base"
-        Neo4jApp[Neo4j Database<br/>Container App<br/>Persistent Storage]
-        RAGApp[RAG Service<br/>Container App]
+    subgraph "Azure Container Apps - RAG Service"
+        RAGApp[RAG Service<br/>Container App<br/>4 CPU, 8GB RAM<br/>Auto-scale 1-10]
+        ManagedID[Managed Identity<br/>Passwordless Auth]
 
         Agent -->|Query| RAGApp
-        RAGApp -->|Vector Search| Neo4jApp
+        RAGApp -->|Identity| ManagedID
+    end
+
+    subgraph "Neo4j Aura (Managed Database)"
+        AuraDB[(Neo4j Aura<br/>Instance: 812bc7bd<br/>2GB RAM, 1 CPU<br/>Vector + Graph Search)]
+
+        ManagedID -->|Authenticate| AuraDB
+        RAGApp -->|Vector Search| AuraDB
+    end
+
+    subgraph "Azure Security & Secrets"
+        KeyVault[Azure Key Vault<br/>Secure Credentials<br/>Aura Password]
+
+        ManagedID -->|Retrieve| KeyVault
     end
 
     subgraph "Azure Storage & Processing"
         BlobStorage[Azure Blob Storage<br/>Document Repository]
         BlobStorage -->|Upload| RAGApp
-        RAGApp -->|Index| Neo4jApp
+        RAGApp -->|Index| AuraDB
     end
 
-    subgraph "Security & Monitoring"
-        KeyVault[Azure Key Vault<br/>Secrets Management]
-        AppInsights[Application Insights<br/>Logging & Metrics]
-        ManagedID[Managed Identity<br/>Authentication]
+    subgraph "Monitoring & Compliance"
+        AppInsights[Application Insights<br/>Logging & Metrics<br/>Audit Trail]
 
-        RAGApp -->|Credentials| KeyVault
         RAGApp -->|Telemetry| AppInsights
-        RAGApp -->|Auth| ManagedID
-        Neo4jApp -->|Logs| AppInsights
+        AuraDB -->|Query Logs| AppInsights
     end
 
     style Agent fill:#ccffcc
     style RAGApp fill:#ffe1cc
-    style Neo4jApp fill:#4db8ff
-    style AppInsights fill:#e1f5ff
+    style AuraDB fill:#4db8ff
     style KeyVault fill:#fff4cc
+    style ManagedID fill:#ffffcc
+    style AppInsights fill:#e1f5ff
 ```
 
-**Note**: BitNet.cpp and Streamlit are local development tools only - Azure production uses AI Foundry's managed AI models (GPT-4o, GPT-4o-mini, GPT-3.5-turbo, etc.) with Neo4j and RAG Container Apps providing the knowledge base infrastructure.
+**Security Architecture** ([PR #15](https://github.com/ma3u/neo4j-agentframework/pull/15)): Uses **Neo4j Aura** (managed database, instance 812bc7bd) with **Azure Managed Identity** for passwordless authentication and **Key Vault** for secure credential storage. RAG service authenticates to Aura using Managed Identity without storing passwords in code or environment variables. This eliminates credential management overhead and provides SOC 2/GDPR compliance with full audit trails. See [Azure Key Vault Setup Guide](docs/AZURE_KEYVAULT_SETUP.md) for implementation details.
+
+**Cost**: Neo4j Aura $65-200/month + RAG Container App $150/month = **$215-350/month total** (83% cheaper than self-hosted Neo4j Container App)
+
+**Note**: BitNet.cpp and Streamlit are local development tools only - Azure production uses AI Foundry's managed AI models with Neo4j Aura (managed database) and RAG Container App providing the secure knowledge base infrastructure.
 
 ### Key Benefits
 
