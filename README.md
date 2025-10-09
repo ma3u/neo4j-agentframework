@@ -102,56 +102,54 @@ graph TB
 
 ### Azure Cloud Architecture (Enterprise Deployment)
 
-Enterprise production deployment leverages Azure Container Apps to host Neo4j database and RAG service as auto-scaling containers, eliminating infrastructure management overhead. Azure AI Foundry provides conversational AI agents as a managed SaaS service using GPT-4o-mini, removing the need to deploy or manage BitNet or Streamlit in the cloud. This hybrid approach delivers enterprise features (managed identity, auto-scaling, monitoring) while keeping monthly costs around $326 by deploying only the essential knowledge base layer.
+Enterprise production deployment uses Azure Container Apps to host both Neo4j database and RAG service as independently scalable containers, providing the intelligent knowledge base layer. Azure AI Foundry delivers conversational AI as a fully managed SaaS service with GPT-4o-mini agents, eliminating the need to deploy BitNet or Streamlit to the cloud. This clean separation keeps the knowledge base (Neo4j + RAG) in your control while leveraging Microsoft's managed AI infrastructure, resulting in enterprise-grade capabilities at approximately $326/month.
 
 ```mermaid
 graph TB
     subgraph "User Access"
         Users[👥 Users]
-        Teams[Microsoft Teams]
-        Users -->|Access| Teams
+        Teams[Microsoft Teams<br/>Web/Mobile]
+        Users -->|Interact| Teams
     end
 
-    subgraph "Azure AI Foundry"
-        Agent[Azure AI Agent<br/>GPT-4o-mini]
+    subgraph "Azure AI Foundry (SaaS)"
+        Agent[AI Agent Service<br/>GPT-4o-mini<br/>Managed Service]
         Teams -->|Chat| Agent
     end
 
-    subgraph "Azure Container Apps"
-        RAGAPI[RAG Service<br/>Auto-scaling 0-10]
-        BitNetContainer[BitNet.cpp<br/>Container Instance]
-        Agent -->|Query| RAGAPI
-        RAGAPI -->|Inference| BitNetContainer
+    subgraph "Azure Container Apps - Knowledge Base"
+        Neo4jApp[Neo4j Database<br/>Container App<br/>2 CPU, 8GB RAM<br/>Persistent Storage]
+        RAGApp[RAG Service<br/>Container App<br/>4 CPU, 8GB RAM<br/>Auto-scale 1-10]
+
+        Agent -->|Query| RAGApp
+        RAGApp -->|Vector Search| Neo4jApp
     end
 
-    subgraph "Azure Database"
-        CosmosNeo4j[(Azure Cosmos DB<br/>Neo4j API)]
-        RAGAPI -->|Vector Search| CosmosNeo4j
+    subgraph "Azure Storage & Processing"
+        BlobStorage[Azure Blob Storage<br/>Document Repository]
+        BlobStorage -->|Upload| RAGApp
+        RAGApp -->|Index| Neo4jApp
     end
 
-    subgraph "Document Processing"
-        Storage[Azure Blob Storage]
-        DocIntel[Document Intelligence]
-        Storage -->|Process| DocIntel
-        DocIntel -->|Extract| CosmosNeo4j
-    end
+    subgraph "Security & Monitoring"
+        KeyVault[Azure Key Vault<br/>Secrets Management]
+        AppInsights[Application Insights<br/>Logging & Metrics]
+        ManagedID[Managed Identity<br/>Authentication]
 
-    subgraph "Monitoring & Security"
-        AppInsights[Application Insights]
-        KeyVault[Key Vault]
-        ManagedID[Managed Identity]
-
-        RAGAPI -->|Logs| AppInsights
-        RAGAPI -->|Secrets| KeyVault
-        RAGAPI -->|Auth| ManagedID
+        RAGApp -->|Credentials| KeyVault
+        RAGApp -->|Telemetry| AppInsights
+        RAGApp -->|Auth| ManagedID
+        Neo4jApp -->|Logs| AppInsights
     end
 
     style Agent fill:#ccffcc
-    style RAGAPI fill:#ffe1cc
-    style BitNetContainer fill:#ffcccc
-    style CosmosNeo4j fill:#4db8ff
+    style RAGApp fill:#ffe1cc
+    style Neo4jApp fill:#4db8ff
     style AppInsights fill:#e1f5ff
+    style KeyVault fill:#fff4cc
 ```
+
+**Note**: BitNet and Streamlit are local development tools only - production uses Azure AI Foundry's managed AI agents with GPT-4o-mini, while Neo4j and RAG Container Apps provide the knowledge base infrastructure.
 
 ### Key Benefits
 
