@@ -1,547 +1,215 @@
 # System Architecture
 
-**Complete technical architecture for Neo4j RAG + BitNet + Azure Agent Framework**
+## 🔗 Quick Navigation
+- [← Back to Main README](../README.md) | [Deployment](DEPLOYMENT.md) | [API Reference](API-REFERENCE.md)
 
----
+High-level design of the Neo4j Hybrid RAG System.
 
-## 📐 High-Level Architecture
+## 🏗️ Overview
 
-```mermaid
-graph TB
-    subgraph "Document Processing Layer"
-        PDF[PDF Documents]
-        Docling[Docling Loader<br/>Advanced PDF Processing]
-        Parser[Document Parser<br/>Tables, Images, Structure]
-        Chunker[Text Chunker<br/>300 chars, 50 overlap]
+The system combines three core components to provide intelligent document search and generation:
 
-        PDF -->|Upload| Docling
-        Docling -->|Extract| Parser
-        Parser -->|Split| Chunker
-        Chunker -->|Chunks| Store
-    end
+1. **Neo4j Database** - Stores documents with vector embeddings and relationships  
+2. **RAG Service** - Handles retrieval and orchestration
+3. **LLM Engine** - Generates responses (local BitNet or Azure OpenAI)
 
-    subgraph "Storage Layer"
-        Store[Document Store]
-        Neo4j[(Neo4j Graph DB<br/>5.11+)]
-        DocNode[Document Nodes]
-        ChunkNode[Chunk Nodes]
-
-        Store -->|Create| DocNode
-        DocNode -->|HAS_CHUNK| ChunkNode
-        Neo4j -.->|Contains| DocNode
-        Neo4j -.->|Contains| ChunkNode
-    end
-
-    subgraph "Indexing Layer"
-        Embedder[SentenceTransformer<br/>all-MiniLM-L6-v2]
-        VectorIdx[Vector Index<br/>384-dimensional]
-        FullTextIdx[Full-Text Index<br/>Keyword Search]
-
-        ChunkNode -->|Embed| Embedder
-        Embedder -->|384-dim vector| VectorIdx
-        ChunkNode -->|Index Text| FullTextIdx
-    end
-
-    subgraph "Query Processing Layer"
-        UserQuery[User Query]
-        QueryEmbed[Query Embedding]
-        VectorSearch[Vector Search<br/>Cosine Similarity]
-        KeywordSearch[Keyword Search<br/>Full-Text]
-        HybridSearch[Hybrid Search<br/>Alpha = 0.5]
-        Cache[Query Cache<br/>FIFO 100 entries]
-
-        UserQuery -->|Check| Cache
-        Cache -->|Miss| QueryEmbed
-        QueryEmbed -->|Search| VectorSearch
-        QueryEmbed -->|Search| KeywordSearch
-        VectorSearch -->|Results| HybridSearch
-        KeywordSearch -->|Results| HybridSearch
-        Cache -->|Hit| Context
-    end
-
-    subgraph "Retrieval Layer"
-        VectorIdx -.->|Top-K| VectorSearch
-        FullTextIdx -.->|Match| KeywordSearch
-        HybridSearch -->|Rerank| Context[Retrieved Context<br/>Top-K Chunks]
-    end
-
-    subgraph "LLM Inference Layer"
-        Context -->|Augment| BitNet
-        BitNet[BitNet.cpp<br/>1.58-bit Quantized]
-        LlamaEngine[llama-cli Binary<br/>ARM TL1 Kernels]
-        Model[GGUF Model<br/>1.11GB]
-
-        BitNet -->|Invoke| LlamaEngine
-        LlamaEngine -.->|Load| Model
-        LlamaEngine -->|Generate| Answer[Generated Answer<br/>2-5s inference]
-    end
-
-    subgraph "MCP Integration Layer (Optional)"
-        MCPServer[MCP Server<br/>Model Context Protocol]
-        MCPTools[MCP Tools<br/>━━━━━━━━━━━━━━<br/>Cypher Query<br/>Graph Memory<br/>RAG Operations<br/>Aura Management]
-
-        MCPServer -->|Expose| MCPTools
-        MCPTools -->|Access| Context
-        MCPTools -->|Access| Neo4j
-    end
-
-    subgraph "Azure Agent Layer (Optional)"
-        Answer -->|Optional| AgentFramework
-        AgentFramework[Azure AI Agent<br/>Microsoft Agent Framework]
-        AzureAI[Azure AI Foundry<br/>GPT-4o-mini]
-        ManagedIdentity[Managed Identity<br/>Authentication]
-
-        AgentFramework -->|Authenticate| ManagedIdentity
-        ManagedIdentity -->|Access| AzureAI
-        AzureAI -->|Enhanced Response| FinalResponse[Final Response]
-    end
-
-    UserQuery -.->|MCP Protocol| MCPServer
-    UserQuery -.->|Direct| AgentFramework
-    HybridSearch -->|Stats| Cache
-
-    style Docling fill:#e1f5ff,stroke:#0066cc,stroke-width:2px
-    style Neo4j fill:#4db8ff,stroke:#0066cc,stroke-width:2px
-    style BitNet fill:#ffcccc,stroke:#cc0000,stroke-width:2px
-    style AgentFramework fill:#ccffcc,stroke:#00cc00,stroke-width:2px
-    style MCPServer fill:#fff0f5,stroke:#9c27b0,stroke-width:2px
-    style Cache fill:#ffffcc,stroke:#cccc00,stroke-width:2px
-```
-
----
-
-## 🔧 Component Architecture
-
-### 1. Document Processing Pipeline
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant API as FastAPI Server
-    participant Docling as Docling Loader
-    participant Parser as Document Parser
-    participant RAG as Neo4j RAG
-    participant Neo4j as Neo4j Database
-
-    User->>API: Upload PDF
-    API->>Docling: Process Document
-    Docling->>Parser: Extract Content
-    Parser->>Parser: Parse Tables & Images
-    Parser->>Parser: Extract Structure
-    Parser->>RAG: Send Chunks
-    RAG->>RAG: Generate Embeddings
-    RAG->>Neo4j: Store Document & Chunks
-    Neo4j->>Neo4j: Create Indexes
-    Neo4j-->>API: Success
-    API-->>User: Upload Complete
-```
-
-**Components:**
-- **Docling Loader**: Advanced PDF processing with table/image extraction
-- **Document Parser**: Extracts structure, metadata, and content
-- **Text Chunker**: RecursiveCharacterTextSplitter (300 chars, 50 overlap)
-- **Embedding Generator**: SentenceTransformer (all-MiniLM-L6-v2)
-
-### 2. Query Processing Pipeline
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant API as FastAPI Server
-    participant Cache as Query Cache
-    participant RAG as RAG Engine
-    participant Neo4j as Neo4j Database
-    participant BitNet as BitNet.cpp
-    participant Agent as Azure Agent (Optional)
-
-    User->>API: Query Request
-    API->>Cache: Check Cache
-    alt Cache Hit
-        Cache-->>API: Cached Result
-    else Cache Miss
-        API->>RAG: Process Query
-        RAG->>RAG: Generate Query Embedding
-        RAG->>Neo4j: Vector Search
-        RAG->>Neo4j: Keyword Search
-        Neo4j-->>RAG: Search Results
-        RAG->>RAG: Hybrid Ranking
-        RAG->>Cache: Store Result
-        RAG-->>API: Retrieved Context
-
-        alt Use LLM
-            API->>BitNet: Generate with Context
-            BitNet-->>API: Generated Answer
-        end
-
-        alt Azure Integration
-            API->>Agent: Enhance with GPT-4o
-            Agent-->>API: Final Response
-        end
-    end
-    API-->>User: Response
-```
-
-**Components:**
-- **Query Cache**: FIFO cache with 100 entries (thread-safe)
-- **Vector Search**: Cosine similarity on 384-dim embeddings
-- **Keyword Search**: Full-text index matching
-- **Hybrid Search**: Weighted combination (alpha=0.5)
-- **Connection Pool**: 10 max connections to Neo4j
-
-### 3. BitNet Inference Architecture
-
-```mermaid
-graph LR
-    subgraph "BitNet Container"
-        Server[FastAPI Server<br/>Port 8001]
-        Wrapper[Python Wrapper]
-        Binary[llama-cli Binary]
-        Kernels[ARM TL1 Kernels<br/>Optimized Lookup Tables]
-        Model[GGUF Model<br/>1.11GB i2_s quantized]
-    end
-
-    Input[Context + Prompt] -->|HTTP POST| Server
-    Server -->|Invoke| Wrapper
-    Wrapper -->|Execute| Binary
-    Binary -.->|Load| Model
-    Binary -.->|Use| Kernels
-    Binary -->|Generate| Output[Text Generation]
-    Output -->|HTTP Response| Result[Generated Answer]
-
-    style Binary fill:#ffcccc
-    style Model fill:#ffe6e6
-    style Kernels fill:#fff0f0
-```
-
-**Components:**
-- **FastAPI Server**: REST API for LLM inference
-- **llama-cli Binary**: Compiled with clang-18, ARM optimizations
-- **TL1 Kernels**: Generated by `codegen_tl1.py`
-- **GGUF Model**: 1.58-bit ternary quantization (-1, 0, +1)
-
----
-
-## 🏗️ Deployment Architecture
-
-### Local Deployment
+## 📐 Architecture Diagram
 
 ```mermaid
 graph TB
-    subgraph "Docker Desktop"
-        subgraph "Neo4j Container"
-            Neo4jDB[Neo4j Database<br/>Port 7474, 7687]
-        end
-
-        subgraph "RAG Service Container"
-            RAGApp[FastAPI App<br/>Port 8000]
-            SentTrans[SentenceTransformer]
-            RAGEngine[RAG Engine]
-        end
-
-        subgraph "BitNet Container"
-            BitNetApp[FastAPI App<br/>Port 8001]
-            LlamaCLI[llama-cli]
-            BitNetModel[GGUF Model 1.11GB]
-        end
-
-        Network[Docker Network<br/>rag-network]
+    subgraph "User Interface"
+        API[RAG API<br/>FastAPI]
+        DOC[Document Upload]
+        QUERY[Query Interface]
     end
-
-    Client[Browser/API Client] -->|HTTP| RAGApp
-    RAGApp <-->|Bolt| Neo4jDB
-    RAGApp -->|HTTP| BitNetApp
-
-    Neo4jDB -.->|Network| Network
-    RAGApp -.->|Network| Network
-    BitNetApp -.->|Network| Network
-
-    style Neo4jDB fill:#4db8ff
-    style RAGApp fill:#e1f5ff
-    style BitNetApp fill:#ffcccc
+    
+    subgraph "Neo4j Database"
+        NEO[(Neo4j Graph DB)]
+        VEC[Vector Index<br/>384-dim]
+        FULL[Full-Text Index]
+    end
+    
+    subgraph "RAG Pipeline"
+        EMBED[SentenceTransformer<br/>Embeddings]
+        SEARCH[Hybrid Search<br/>Vector + Keyword]
+        CONTEXT[Context Builder]
+    end
+    
+    subgraph "LLM Options"
+        BITNET[BitNet.cpp<br/>1.58-bit Local]
+        AZURE[Azure OpenAI<br/>Cloud API]
+    end
+    
+    DOC --> EMBED
+    EMBED --> NEO
+    NEO --> VEC
+    NEO --> FULL
+    
+    QUERY --> SEARCH
+    SEARCH --> VEC
+    SEARCH --> FULL
+    SEARCH --> CONTEXT
+    
+    CONTEXT --> BITNET
+    CONTEXT --> AZURE
+    
+    BITNET --> API
+    AZURE --> API
 ```
 
-**Resources:**
-- **Neo4j**: 4GB heap, 2GB pagecache
-- **RAG Service**: 2GB RAM, 1 CPU
-- **BitNet**: 2GB RAM, 1 CPU
-- **Total**: ~6GB RAM, 3 CPUs
+## 🔄 Data Flow
 
-### Azure Production Deployment
+### Document Ingestion
+1. **Upload** → Document received via API
+2. **Chunk** → Split into manageable pieces  
+3. **Embed** → Generate vector embeddings (SentenceTransformer)
+4. **Store** → Save in Neo4j with vector and full-text indexes
 
-```mermaid
-graph TB
-    subgraph "Azure Container Apps Environment"
-        subgraph "Container Registry"
-            ACR[Azure Container Registry<br/>crneo4jrag*.azurecr.io]
-            Neo4jImg[neo4j:5.11]
-            RAGImg[neo4j-rag:v1.0]
-            BitNetImg[bitnet-llm:v1.0]
-            AgentImg[neo4j-agent:v1.0]
-        end
+### Query Processing
+1. **Query** → User question received
+2. **Embed** → Convert question to vector
+3. **Search** → Hybrid search (vector + keyword + graph)
+4. **Retrieve** → Get top-k relevant chunks
+5. **Generate** → LLM creates answer using context
+6. **Return** → Structured response with sources
 
-        subgraph "Container Apps"
-            Neo4jApp[Neo4j Database<br/>Internal Only<br/>4 CPU, 8GB]
-            RAGApp[RAG Service<br/>External HTTPS<br/>2 CPU, 4GB<br/>0-10 replicas]
-            BitNetApp[BitNet LLM<br/>Internal Only<br/>2 CPU, 4GB<br/>1-3 replicas]
-            AgentApp[Agent Framework<br/>External HTTPS<br/>2 CPU, 4GB<br/>0-10 replicas]
-        end
+## 🏠 Local Architecture
 
-        subgraph "Azure AI Services"
-            AzureAI[Azure AI Foundry<br/>GPT-4o-mini]
-            ManagedID[Managed Identity]
-        end
+**Components**:
+- Neo4j Community (graph database)
+- SentenceTransformer all-MiniLM-L6-v2 (embeddings)  
+- BitNet.cpp with 1.58-bit quantization (LLM)
+- FastAPI service (orchestration)
 
-        LB[Azure Load Balancer]
-        LogAnalytics[Log Analytics Workspace]
-    end
+**Benefits**:
+- 100% data sovereignty
+- No API costs
+- Fast local inference
+- Works offline
 
-    Internet[Internet] -->|HTTPS| LB
-    LB -->|Route| RAGApp
-    LB -->|Route| AgentApp
+**Trade-offs**:
+- Requires local compute resources (~4GB RAM)
+- Model quality limited by BitNet capabilities
+- Manual updates and maintenance
 
-    RAGApp <-->|Bolt| Neo4jApp
-    RAGApp -->|HTTP| BitNetApp
-    AgentApp -->|HTTP| RAGApp
-    AgentApp -->|Authenticate| ManagedID
-    ManagedID -->|Access| AzureAI
+## ☁️ Azure Architecture  
 
-    ACR -.->|Pull| Neo4jApp
-    ACR -.->|Pull| RAGApp
-    ACR -.->|Pull| BitNetApp
-    ACR -.->|Pull| AgentApp
+**Components**:
+- Neo4j Aura (managed graph database)
+- Azure Container Apps (RAG service)
+- Azure OpenAI (LLM generation)
+- Azure AI Foundry (agent orchestration)
 
-    Neo4jApp -->|Logs| LogAnalytics
-    RAGApp -->|Logs| LogAnalytics
-    BitNetApp -->|Logs| LogAnalytics
-    AgentApp -->|Logs| LogAnalytics
+**Benefits**:
+- Auto-scaling and high availability
+- Enterprise security and compliance
+- Latest OpenAI models
+- Managed maintenance
 
-    style AzureAI fill:#ccffcc
-    style ACR fill:#e6e6ff
-    style LB fill:#ffe6cc
+**Trade-offs**:  
+- Monthly costs (~$200-350)
+- Data leaves your environment
+- Internet dependency
+- Vendor lock-in risks
+
+## 🔍 Search Strategy
+
+The system uses a **hybrid search approach** combining:
+
+### Vector Search
+- **Purpose**: Semantic similarity matching
+- **Technology**: Neo4j vector index (COSINE similarity)
+- **Dimensions**: 384 (SentenceTransformer all-MiniLM-L6-v2)
+- **Performance**: Sub-100ms for most queries
+
+### Keyword Search  
+- **Purpose**: Exact term matching
+- **Technology**: Neo4j full-text index (Lucene)
+- **Features**: Fuzzy matching, stemming, scoring
+- **Use case**: Technical terms, proper nouns
+
+### Graph Relationships
+- **Purpose**: Context expansion via relationships
+- **Technology**: Neo4j Cypher queries
+- **Benefits**: Follow document relationships, hierarchies
+- **Use case**: Multi-document reasoning
+
+## 🧠 LLM Integration
+
+### Local BitNet.cpp
+```
+BitNet Binary → Model Loading → Inference → Response
+     ↑              ↑             ↑          ↓
+334MB container  1.1GB model   ~2s gen    JSON API
 ```
 
-**Azure Resources:**
-- **Resource Group**: rg-neo4j-rag-bitnet
-- **Container Registry**: Basic SKU
-- **Container Apps Environment**: With Log Analytics
-- **Managed Identity**: For secure authentication
-- **Auto-scaling**: HTTP-based scaling (0-10 instances)
+**Characteristics**:
+- 1.58-bit quantization (vs 16-bit traditional)
+- 87% memory reduction 
+- ARM-optimized kernels
+- External model storage
 
----
-
-## 📊 Data Flow Architecture
-
-### End-to-End Data Flow
-
-```mermaid
-flowchart LR
-    subgraph Input
-        PDF[PDF Document<br/>50 pages]
-    end
-
-    subgraph Processing
-        Docling[Docling<br/>Extract 150 chunks]
-        Embed[Embed<br/>150 × 384-dim vectors]
-    end
-
-    subgraph Storage
-        Neo4j[Neo4j<br/>1 Doc + 150 Chunks<br/>+ Indexes]
-    end
-
-    subgraph Query
-        Q[User Query<br/>"What is Neo4j?"]
-        QEmbed[Query Vector<br/>384-dim]
-        Search[Search<br/>Top-5 results]
-    end
-
-    subgraph Generation
-        Context[5 chunks context<br/>~1500 chars]
-        BitNet[BitNet Generate<br/>2-5s inference]
-        Answer[Answer<br/>200 tokens]
-    end
-
-    PDF -->|50 pages| Docling
-    Docling -->|150 chunks| Embed
-    Embed -->|Store| Neo4j
-    Q -->|Encode| QEmbed
-    QEmbed -->|Search| Neo4j
-    Neo4j -->|Retrieve| Search
-    Search -->|Top-5| Context
-    Context -->|Augment| BitNet
-    BitNet -->|Generate| Answer
-
-    style Docling fill:#e1f5ff
-    style Neo4j fill:#4db8ff
-    style BitNet fill:#ffcccc
+### Azure OpenAI
+```
+RAG Context → Azure API → Model Inference → Structured Response
+     ↑           ↑            ↑               ↓
+Local prep   Managed     GPT-4o-mini      Enhanced JSON
 ```
 
-**Performance Metrics:**
-- **Upload**: 50-page PDF → 2-3s per page → 100-150s total
-- **Storage**: 150 chunks × 384-dim → ~230KB embeddings
-- **Query**: Encoding 10ms + Search 20ms + Rerank 10ms = 40ms
-- **Generation**: Context 1500 chars → BitNet 2-5s → 200 tokens
-- **Total**: ~3-6s end-to-end (query + generation)
+**Characteristics**:
+- Latest model versions
+- Higher quality responses  
+- Auto-scaling infrastructure
+- Pay-per-token pricing
 
----
+## 📊 Performance Characteristics
 
-## 🔒 Security Architecture
+### Latency Breakdown
+| Component | Local | Azure |
+|-----------|-------|-------|
+| **Vector Search** | ~50ms | ~100ms |
+| **Context Building** | ~20ms | ~30ms |
+| **LLM Generation** | ~2000ms | ~500ms |
+| **Total Response** | ~2100ms | ~650ms |
 
-```mermaid
-graph TB
-    subgraph "Security Layers"
-        subgraph "Network Security"
-            HTTPS[HTTPS/TLS<br/>Encrypted Transport]
-            Internal[Internal Network<br/>Container Isolation]
-            Firewall[Azure Firewall<br/>IP Restrictions]
-        end
+### Throughput
+| Metric | Local | Azure |
+|--------|-------|-------|
+| **Concurrent Users** | 1-5 | 10-100+ |
+| **Queries/minute** | 20-30 | 100-1000+ |
+| **Document Ingestion** | 100/min | 1000+/min |
 
-        subgraph "Authentication & Authorization"
-            ManagedID[Managed Identity<br/>No Credentials]
-            RBAC[Azure RBAC<br/>Role-Based Access]
-            Neo4jAuth[Neo4j Auth<br/>Username/Password]
-        end
-
-        subgraph "Data Security"
-            Encryption[Data Encryption<br/>At Rest & In Transit]
-            Secrets[Azure Key Vault<br/>Secret Management]
-            Backup[Automated Backups<br/>Point-in-Time Recovery]
-        end
-
-        subgraph "Application Security"
-            InputVal[Input Validation<br/>FastAPI Pydantic]
-            RateLimit[Rate Limiting<br/>DDoS Protection]
-            Logging[Audit Logging<br/>Log Analytics]
-        end
-    end
-
-    Internet[External Traffic] -->|443| HTTPS
-    HTTPS -->|Validate| InputVal
-    InputVal -->|Check| RateLimit
-    RateLimit -->|Route| Internal
-    Internal -->|Authenticate| ManagedID
-    ManagedID -->|Authorize| RBAC
-    RBAC -->|Access| Secrets
-    Secrets -.->|Provide| Neo4jAuth
-    Internal -->|Log| Logging
-
-    style HTTPS fill:#ccffcc
-    style ManagedID fill:#e6e6ff
-    style Encryption fill:#ffe6cc
-```
-
----
-
-## 📈 Scaling Architecture
+## 🔧 Scalability Design
 
 ### Horizontal Scaling
+- **Neo4j**: Cluster mode for read replicas
+- **RAG Service**: Multiple container instances  
+- **BitNet**: Model sharing via volume mounts
 
-```mermaid
-graph TB
-    subgraph "Auto-Scaling Configuration"
-        LB[Azure Load Balancer]
+### Vertical Scaling
+- **Memory**: More RAM improves model performance
+- **CPU**: Faster inference with more cores
+- **Storage**: SSD improves Neo4j performance
 
-        subgraph "RAG Instances"
-            RAG1[RAG Service #1]
-            RAG2[RAG Service #2]
-            RAGn[RAG Service #N<br/>Max 10]
-        end
+### Caching Strategy
+- **Query Cache**: Recent query results (10-minute TTL)
+- **Embedding Cache**: Reuse embeddings for identical text
+- **Model Cache**: Keep models loaded in memory
 
-        subgraph "BitNet Instances"
-            BitNet1[BitNet #1]
-            BitNet2[BitNet #2]
-            BitNet3[BitNet #3<br/>Max 3]
-        end
+## 🛡️ Security Considerations
 
-        ConnectionPool[Neo4j Connection Pool<br/>10 max connections]
-        Neo4jDB[(Neo4j Database<br/>Single Instance)]
-    end
+### Local Deployment
+- All data remains on-premises
+- Standard Docker container security
+- Neo4j authentication required
+- No external API keys needed
 
-    LB -->|Round Robin| RAG1
-    LB -->|Round Robin| RAG2
-    LB -->|Round Robin| RAGn
-
-    RAG1 -->|Pool| ConnectionPool
-    RAG2 -->|Pool| ConnectionPool
-    RAGn -->|Pool| ConnectionPool
-
-    ConnectionPool <-->|Bolt| Neo4jDB
-
-    RAG1 -->|HTTP| BitNet1
-    RAG2 -->|HTTP| BitNet2
-    RAGn -->|HTTP| BitNet3
-
-    style LB fill:#ffe6cc
-    style Neo4jDB fill:#4db8ff
-    style ConnectionPool fill:#ffffcc
-```
-
-**Scaling Triggers:**
-- **RAG Service**: HTTP concurrency > 10 requests
-- **BitNet Service**: CPU > 70% or Memory > 80%
-- **Scale-down**: After 5 minutes of low traffic
-- **Cool-down**: 3 minutes between scale events
+### Azure Deployment  
+- Azure Managed Identity for authentication
+- Key Vault for secrets management
+- Network security groups for isolation
+- Audit logging via Application Insights
 
 ---
 
-## 🔗 Integration Patterns
-
-### API Integration
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant RAG as RAG Service
-    participant Neo4j
-    participant BitNet
-    participant Agent as Azure Agent (Optional)
-
-    Client->>RAG: POST /query
-    activate RAG
-
-    RAG->>RAG: Validate Request
-    RAG->>RAG: Check Cache
-
-    alt Cache Miss
-        RAG->>Neo4j: Vector + Keyword Search
-        activate Neo4j
-        Neo4j-->>RAG: Top-K Results
-        deactivate Neo4j
-
-        RAG->>RAG: Hybrid Ranking
-
-        alt Use BitNet
-            RAG->>BitNet: Generate with Context
-            activate BitNet
-            BitNet-->>RAG: Generated Answer
-            deactivate BitNet
-        end
-
-        alt Azure Enhancement
-            RAG->>Agent: Enhance Response
-            activate Agent
-            Agent-->>RAG: Final Answer
-            deactivate Agent
-        end
-
-        RAG->>RAG: Cache Result
-    end
-
-    RAG-->>Client: JSON Response
-    deactivate RAG
-```
-
----
-
-## 📚 Related Documentation
-
-- [**📖 Documentation Index**](README.md) - Complete documentation map
-- [**🏗️ Azure Architecture**](AZURE_ARCHITECTURE.md) - Azure-specific architecture
-- [**📊 Performance Analysis**](performance_analysis.md) - Performance benchmarks
-- [**🚀 Quick Start Guide**](README-QUICKSTART.md) - Getting started
-- [**📖 Main README**](../README.md) - Project overview
-
----
-
-**Last Updated**: 2025-10-05
-**Version**: 1.0
-**Status**: Production Ready
+**Implementation Details**: See [DEPLOYMENT.md](DEPLOYMENT.md) for setup instructions and [docs/API-REFERENCE.md](docs/API-REFERENCE.md) for usage examples.
