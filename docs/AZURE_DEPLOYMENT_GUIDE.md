@@ -1,6 +1,9 @@
-# Azure Deployment Guide: Neo4j RAG + Microsoft Agent Framework
+# Azure Deployment Guide
 
-This guide provides step-by-step instructions for deploying your optimized Neo4j RAG system to Azure using Microsoft Agent Framework.
+## 🔗 Quick Navigation
+- [← Back to Main README](../README.md) | [Architecture](AZURE_ARCHITECTURE.md) | [Local Deployment](DEPLOYMENT.md)
+
+Complete step-by-step guide for deploying the Neo4j Hybrid RAG System to Azure production.
 
 ---
 

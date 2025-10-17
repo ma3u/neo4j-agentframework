@@ -1,195 +1,122 @@
-# 🚀 Intelligent Knowledge Base: Neo4j + RAG + AI Agents
+# Neo4j Hybrid RAG System
 
-**Build production-ready AI that actually remembers and learns - 417x faster vector search with hybrid local/cloud deployment**
+**Intelligent document search and generation with Neo4j graph database + local/cloud LLM options**
 
-Transform your documents into an intelligent knowledge base that combines Neo4j's graph database power with retrieval-augmented generation. Deploy locally for complete control and zero costs, or scale to Azure with enterprise-grade AI agents. Get started in 5 minutes with our Streamlit chat interface and experience AI that truly understands your data.
-
----
-
-## 📑 Table of Contents
-
-- [Overview](#-overview)
-- [Architecture](#architecture)
-- [Key Benefits](#key-benefits)
-- [Quick Start](#-quick-start)
-- [Usage](#-usage)
-- [Configuration](#-configuration)
-- [Azure Deployment](#-azure-deployment)
-- [Performance Benchmarks](#-performance-benchmarks)
-- [Documentation](#-documentation)
-- [Development](#-development)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Support](#-support)
+Transform your documents into an intelligent knowledge base that combines Neo4j's graph database power with retrieval-augmented generation. Deploy 100% locally for complete control, or scale to Azure for enterprise production.
 
 ---
 
-## 📋 Overview
+## 🎯 What It Does
 
-A production-ready hybrid RAG system that combines Neo4j's graph database with intelligent retrieval and generation capabilities. The system works both locally for development and testing (with optional BitNet.cpp LLM), and in Azure for enterprise production deployments (using AI Foundry's managed models). Built for flexibility, it delivers fast vector search while maintaining complete data sovereignty locally and enterprise scalability in the cloud.
+- **Stores documents** in Neo4j with vector embeddings and graph relationships
+- **Searches intelligently** using hybrid vector + keyword + graph search  
+- **Generates answers** using local BitNet LLM (1.58-bit quantized) or Azure OpenAI
+- **Scales flexibly** from local development to enterprise cloud deployment
 
-**Core components**: 
-- Neo4j (graph database + vector search)
+## 🏗️ Architecture Options
+
+This project demonstrates production-ready hybrid RAG system that combines Neo4j's graph database with intelligent retrieval and generation capabilities. The system works both locally for development and testing (with optional BitNet.cpp LLM), and in Azure for enterprise production deployments (using AI Foundry's managed models). Built for flexibility, it delivers fast vector search while maintaining complete data sovereignty locally and enterprise scalability in the cloud.
+
+**Core components:**
+
+- Graph database + vector search)
 - RAG Service (intelligent retrieval + generation)
-- BitNet.cpp (optional local high-efficiency LLM inference)
+- High-efficiency LLM model 
 - Streamlit Chat UI (interactive interface for local testing)
-- Azure AI Foundry (AI Agent + managed AI models for production)
+- Azure AI Foundry (Assistent + managed AI models for production)
 
-## Architecture
-
-Two deployment options for maximum flexibility: run everything locally for development with zero external dependencies, or deploy the knowledge base to Azure Container Apps while Azure AI Foundry handles conversational AI as a managed service. Both architectures use the same codebase, enabling seamless transition from development to production.
-
-### On-prem /  Development (100% Sovereign)
+### Local Development (100% Sovereign)
 
 Run the complete stack on your laptop with full data control and zero recurring costs, including BitNet.cpp for local LLM inference (optional). All components containerized with Docker for easy setup and teardown. Perfect for development, testing, demos, and organizations requiring complete data sovereignty without external API dependencies.
 
-```mermaid
-graph TB
-    subgraph "User Interface"
-        StreamlitUI[🧠 Streamlit Chat UI]
-        WebUI[Web Browser]
-        WebUI -->|Interact| StreamlitUI
-    end
+**100% sovereign deployment for complete data control and privacy.** Ideal for organizations with strict data residency requirements, development teams wanting full control over their infrastructure, or anyone seeking to avoid cloud costs and API dependencies. Run the entire AI-powered knowledge base on your laptop, development server, or private cloud infrastructure with zero external API calls. Perfect for offline environments, sensitive data processing, regulatory compliance scenarios, or simply learning and experimenting without cloud commitments.
 
-    subgraph "Document Processing"
-        Upload[📤 Document Upload<br/>PDF, TXT, MD, DOCX]
-        Docling[Docling Loader<br/>Advanced PDF Processing]
-        Upload -->|Files| Docling
-        Docling -->|Tables, Images, Structure| Chunks[Document Chunks]
-    end
-
-    subgraph "Neo4j Database"
-        Neo4j[(Neo4j Graph DB)]
-        Chunks -->|Store| Neo4j
-        Neo4j -->|Vector Search| VectorIdx[Vector Index<br/>384-dim embeddings]
-        Neo4j -->|Keyword Search| FullText[Full-Text Index]
-    end
-
-    subgraph "RAG Pipeline"
-        RAGAPI[RAG Service]
-        Embed[SentenceTransformer<br/>Local Embeddings]
-        Search[Hybrid Search<br/>Vector + Keyword]
-
-        StreamlitUI -->|Query| RAGAPI
-        StreamlitUI -->|Upload| Upload
-        RAGAPI -->|Encode| Embed
-        Embed -->|Similarity| VectorIdx
-        Search -->|Retrieve| Context[Retrieved Context]
-        VectorIdx -->|Top-K| Search
-        FullText -->|Keywords| Search
-    end
-
-    subgraph "LLM Inference"
-        BitNet[BitNet.cpp<br/>1.58-bit Quantized]
-        Context -->|Augment| BitNet
-        BitNet -->|Generate| Answer[Generated Answer]
-        Answer -->|Return| StreamlitUI
-    end
-
-    subgraph "Monitoring"
-        Health[🏥 Health Checks]
-        Stats[📊 System Stats]
-        StreamlitUI -->|Monitor| Health
-        StreamlitUI -->|Metrics| Stats
-        Health -->|Check| Neo4j
-        Health -->|Check| RAGAPI
-        Health -->|Check| BitNet
-        Stats -->|Query| RAGAPI
-    end
-
-    style StreamlitUI fill:#ff4b4b
-    style Docling fill:#e1f5ff
-    style Neo4j fill:#4db8ff
-    style BitNet fill:#ffcccc
-    style Health fill:#ccffcc
-    style RAGAPI fill:#ffe1cc
-```
-
-### Azure Cloud Architecture (Enterprise Deployment)
-
-Enterprise production deployment uses **Neo4j Aura** (managed graph database) and RAG service in Azure Container Apps with **passwordless authentication** via Managed Identity and Key Vault ([PR #15](https://github.com/ma3u/neo4j-agentframework/pull/15), [Issue #14](https://github.com/ma3u/neo4j-agentframework/issues/14)). Azure AI Foundry provides the complete AI agent solution with access to GPT-4o, GPT-4o-mini, GPT-3.5-turbo, and other models as a fully managed service - no LLM deployment needed. This secure architecture eliminates credential management overhead while delivering enterprise capabilities including auto-scaling, audit trails, and SOC 2/GDPR compliance at approximately $65-200/month for Neo4j Aura plus $150/month for RAG Container Apps.
+**Use Cases**: Development environments, sensitive data processing, regulatory compliance, offline operations, learning & experimentation
+**Benefits**: Zero cloud costs, complete data sovereignty, no external dependencies, full infrastructure control
+**Performance**: fast search, 87% memory reduction
 
 ```mermaid
-graph TB
-    subgraph "User Access"
-        Users[👥 Users]
-        Teams[Microsoft Teams<br/>Web/Mobile]
-        Users -->|Interact| Teams
+graph LR
+    USER[👤 User<br/>Web Browser]
+
+    subgraph Docker["🐳 Docker Containers"]
+        UI[🧠 Streamlit UI<br/>Document Upload<br/>Q&A Interface]
+        RAG[⚡ RAG Service<br/>FastAPI + Docling<br/>SentenceTransformers]
+        DB[(🗄️ Neo4j Database<br/>Vector + Keyword Search<br/>417x Faster)]
+        BitNet[🤖 BitNet.cpp<br/>1.58-bit LLM<br/>87% Memory Reduction]
     end
 
-    subgraph "Azure AI Foundry (SaaS)"
-        Agent[AI Agent Service<br/>GPT-4o-mini]
-        Teams -->|Chat| Agent
-    end
+    USER -->|Interact| UI
+    UI -->|Query| RAG
+    RAG -->|Search| DB
+    DB -->|Context| RAG
+    RAG -->|Generate| BitNet
+    BitNet -->|Answer| UI
+    UI -->|Display| USER
 
-    subgraph "Azure Container Apps - RAG Service"
-        RAGApp[RAG Service<br/>Container App<br/>4 CPU, 8GB RAM<br/>Auto-scale 1-10]
-        ManagedID[Managed Identity<br/>Passwordless Auth]
+    classDef userClass fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef containerClass fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
 
-        Agent -->|Query| RAGApp
-        RAGApp -->|Identity| ManagedID
-    end
-
-    subgraph "Neo4j Aura (Managed Database)"
-        AuraDB[(Neo4j Aura<br/>Instance: 812bc7bd<br/>2GB RAM, 1 CPU<br/>Vector + Graph Search)]
-
-        ManagedID -->|Authenticate| AuraDB
-        RAGApp -->|Vector Search| AuraDB
-    end
-
-    subgraph "Azure Security & Secrets"
-        KeyVault[Azure Key Vault<br/>Secure Credentials<br/>Aura Password]
-
-        ManagedID -->|Retrieve| KeyVault
-    end
-
-    subgraph "Azure Storage & Processing"
-        BlobStorage[Azure Blob Storage<br/>Document Repository]
-        BlobStorage -->|Upload| RAGApp
-        RAGApp -->|Index| AuraDB
-    end
-
-    subgraph "Monitoring & Compliance"
-        AppInsights[Application Insights<br/>Logging & Metrics<br/>Audit Trail]
-
-        RAGApp -->|Telemetry| AppInsights
-        AuraDB -->|Query Logs| AppInsights
-    end
-
-    style Agent fill:#ccffcc
-    style RAGApp fill:#ffe1cc
-    style AuraDB fill:#4db8ff
-    style KeyVault fill:#fff4cc
-    style ManagedID fill:#ffffcc
-    style AppInsights fill:#e1f5ff
+    class USER userClass
+    class UI,RAG,DB,BitNet containerClass
 ```
 
-**Security Architecture** ([PR #15](https://github.com/ma3u/neo4j-agentframework/pull/15)): Uses **Neo4j Aura** (managed database, instance 812bc7bd) with **Azure Managed Identity** for passwordless authentication and **Key Vault** for secure credential storage. RAG service authenticates to Aura using Managed Identity without storing passwords in code or environment variables. This eliminates credential management overhead and provides SOC 2/GDPR compliance with full audit trails. See [Azure Key Vault Setup Guide](docs/AZURE_KEYVAULT_SETUP.md) for implementation details.
-
-**Cost**: Neo4j Aura $65-200/month + RAG Container App $150/month = **$215-350/month total** (83% cheaper than self-hosted Neo4j Container App)
-
-**Note**: BitNet.cpp and Streamlit are local development tools only - Azure production uses AI Foundry's managed AI models with Neo4j Aura (managed database) and RAG Container App providing the secure knowledge base infrastructure.
-
-### Key Benefits
-
-Comparing our solution against traditional RAG implementations shows significant advantages in cost, performance, and flexibility. Using Neo4j instead of specialized vector databases provides both vector search and graph capabilities in one system. Local embeddings and BitNet quantization eliminate expensive API calls while delivering comparable quality. The hybrid deployment model provides sovereignty for development and scalability for production.
-
-| Component | Traditional | Our Solution | Improvement |
-|-----------|-------------|--------------|-------------|
-| **Vector DB** | Pinecone/Weaviate | Neo4j | faster retrieval |
-| **Embeddings** | OpenAI API ($50/mo) | SentenceTransformers | $50/month savings |
-| **LLM** | GPT-3.5 (8GB RAM) | BitNet (1.5GB RAM) | 87% memory reduction |
-| **Deployment** | Cloud APIs only | Local + Azure | Full sovereignity and flexibility |
 
 
----
+### Azure Production (Enterprise Scale)
+
+**Production-ready enterprise deployment with automatic scaling and managed services.** Ideal for organizations needing high availability, automatic scaling based on demand, and enterprise-grade AI capabilities through Azure AI Foundry. Scales from zero to ten replicas automatically based on traffic, eliminating infrastructure management overhead while maintaining exceptional performance. Perfect for production applications, customer-facing services, multi-user environments, and integrations with Microsoft 365, Teams, or custom enterprise applications requiring intelligent document search.
+
+Enterprise production deployments uses Neo4j Aura (managed graph database) and RAG service in Azure Container Apps with passwordless authentication via Managed Identity and Key Vault. Azure AI Foundry provides the complete AI agent solution with access to GPT-4o, GPT-5o-mini, and other models as a fully managed service - no LLM deployment needed. This secure architecture eliminates credential management overhead while delivering enterprise capabilities including auto-scaling, audit trails, and SOC 2/GDPR compliance at approximately $65-200/month for Neo4j Aura plus $150/month for RAG Container Apps.
+
+**Use Cases**: Production applications, customer-facing services, multi-user environments, Microsoft 365/Teams integration, enterprise knowledge bases
+**Benefits**: Automatic scaling, zero infrastructure management, enterprise-grade AI (gpt-5o-mini), high availability, global reach
+**Scalability**: 0-10 replicas auto-scaling, 100+ concurrent users, serverless architecture
+
+```mermaid
+graph LR
+    subgraph Internet["🌐 Internet"]
+        USER[👤 End Users<br/>API Clients]
+    end
+
+    subgraph Azure["☁️ Azure Cloud"]
+        subgraph AIFoundry["🤖 Azure AI Foundry"]
+            ASSISTANT["Azure AI Assistant<br/>━━━━━━━━━━━━━━<br/>ID: asst_LHQBX...<br/>Model: gpt-4o-mini<br/>Deployment: 2025-08-07<br/>━━━━━━━━━━━━━━<br/>Functions:<br/>• search_knowledge_base<br/>• add_document<br/>• get_statistics"]
+        end
+
+        subgraph CAE["Container Apps"]
+            RAG["⚡ RAG Service<br/>CPU: 2, RAM: 4GB<br/>Replicas: 0-10<br/>━━━━━━━━━━━━━━<br/>FastAPI + Docling<br/>SentenceTransformers<br/>Connection Pool<br/>Query Cache"]
+        end
+
+        subgraph Data["🗄️ Data Layer"]
+            AURA[(Neo4j Aura<br/>Managed Database<br/>━━━━━━━━━━━━━━<br/>Vector Index 384-dim<br/>Full-text Index<br/>Graph Relationships)]
+        end
+    end
+
+    %% Left to Right Flow
+    USER -->|HTTPS API| ASSISTANT
+    ASSISTANT -->|Function Calls| RAG
+    RAG <-->|Bolt 7687| AURA
+
+    classDef userClass fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef assistantClass fill:#ffcccc,stroke:#cc0000,stroke-width:2px
+    classDef containerClass fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef dbClass fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+
+    class USER userClass
+    class ASSISTANT assistantClass
+    class RAG containerClass
+    class AURA dbClass
+```
+
+
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Docker Desktop installed and running
-- Python 3.11+ 
+- Python 3.11+
 - 4GB+ RAM available
 - x86_64 or ARM64 architecture
 
@@ -216,6 +143,8 @@ The Docker Compose configuration automatically sets up all four services (Neo4j,
 *Neo4j Database + RAG Service + BitNet LLM running in Docker Desktop*
 
 ### Option 2: Development Setup
+
+For developers who want to modify the RAG service code or debug with breakpoints. Runs Neo4j in Docker but the Python RAG service locally, enabling faster iteration cycles, easier debugging, and direct code editing without rebuilding containers.
 
 ```bash
 # Start Neo4j only
@@ -249,8 +178,6 @@ curl -X POST "http://localhost:8000/query" \
 curl http://localhost:8000/stats
 ```
 
----
-
 ## 🎯 Usage
 
 ### Web Interfaces
@@ -273,11 +200,25 @@ After starting the services, multiple web interfaces become available for differ
 
 **Documentation**: See [http://localhost:8000/docs](http://localhost:8000/docs) for interactive API documentation
 
-### Python Usage
 
-See [API Documentation](neo4j-rag-demo/README.md) and [CLAUDE.md](CLAUDE.md) for Python code examples
 
----
+## 📊 Performance Benefits
+
+| Component | Traditional | This System | Improvement |
+|-----------|-------------|-------------|-------------|
+| **Vector Search** | Pinecone/Weaviate | Neo4j | 417x faster retrieval |
+| **Embeddings** | OpenAI API ($50/mo) | SentenceTransformers | $50/month savings |
+| **LLM Memory** | 8-16GB RAM | BitNet 1.5GB | 87% memory reduction |
+| **Deployment** | Cloud-only | Local + Cloud | Complete flexibility |
+
+## 🐳 Available Container Images
+
+| Image | Size | Description | Registry |
+|-------|------|-------------|----------|
+| **bitnet-minimal** | 334MB | Ultra-efficient, external model | `ghcr.io/ma3u/ms-agentf-neo4j/bitnet-minimal` |
+| **bitnet-optimized** | 2.5GB | Balanced, embedded model | `ghcr.io/ma3u/ms-agentf-neo4j/bitnet-optimized` |
+| **bitnet-final** | 3.2GB | Complete, all features | `ghcr.io/ma3u/ms-agentf-neo4j/bitnet-final` |
+| **rag-service** | 2.76GB | High-performance RAG pipeline | `ghcr.io/ma3u/ms-agentf-neo4j/rag-service` |
 
 ## 🔧 Configuration
 
@@ -309,11 +250,13 @@ After deployment, configure your AI Assistant: `python scripts/configure-azure-a
 - ✅ Sets optimal parameters for knowledge base queries
 - ✅ Enables 417x performance for your Assistant
 
-**Your Assistant**:
+**Your Assistant:**
 - **ID**: `asst_LHQBXYvRhnbFo7KQ7IRbVXRR`
 - **Name**: Neo4j RAG Assistant (updated from Assistant347)
 - **Model**: gpt-4o-mini
 - **Tools**: 4 Neo4j RAG functions
+
+![alt text](image.png)
 
 **Test in playground**: Ask "What is Neo4j?" and verify it searches the knowledge base.
 
@@ -323,25 +266,7 @@ See [ASSISTANT_CONFIGURATION.md](docs/ASSISTANT_CONFIGURATION.md) for detailed s
 
 See [Azure AI Integration Guide](docs/AZURE_CLOUD_ARCHITECTURE.md) for Python integration examples
 
----
 
-## 📊 Performance Benchmarks
-
-Significant improvements across memory usage, response times, and costs through intelligent optimization and quantization. BitNet's 1.58-bit quantization reduces memory by 87% while maintaining answer quality, enabling deployment on consumer hardware. Vector search optimizations achieve 417x speed improvements over baseline implementations through connection pooling, intelligent caching, and parallel processing.
-
-**Memory**: Traditional 8-16GB → BitNet 1.5GB (87% reduction)
-
-**Speed**: Vector search 46s → 110ms (417x faster), Total response 5-10s → 2-6s (sub-second with cache)
-
-**Cost**: Traditional $100+/month → BitNet $15-30/month (85-90% savings), Azure deployment ~$326/month
-
----
-
-## 📚 Documentation
-
-Comprehensive documentation covering everything from quick start guides to detailed Azure deployment procedures. Organized into getting started guides, deployment and operations manuals, technical architecture documentation, and testing procedures. Each guide is self-contained with clear examples and troubleshooting sections.
-
-**Complete index**: [docs/README.md](docs/README.md)
 
 ### 🚀 Getting Started
 
@@ -349,11 +274,11 @@ Essential guides to get you up and running quickly, from complete developer jour
 
 | Document | Description |
 |----------|-------------|
-| [**Quick Start Guide**](docs/README-QUICKSTART.md) | Complete developer journey (local → Azure) |
-| [**Streamlit Chat UI**](neo4j-rag-demo/streamlit_app/README.md) | Interactive chat interface documentation **[NEW!]** |
-| [**Local Testing Guide**](docs/LOCAL-TESTING-GUIDE.md) | Comprehensive testing procedures |
-| [**RAG Testing Guide**](docs/RAG-TESTING-GUIDE.md) | RAG-specific testing procedures |
-| [**User Guide**](docs/USER_GUIDE.md) | End-user documentation |
+| [Quick Start Guide](docs/README-QUICKSTART.md) | Complete developer journey (local → Azure) |
+| [Streamlit Chat UI](neo4j-rag-demo/streamlit_app/README.md) | Interactive chat interface documentation **[under development]** |
+| [Local Testing Guide](docs/LOCAL-TESTING-GUIDE.md) | Comprehensive testing procedures |
+| [AG Testing Guide](docs/RAG-TESTING-GUIDE.md) | RAG-specific testing procedures |
+| [User Guide](docs]/USER_GUIDE.md) | End-user documentation |
 
 ### ☁️ Deployment & Operations
 
@@ -361,10 +286,10 @@ Detailed guides for deploying to Azure Container Apps with comprehensive coverag
 
 | Document | Description |
 |----------|-------------|
-| [**Azure Deployment Guide**](docs/AZURE_DEPLOYMENT_GUIDE.md) | Detailed Azure deployment steps |
-| [**Azure Architecture**](docs/AZURE_ARCHITECTURE.md) | Azure architecture documentation |
-| [**Basic Deployment**](docs/DEPLOYMENT.md) | Quick deployment reference |
-| [**BitNet Deployment**](docs/BITNET_DEPLOYMENT_GUIDE.md) | BitNet-specific deployment |
+| [Azure Deployment Guide](docs/AZURE_DEPLOYMENT_GUIDE.md) | Detailed Azure deployment steps |
+| [Azure Architecture](docs/AZURE_ARCHITECTURE.md) | Azure architecture documentation |
+| [Basic Deployment](docs/DEPLOYMENT.md) | Quick deployment reference |
+| [BitNet Deployment](docs/BITNET_DEPLOYMENT_GUIDE.md) | BitNet-specific deployment |
 
 ### 🏗️ Technical Documentation
 
@@ -372,46 +297,51 @@ Deep technical documentation covering system architecture, performance optimizat
 
 | Document | Description |
 |----------|-------------|
-| [**System Architecture**](docs/ARCHITECTURE.md) | Complete architecture with 17 Mermaid diagrams |
-| [**Embeddings Guide**](docs/EMBEDDINGS.md) | Embedding models (all-MiniLM-L6-v2 vs Azure OpenAI) |
-| [**BitNet Success Story**](docs/BITNET-SUCCESS.md) | BitNet build journey & lessons learned |
-| [**LLM Setup Guide**](docs/LLM_SETUP.md) | LLM configuration and setup |
-| [**Performance Analysis**](docs/performance_analysis.md) | Detailed benchmarks & metrics |
+| [System Architecture](docs/ARCHITECTURE.md) | Complete architecture with 17 Mermaid diagrams |
+| [Embeddings Guide](docs/EMBEDDINGS.md) | Embedding models (all-MiniLM-L6-v2 vs Azure OpenAI) |
+| [BitNet Success Story](docs/BITNET-SUCCESS.md) | BitNet build journey & lessons learned |
+| [LLM Setup Guide](docs/LLM_SETUP.md) | LLM configuration and setup |
+| [Performance Analysis](docs/performance_analysis.md) | Detailed benchmarks & metrics |
 
 ### 🛠️ Setup & Configuration
+
 | Document | Description |
 |----------|-------------|
-| [**Neo4j Browser Guide**](docs/NEO4J_BROWSER_GUIDE.md) | Neo4j Browser setup and usage |
-| [**Knowledge Base Setup**](docs/KNOWLEDGE_BASE_SETUP.md) | Knowledge base download and configuration |
-| [**Browser Setup Guides**](docs/browser-setup/) | Detailed browser configuration |
+| [Neo4j Browser Guide](docs/NEO4J_BROWSER_GUIDE.md) | Neo4j Browser setup and usage |
+| [Knowledge Base Setup](docs/KNOWLEDGE_BASE_SETUP.md) | Knowledge base download and configuration |
+| [Browser Setup Guides](docs/browser-setup/) | Detailed browser configuration |
 
 ### 📋 Project Management
+
 | Document | Description |
 |----------|-------------|
-| [**Implementation Status**](docs/IMPLEMENTATION-STATUS.md) | Current features & progress |
-| [**Next Steps & Roadmap**](docs/NEXT-STEPS.md) | Future improvements |
+| [Implementation Status](docs/IMPLEMENTATION-STATUS.md) | Current features & progress |
+| [Next Steps & Roadmap](docs/NEXT-STEPS.md) | Future improvements |
 
 ### 🤝 Contributing & Governance
+
 | Document | Description |
 |----------|-------------|
-| [**Contributing Guide**](docs/CONTRIBUTING.md) | How to contribute |
-| [**Security Policy**](docs/SECURITY.md) | Security guidelines & reporting |
-| [**Claude Code Guide**](CLAUDE.md) | AI assistant guidance |
+| [Contributing Guide](docs/CONTRIBUTING.md) | How to contribute |
+| [Security Policy](docs/SECURITY.md) | Security guidelines & reporting |
+| [Claude Code Guide](CLAUDE.md) | AI assistant guidance |
 
 ### 📦 Archive & Historical
+
 | Document | Description |
 |----------|-------------|
-| [**Archive Documentation**](docs/archive/) | Historical references & summaries |
-| [**Cost Optimization**](docs/azure/cost-optimized-deployment.md) | Azure cost optimization strategies |
+| [Archive Documentation](docs/archive/) | Historical references & summaries |
+| [Cost Optimization](docs/azure/cost-optimized-deployment.md) | Azure cost optimization strategies |
 
 ### 🔗 Live Resources
-- [**🤖 API Documentation**](http://localhost:8000/docs) - Interactive API docs (when running locally)
-- [**GitHub Repository**](https://github.com/ma3u/neo4j-agentframework) - Source code & issues
-- [**Release Notes**](https://github.com/ma3u/neo4j-agentframework/releases) - Version history
+
+- [API Documentation](http://localhost:8000/docs) - Interactive API docs (when running locally)
+- [GitHub Repository](https://github.com/ma3u/neo4j-agentframework) - Source code & issues
+- [Release Notes](https://github.com/ma3u/neo4j-agentframework/releases) - Version history
 
 ## 🤝 Contributing
 
-Contributions welcome through pull requests following the standard GitHub workflow. Fork the repository, create a feature branch, make changes with tests, and submit a PR for review. 
+Contributions welcome through pull requests following the standard GitHub workflow. Fork the repository, create a feature branch, make changes with tests, and submit a PR for review.
 
 ## 📝 License
 
@@ -423,4 +353,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Documentation**: [Wiki](https://github.com/ma3u/neo4j-agentframework/wiki)
 - **Discussions**: [GitHub Discussions](https://github.com/ma3u/neo4j-agentframework/discussions)
 
----

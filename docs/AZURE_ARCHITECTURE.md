@@ -1,6 +1,9 @@
-# Azure Architecture - Neo4j RAG + BitNet + Agent Framework
+# Azure Architecture
 
-**Complete Azure deployment architecture with Docling, BitNet.cpp, and Microsoft Agent Framework**
+## 🔗 Quick Navigation
+- [← Back to Main README](../README.md) | [Deployment](AZURE_DEPLOYMENT_GUIDE.md) | [API Reference](API-REFERENCE.md)
+
+**Enterprise Azure architecture for Neo4j Hybrid RAG System**
 
 ---
 

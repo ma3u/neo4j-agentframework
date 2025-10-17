@@ -1,228 +1,236 @@
-# Neo4j RAG + BitNet Deployment Guide
+# Deployment Guide
 
-## ✅ Current Deployment: 3-Tier Architecture
+## 🔗 Quick Navigation
+- [← Back to Main README](../README.md) | [Architecture](ARCHITECTURE.md) | [API Reference](API-REFERENCE.md)
 
-Successfully deployed and tested pipeline with:
-- **Neo4j Database** (separate container)
-- **RAG Service** (SentenceTransformers embeddings)
-- **BitNet LLM** (API-compatible mock for testing)
+Deploy the Neo4j Hybrid RAG System locally or on Azure.
 
-## Quick Start
+## 🏠 Local Deployment
 
-### Start All Services
+### Option 1: Pre-built Containers (Recommended)
+**Best for**: Quick evaluation, development, demos
+
 ```bash
-docker-compose -f scripts/docker-compose.optimized.yml up -d
-```
+# 1. Clone repository
+git clone https://github.com/ma3u/neo4j-agentframework.git
+cd neo4j-agentframework
 
-### Verify Services
-```bash
-# Check status
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "neo4j|rag|bitnet"
+# 2. Start services (auto-downloads images)
+docker compose -f scripts/docker-compose.ghcr.yml up -d
 
-# Test each service
-curl http://localhost:7474          # Neo4j Browser
-curl http://localhost:8000/health   # RAG Service
-curl http://localhost:8001/health   # BitNet LLM
-```
+# 3. Access services
+# Neo4j Browser: http://localhost:7474 (neo4j/password)
+# RAG API: http://localhost:8000/docs  
+# BitNet LLM: http://localhost:8001/health
 
-### Test Complete Pipeline
-
-#### 1. Add Sample Document
-```bash
-curl -X POST http://localhost:8000/documents \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "content": "Neo4j is a graph database management system developed by Neo4j Inc. It stores data as nodes and relationships, making it ideal for connected data and complex queries.",
-    "metadata": {"source": "documentation"}
-  }'
-```
-
-#### 2. Query RAG (with Vector Search)
-```bash
+# 4. Test the system
 curl -X POST http://localhost:8000/query \
-  -H 'Content-Type: application/json' \
-  -d '{"question":"What is Neo4j?","k":3}'
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is Neo4j?","k":5}'
 ```
 
-#### 3. Test BitNet Generation
+### Option 2: Minimal BitNet (334MB)
+**Best for**: Resource-constrained environments, edge deployment
+
 ```bash
-curl -X POST http://localhost:8001/generate \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "prompt": "What is Neo4j?",
-    "context": "Neo4j is a graph database...",
-    "max_tokens": 50
-  }'
+# 1. Pull minimal BitNet image  
+docker pull ghcr.io/ma3u/ms-agentf-neo4j/bitnet-minimal:latest
+
+# 2. Create model storage directory
+mkdir models
+
+# 3. Run with external model storage
+docker run -d -p 8001:8001 --name bitnet \
+  -v $(pwd)/models:/app/models \
+  ghcr.io/ma3u/ms-agentf-neo4j/bitnet-minimal:latest
+
+# 4. Monitor model download (first run)
+docker logs -f bitnet
 ```
 
-## Architecture
+### Option 3: Development Setup
+**Best for**: Code development, customization
 
-```
-┌──────────────────┐
-│  User Query      │
-└────────┬─────────┘
-         │
-         v
-┌──────────────────┐
-│  RAG Service     │ ← SentenceTransformers (all-MiniLM-L6-v2)
-│  Port 8000       │
-└────┬─────────┬───┘
-     │         │
-     v         v
-┌─────────┐  ┌──────────────┐
-│ Neo4j   │  │ BitNet LLM   │
-│ Port    │  │ Port 8001    │
-│ 7474    │  └──────────────┘
-│ 7687    │
-└─────────┘
+```bash
+# 1. Start Neo4j database
+docker run -d --name neo4j \
+  -p 7474:7474 -p 7687:7687 \
+  -e NEO4J_AUTH=neo4j/password \
+  neo4j:5.15-community
+
+# 2. Setup Python environment
+cd neo4j-rag-demo
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# 3. Run RAG service
+python app_local.py
 ```
 
-## Components
+## ☁️ Azure Production Deployment
 
-### 1. Neo4j Database
-- **Image**: neo4j:5.15-community
-- **Ports**: 7474 (Browser), 7687 (Bolt)
-- **Purpose**: Document storage, vector search
-- **Credentials**: neo4j/password
+### Prerequisites
+- Azure subscription
+- Azure CLI installed and logged in
+- 30 minutes deployment time
 
-### 2. RAG Service
-- **Build**: neo4j-rag-demo/Dockerfile.local
-- **Port**: 8000
-- **Features**:
-  - Local embeddings (no Azure dependency)
-  - Vector similarity search
-  - Keyword search
-  - Hybrid search
+### Automated Deployment
+```bash
+# 1. Set environment variables
+export RESOURCE_GROUP="rg-neo4j-rag"
+export LOCATION="eastus"  
+export SUBSCRIPTION_ID="your-subscription-id"
 
-### 3. BitNet LLM
-- **Build**: Dockerfile.bitnet-simple
-- **Port**: 8001
-- **Current**: Simplified API mock for testing
-- **Future**: Native BitNet.cpp integration
+# 2. Run deployment script
+./scripts/azure-deploy-enterprise.sh
 
-## API Endpoints
+# 3. Configure AI Assistant (optional)
+python scripts/configure-azure-assistant.py
+```
 
-### RAG Service (Port 8000)
-- `GET /health` - Service health check
-- `GET /stats` - Neo4j statistics
-- `POST /documents` - Add documents
-- `POST /query` - RAG query with retrieval
-- `POST /search` - Vector search only
+### Manual Azure Setup
 
-### BitNet LLM (Port 8001)
-- `GET /health` - Service health check
-- `GET /model-info` - Model information
-- `POST /generate` - Text generation
-- `POST /chat` - Chat with RAG context
+#### Step 1: Container Apps Environment
+```bash
+# Create resource group
+az group create --name $RESOURCE_GROUP --location $LOCATION
 
-## Files
+# Create container apps environment
+az containerapp env create \
+  --name neo4j-rag-env \
+  --resource-group $RESOURCE_GROUP \
+  --location $LOCATION
+```
 
-### Active Deployment
-- `scripts/docker-compose.optimized.yml` - Main deployment file
-- `scripts/bitnet_server_simple.py` - BitNet API mock
-- `scripts/Dockerfile.bitnet-*` - BitNet container builds
+#### Step 2: Neo4j Aura Database
+1. Go to [Neo4j Aura](https://neo4j.com/cloud/aura/)
+2. Create new AuraDB instance (2GB RAM recommended)
+3. Save connection details (URI, username, password)
 
-### Archived Experiments
-- `archive/bitnet-experiments/` - Previous approaches
-  - Native BitNet.cpp compilation attempts
-  - Combined Neo4j+RAG containers
-  - Various integration strategies
+#### Step 3: Deploy RAG Service
+```bash
+az containerapp create \
+  --name rag-service \
+  --resource-group $RESOURCE_GROUP \
+  --environment neo4j-rag-env \
+  --image ghcr.io/ma3u/ms-agentf-neo4j/rag-service:latest \
+  --cpu 1.0 --memory 2.0Gi \
+  --min-replicas 1 --max-replicas 3 \
+  --env-vars \
+    NEO4J_URI="bolt://your-aura-instance" \
+    NEO4J_USER="neo4j" \
+    NEO4J_PASSWORD="your-password" \
+  --ingress external --target-port 8000
+```
 
-## Testing Results
+#### Step 4: Azure OpenAI Integration
+```bash
+# Create Azure OpenAI resource
+az cognitiveservices account create \
+  --name "neo4j-rag-openai" \
+  --resource-group $RESOURCE_GROUP \
+  --location $LOCATION \
+  --kind OpenAI \
+  --sku S0
 
-✅ **Neo4j**: Running and healthy
-✅ **RAG Service**: Embeddings working, vector search operational
-✅ **BitNet LLM**: API responding, generation working
-✅ **Pipeline**: End-to-end test successful
+# Deploy model (gpt-4o-mini recommended for cost efficiency)
+az cognitiveservices account deployment create \
+  --name "neo4j-rag-openai" \
+  --resource-group $RESOURCE_GROUP \
+  --deployment-name gpt-4o-mini \
+  --model-name gpt-4o-mini \
+  --model-version "2024-07-18"
+```
 
-**Sample Test Output**:
-```json
+## 🔧 Configuration Options
+
+### Environment Variables
+
+**Local Development**:
+```bash
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j  
+NEO4J_PASSWORD=password
+BITNET_LLM_URL=http://localhost:8001
+```
+
+**Azure Production**:
+```bash
+NEO4J_URI=bolt://your-aura-instance.databases.neo4j.io:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your-secure-password
+AZURE_OPENAI_ENDPOINT=https://your-openai.openai.azure.com/
+AZURE_OPENAI_API_KEY=your-api-key
+```
+
+### Resource Requirements
+
+| Component | Local | Azure |
+|-----------|-------|-------|
+| **Neo4j** | 1GB RAM | AuraDB (2-8GB) |
+| **RAG Service** | 1GB RAM | Container Apps (2GB) |
+| **BitNet LLM** | 1.5GB RAM | Optional (use Azure OpenAI) |
+| **Total** | ~4GB RAM | $200-350/month |
+
+## 🧪 Verification
+
+### Health Checks
+```bash  
+# Check all services
+curl http://localhost:8000/health  # RAG service
+curl http://localhost:8001/health  # BitNet LLM  
+curl http://localhost:7474/db/data/ # Neo4j (requires auth)
+
+# Expected response
 {
-  "answer": "The context doesn't provide a clear yes/no answer to this question.",
-  "sources": [
-    {
-      "text": "Neo4j is a graph database management system...",
-      "score": 0.8035,
-      "doc_id": "129dde30-401b-444b-bee9-ed0148976fcc"
-    }
-  ],
-  "processing_time": 0.076
+  "status": "healthy",
+  "neo4j_connected": true,
+  "model": "SentenceTransformer (all-MiniLM-L6-v2)"
 }
 ```
 
-## Performance Characteristics
-
-- **RAG Retrieval**: ~76ms average
-- **Vector Search**: ~80ms with local embeddings
-- **BitNet Response**: ~22 tokens generated
-- **Memory**: ~2GB total (all containers)
-
-## Production Considerations
-
-### Current Setup (Testing)
-- ✅ 100% local (no cloud dependencies)
-- ✅ Fast retrieval with SentenceTransformers
-- ✅ API-compatible BitNet mock
-- ⚠️ BitNet is simplified (not actual inference)
-
-### Production Upgrades
-1. **Native BitNet.cpp**: Compile actual inference binary
-2. **GPU Support**: Use BitNet GPU kernels for speed
-3. **Scaling**: Add load balancing for RAG service
-4. **Monitoring**: Add metrics and observability
-5. **Security**: Implement authentication/authorization
-
-## Troubleshooting
-
-### Service Won't Start
+### Test Document Upload and Query
 ```bash
-# Check logs
-docker-compose -f scripts/docker-compose.optimized.yml logs <service-name>
+# 1. Add a document
+curl -X POST http://localhost:8000/documents \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Neo4j is a graph database management system that stores data as nodes and relationships.",
+    "metadata": {"source": "test", "type": "definition"}
+  }'
 
-# Restart service
-docker-compose -f scripts/docker-compose.optimized.yml restart <service-name>
+# 2. Query the knowledge base
+curl -X POST http://localhost:8000/query \
+  -H "Content-Type: application/json" \  
+  -d '{"question": "What is Neo4j?", "k": 3}'
+
+# Expected: Intelligent response based on stored document
 ```
 
-### Port Conflicts
-```bash
-# Check what's using ports
-lsof -i :7474
-lsof -i :7687
-lsof -i :8000
-lsof -i :8001
-```
+## 🐳 Container Image Options
 
-### Reset Everything
-```bash
-# Stop and remove all
-docker-compose -f scripts/docker-compose.optimized.yml down -v
+Choose the right container for your use case:
 
-# Rebuild from scratch
-docker-compose -f scripts/docker-compose.optimized.yml up -d --build
-```
+| Use Case | Image | Command |
+|----------|-------|---------|
+| **Quick Demo** | Pre-built stack | `docker compose -f scripts/docker-compose.ghcr.yml up` |
+| **Resource-Constrained** | BitNet Minimal | `docker run ghcr.io/ma3u/ms-agentf-neo4j/bitnet-minimal` |
+| **Production** | Optimized | `docker run ghcr.io/ma3u/ms-agentf-neo4j/bitnet-optimized` |
+| **Development** | Build from source | `docker compose up --build` |
 
-## Next Steps
+## 🚨 Troubleshooting
 
-1. **Add More Documents**: Populate knowledge base
-2. **Test Queries**: Verify retrieval quality
-3. **Integrate BitNet.cpp**: Upgrade to native inference
-4. **Deploy to Production**: Azure/AWS/GCP
+**Common Issues**:
+- **Port conflicts**: Ensure ports 7474, 7687, 8000, 8001 are available
+- **Memory errors**: Allocate at least 4GB RAM to Docker
+- **Model download fails**: Check internet connection and disk space (1.1GB needed)
+- **Neo4j connection**: Verify credentials and wait for database startup (30-60s)
 
-## References
-
-### Official Documentation
-- [BitNet Official Repo](https://github.com/microsoft/BitNet)
-- [Neo4j Documentation](https://neo4j.com/docs/)
-- [SentenceTransformers](https://www.sbert.net/)
-
-### Related Documentation
-- [**📖 Documentation Index**](README.md) - Complete documentation map
-- [**☁️ Azure Deployment Guide**](AZURE_DEPLOYMENT_GUIDE.md) - Detailed Azure deployment
-- [**🚀 Quick Start Guide**](README-QUICKSTART.md) - Complete setup journey
-- [**🧪 Local Testing Guide**](LOCAL-TESTING-GUIDE.md) - Testing procedures
-- [**⚡ BitNet Success**](BITNET-SUCCESS.md) - BitNet build details
+**Get Help**:
+- [GitHub Issues](https://github.com/ma3u/neo4j-agentframework/issues) for bugs
+- [Troubleshooting Guide](docs/reference/TROUBLESHOOT.md) for common problems
 
 ---
 
-**Status**: ✅ Deployment successful, pipeline tested and working
-**Date**: 2025-10-05
+**Next Steps**: See [docs/API-REFERENCE.md](docs/API-REFERENCE.md) for API usage examples.
