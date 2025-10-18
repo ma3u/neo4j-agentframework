@@ -312,8 +312,8 @@ Your knowledge base is **deployed and operational** on Neo4j Aura with a compreh
 
 See [Aura Database Analysis](docs/analysis/AURA_DATABASE_ANALYSIS_REPORT.md) for detailed analysis.
 
-![Aura Instance with Cypher Scripts](image.png)
-Neo4J Aura Instance with Cypher Scripts
+![Azure AI Foundry Assistant Configuration](docs/images/azure-ai-foundry-assistant-configuration.png)
+*Azure AI Foundry Assistant with Neo4j RAG custom functions*
 
 ### Quick Azure Deployment
 

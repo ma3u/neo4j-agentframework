@@ -1,6 +1,14 @@
 # Gamma.app Template - NODES 2025 Presentation
 
-**Copy and paste this into Gamma.app to generate your presentation**
+**Import this document into Gamma.app via URL or paste content**
+
+**GitHub Raw URL**: https://raw.githubusercontent.com/ma3u/neo4j-agentframework/main/docs/GAMMA_APP_TEMPLATE.md
+
+**Screenshots Available**:
+- https://raw.githubusercontent.com/ma3u/neo4j-agentframework/main/docs/images/neo4j-rag-streamlit-ui-mockup.png
+- https://raw.githubusercontent.com/ma3u/neo4j-agentframework/main/docs/images/neo4j-graph-database-browser.png
+- https://raw.githubusercontent.com/ma3u/neo4j-agentframework/main/docs/images/neo4j-rag-docker-desktop-containers.jpg
+- https://raw.githubusercontent.com/ma3u/neo4j-agentframework/main/docs/images/azure-ai-foundry-assistant-configuration.png
 
 ---
 
@@ -74,18 +82,60 @@ Big question at bottom: "Can we get cloud-grade performance with on-premises sov
 
 Title: Hybrid Architecture: Best of Both Worlds
 
-Show two architecture diagrams side-by-side:
+**Include these mermaid diagrams from repository:**
 
 Left Side - Local Development (100% Sovereign):
-User → Streamlit UI → RAG Service → Neo4j Database → BitNet.cpp LLM → Answer back to User
-All inside "Docker Containers" box
-Labels: "$0 cost", "100% sovereign", "Laptop-ready"
+```mermaid
+graph LR
+    USER[👤 User<br/>Web Browser]
+
+    subgraph Docker["🐳 Docker Containers"]
+        UI[🧠 Streamlit UI<br/>Document Upload<br/>Q&A Interface]
+        RAG[⚡ RAG Service<br/>FastAPI + Docling<br/>SentenceTransformers]
+        DB[(🗄️ Neo4j Database<br/>Vector + Keyword Search<br/>417x Faster)]
+        BitNet[🤖 BitNet.cpp<br/>1.58-bit LLM<br/>87% Memory Reduction]
+    end
+
+    USER -->|Interact| UI
+    UI -->|Query| RAG
+    RAG -->|Search| DB
+    DB -->|Context| RAG
+    RAG -->|Generate| BitNet
+    BitNet -->|Answer| UI
+    UI -->|Display| USER
+```
+
+Labels: "$0 cost | 100% sovereign | Laptop-ready"
 
 Right Side - Azure Production (Enterprise Scale):
-User → Azure AI Foundry Assistant → RAG Service (Container Apps) → Neo4j Aura
-Labels: "~$200/month", "Auto-scale", "100+ users"
+```mermaid
+graph LR
+    subgraph Internet["🌐 Internet"]
+        USER[👤 End Users<br/>API Clients]
+    end
 
-Bottom text: "Same Python code. Different environment variables. That's it."
+    subgraph Azure["☁️ Azure Cloud"]
+        subgraph AIFoundry["🤖 Azure AI Foundry"]
+            ASSISTANT["Azure AI Assistant<br/>Model: gpt-4o-mini<br/>Functions:<br/>• search_knowledge_base<br/>• add_document<br/>• get_statistics"]
+        end
+
+        subgraph CAE["Container Apps"]
+            RAG["⚡ RAG Service<br/>CPU: 2, RAM: 4GB<br/>Replicas: 0-10"]
+        end
+
+        subgraph Data["🗄️ Data Layer"]
+            AURA[(Neo4j Aura<br/>Managed Database<br/>30,006 Chunks)]
+        end
+    end
+
+    USER -->|HTTPS API| ASSISTANT
+    ASSISTANT -->|Function Calls| RAG
+    RAG <-->|Bolt 7687| AURA
+```
+
+Labels: "~$200/month | Auto-scale 0-10 | 100+ users"
+
+Bottom text (large): "Same Python code. Different environment variables. That's it."
 
 ---
 
@@ -117,14 +167,17 @@ Bottom: "We solved BitNet so you don't have to"
 
 Title: Demonstrated Performance
 
-Performance table:
+Performance table (make numbers LARGE and bold):
 | Metric | Traditional | Our System | Improvement |
-| Vector Search | 46 seconds | 110ms | 417x FASTER |
-| LLM Memory | 8-16 GB | 1.5 GB | 87% REDUCTION |
-| Embedding Cost | $50/month | $0 local | 100% SAVINGS |
-| Deployment | Cloud-only | Hybrid | Complete Flexibility |
+| Vector Search | 46 seconds | 110ms | **417x FASTER ⚡** |
+| LLM Memory | 8-16 GB | 1.5 GB | **87% REDUCTION 💾** |
+| Embedding Cost | $50/month | $0 local | **100% SAVINGS 💰** |
+| Deployment | Cloud-only | Hybrid | **Complete Flexibility 🔄** |
 
-Current Production State (in box):
+**Screenshot**: Include Azure AI Foundry
+![Azure AI Foundry](https://raw.githubusercontent.com/ma3u/neo4j-agentframework/main/docs/images/azure-ai-foundry-assistant-configuration.png)
+
+Current Production State (highlighted box):
 ✅ Neo4j Aura Instance: 6b870b04 (westeurope)
 ✅ Knowledge Base: 12 books, 30,006 chunks
 ✅ Embeddings: 100% coverage
@@ -183,14 +236,15 @@ Our Approach (highlighted box):
 
 Title: 30,000 Chunks in Production
 
-Show Neo4j Browser screenshot
+**Screenshot**: Use this image
+![Neo4j Browser](https://raw.githubusercontent.com/ma3u/neo4j-agentframework/main/docs/images/neo4j-graph-database-browser.png)
 
-Overlay text boxes:
+Overlay text boxes on screenshot:
 - "12 Technical Books"
 - "O'Reilly, Neo4j Official, Academic Papers"
 - "Query time: ~100ms on 30K chunks"
 
-Sample query shown:
+Sample query (show in code block):
 ```cypher
 MATCH (c:Chunk)
 WHERE toLower(c.text) CONTAINS 'vector search'
