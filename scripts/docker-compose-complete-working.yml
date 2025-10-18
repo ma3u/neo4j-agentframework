@@ -1,0 +1,107 @@
+version: '3.8'
+
+# Complete Working Neo4j + BitNet RAG Pipeline
+# Real BitNet.cpp with 334MB container + 1.11GB external model
+
+services:
+  # Neo4j Database
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: neo4j-working
+    restart: unless-stopped
+    ports:
+      - "7474:7474"  # Browser
+      - "7687:7687"  # Bolt
+    volumes:
+      - neo4j_working_data:/data
+      - neo4j_working_logs:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PLUGINS=["apoc", "graph-data-science"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*,gds.*
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    healthcheck:
+      test: ["CMD-SHELL", "neo4j status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - working-network
+
+  # BitNet Ultra-Minimal with Real Model (334MB + 1.11GB external)
+  bitnet-real:
+    build:
+      context: .
+      dockerfile: Dockerfile.bitnet-minimal
+    image: bitnet-minimal:real
+    container_name: bitnet-working
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    volumes:
+      # Mount for real model storage
+      - ./models:/app/models
+    environment:
+      - MODEL_PATH=/app/models/ggml-model-i2_s.gguf
+      - BITNET_BINARY=/app/bin/llama-cli
+      - BITNET_THREADS=4
+      - BITNET_CTX_SIZE=2048
+      - MODEL_WAIT_TIMEOUT=300
+      - HF_MODEL_ID=microsoft/BitNet-b1.58-2B-4T-gguf
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 180s  # Allow time for model download
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+    networks:
+      - working-network
+
+  # RAG API Service
+  rag-service:
+    build:
+      context: ../neo4j-rag-demo
+      dockerfile: Dockerfile.local
+    image: rag-service:working
+    container_name: rag-working
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../neo4j-rag-demo:/app
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=password
+      - BITNET_LLM_URL=http://bitnet-real:8001
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      bitnet-real:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    networks:
+      - working-network
+
+volumes:
+  neo4j_working_data:
+    driver: local
+  neo4j_working_logs:
+    driver: local
+
+networks:
+  working-network:
+    driver: bridge

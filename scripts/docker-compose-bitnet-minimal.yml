@@ -1,0 +1,129 @@
+version: '3.8'
+
+# BitNet Ultra-Minimal Deployment Options
+# Choose one of the following approaches
+
+services:
+  
+  # Option 1: Volume-mounted model (Recommended)
+  # Pre-download model to host, mount as volume - fastest startup
+  bitnet-minimal-volume:
+    build:
+      context: .
+      dockerfile: Dockerfile.bitnet-minimal
+    image: bitnet-minimal:latest
+    container_name: bitnet-minimal-volume
+    ports:
+      - "8001:8001"
+    volumes:
+      # Mount local model directory (download model first)
+      - ./models:/app/models:ro  # Read-only mount
+    environment:
+      - MODEL_PATH=/app/models/ggml-model-i2_s.gguf
+      - BITNET_BINARY=/app/bin/llama-cli
+      - BITNET_THREADS=4
+      - BITNET_CTX_SIZE=2048
+      - MODEL_WAIT_TIMEOUT=60  # Shorter timeout since model is pre-mounted
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s  # Quick start with pre-mounted model
+    restart: unless-stopped
+    # Resource limits for minimal deployment
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+    profiles:
+      - volume-mount
+  
+  # Option 2: Download at startup
+  # Let container download model at startup - slower but self-contained
+  bitnet-minimal-download:
+    build:
+      context: .
+      dockerfile: Dockerfile.bitnet-minimal
+    image: bitnet-minimal:latest
+    container_name: bitnet-minimal-download
+    ports:
+      - "8002:8001"  # Different port to avoid conflicts
+    volumes:
+      # Persistent volume for downloaded model
+      - bitnet-models:/app/models
+    environment:
+      - MODEL_PATH=/app/models/ggml-model-i2_s.gguf
+      - BITNET_BINARY=/app/bin/llama-cli
+      - BITNET_THREADS=4
+      - BITNET_CTX_SIZE=2048
+      - MODEL_WAIT_TIMEOUT=600  # 10 minutes for download
+      - HF_MODEL_ID=microsoft/BitNet-b1.58-2B-4T-gguf
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 600s  # Long start period for model download
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+    profiles:
+      - download
+  
+  # Complete RAG Stack with Minimal BitNet
+  neo4j:
+    image: neo4j:5.13-community
+    container_name: neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PLUGINS=["graph-data-science"]
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    profiles:
+      - full-stack
+  
+  rag-service:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    image: ms-agentf-neo4j-rag:latest
+    container_name: rag-service
+    ports:
+      - "8000:8000"
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=password
+      - BITNET_LLM_URL=http://bitnet-minimal-volume:8001
+    depends_on:
+      - neo4j
+      - bitnet-minimal-volume
+    profiles:
+      - full-stack
+
+# Named volumes
+volumes:
+  bitnet-models:
+    driver: local
+  neo4j-data:
+    driver: local
+  neo4j-logs:
+    driver: local
+
+# Networks
+networks:
+  default:
+    driver: bridge

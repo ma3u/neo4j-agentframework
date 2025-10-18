@@ -21,7 +21,7 @@ Transform your documents into an intelligent knowledge base combining Neo4j's gr
 - **25.9 GB indexed**: Technical content from O'Reilly, Manning, arXiv, Neo4j Official
 - **Categories**: Neo4j (59%), Graph Theory/ML (32%), RAG (5%), Knowledge Graphs (3%), Vector DBs (1%)
 
-**See**: [AURA_DATABASE_ANALYSIS_REPORT.md](AURA_DATABASE_ANALYSIS_REPORT.md) for complete analysis
+**See**: [Aura Database Analysis](docs/analysis/AURA_DATABASE_ANALYSIS_REPORT.md) for complete technical analysis
 
 ## 🏗️ Architecture Options
 
@@ -145,11 +145,11 @@ Your Aura database contains a comprehensive collection of technical books:
 - Vector Database Management Systems (arXiv 2309.11322)
 
 **Explore with Cypher Queries:**
-- **[45 Copy-Paste Queries](neo4j-rag-demo/AURA_CYPHER_QUERIES.md)** - Complete Cypher guide with graph DB benefits
-- **[Results Explained](CYPHER_ANALYSIS_RESULTS_EXPLAINED.md)** - Non-technical explanation of your data
-- **[Browser Queries](neo4j-rag-demo/scripts/neo4j_browser_queries.cypher)** - Basic statistics and search
-- **[Content Analysis](neo4j-rag-demo/scripts/neo4j_content_analysis.cypher)** - Advanced topic analysis
-- **[Enhanced Queries](neo4j-rag-demo/scripts/neo4j_browser_queries_enhanced.cypher)** - Visualization and utilities
+- **[45 Copy-Paste Queries](docs/cypher/AURA_CYPHER_QUERIES.md)** - Complete Cypher guide with graph DB benefits
+- **[Results Explained](docs/analysis/CYPHER_ANALYSIS_RESULTS_EXPLAINED.md)** - Non-technical explanation with scripts
+- **[Browser Queries](docs/cypher/neo4j_browser_queries.cypher)** - Basic statistics and search
+- **[Content Analysis](docs/cypher/neo4j_content_analysis.cypher)** - Advanced topic analysis
+- **[Enhanced Queries](docs/cypher/neo4j_browser_queries_enhanced.cypher)** - Visualization and utilities
 
 **Manage Knowledge Base:**
 ```bash
@@ -310,7 +310,7 @@ Your knowledge base is **deployed and operational** on Neo4j Aura with a compreh
 
 **Aura Instance**: `6b870b04` (westeurope) | **Books**: 12 PDFs | **Chunks**: 30,006 | **Coverage**: 100%
 
-See [AURA_DATABASE_ANALYSIS_REPORT.md](AURA_DATABASE_ANALYSIS_REPORT.md) for detailed analysis.
+See [Aura Database Analysis](docs/analysis/AURA_DATABASE_ANALYSIS_REPORT.md) for detailed analysis.
 
 ### Quick Azure Deployment
 

@@ -167,6 +167,19 @@ Think of your Neo4j database like a **digital library** that's been specially or
 
 ### Query 1: "How Big Is Your Library?"
 
+**Cypher Script:**
+```cypher
+MATCH (d:Document)
+OPTIONAL MATCH (d)-[:HAS_CHUNK]->(c:Chunk)
+RETURN
+    COUNT(DISTINCT d) as total_documents,
+    COUNT(c) as total_chunks,
+    AVG(SIZE(d.content)) as avg_doc_size,
+    MIN(SIZE(d.content)) as min_doc_size,
+    MAX(SIZE(d.content)) as max_doc_size,
+    SUM(SIZE(d.content)) as total_content_size;
+```
+
 **Result**:
 - 12 books
 - 30,006 pieces of information
@@ -179,6 +192,15 @@ Think of your Neo4j database like a **digital library** that's been specially or
 ---
 
 ### Query 7: "Is Everything Ready for the AI?"
+
+**Cypher Script:**
+```cypher
+MATCH (c:Chunk)
+RETURN
+    COUNT(c) as total_chunks,
+    COUNT(c.embedding) as chunks_with_embedding,
+    toFloat(COUNT(c.embedding)) / toFloat(COUNT(c)) * 100 as coverage_percentage;
+```
 
 **Result**: 100% coverage (all 30,006 chunks have embeddings)
 
@@ -195,6 +217,13 @@ Think of your Neo4j database like a **digital library** that's been specially or
 
 ### Query 9: "Are All the Pieces Connected Properly?"
 
+**Cypher Script:**
+```cypher
+MATCH (c:Chunk)
+WHERE NOT (c)<-[:HAS_CHUNK]-()
+RETURN COUNT(c) as orphaned_chunks;
+```
+
 **Result**: 0 orphaned chunks
 
 **What it means**: Every piece of information is properly linked to its source book. Nothing is floating around disconnected.
@@ -209,6 +238,15 @@ Think of your Neo4j database like a **digital library** that's been specially or
 ---
 
 ### Query 12: "How Connected Is Your Knowledge?"
+
+**Cypher Script:**
+```cypher
+MATCH (n)
+WITH COUNT(n) as node_count
+MATCH ()-[r]->()
+WITH node_count, COUNT(r) as relationship_count
+RETURN node_count, relationship_count;
+```
 
 **Result**:
 - 30,018 total nodes (things in the database)
@@ -230,6 +268,27 @@ Think of your Neo4j database like a **digital library** that's been specially or
 ---
 
 ### Query 15: "What Topics Are Covered?"
+
+**Cypher Script:**
+```cypher
+MATCH (c:Chunk)
+WITH c.text as text
+RETURN
+    CASE
+        WHEN text CONTAINS 'Neo4j' OR text CONTAINS 'neo4j' THEN 'Neo4j Database'
+        WHEN text CONTAINS 'RAG' OR text CONTAINS 'retrieval' THEN 'RAG Systems'
+        WHEN text CONTAINS 'vector' OR text CONTAINS 'embedding' THEN 'Vector/Embeddings'
+        WHEN text CONTAINS 'graph database' OR text CONTAINS 'Graph' THEN 'Graph Databases'
+        WHEN text CONTAINS 'machine learning' OR text CONTAINS 'ML' THEN 'Machine Learning'
+        WHEN text CONTAINS 'knowledge graph' THEN 'Knowledge Graphs'
+        WHEN text CONTAINS 'Cypher' OR text CONTAINS 'cypher' THEN 'Cypher Language'
+        WHEN text CONTAINS 'algorithm' OR text CONTAINS 'Algorithm' THEN 'Algorithms'
+        WHEN text CONTAINS 'neural' OR text CONTAINS 'GNN' THEN 'Neural Networks'
+        ELSE 'Other Topics'
+    END as knowledge_area,
+    COUNT(*) as chunk_count
+ORDER BY chunk_count DESC;
+```
 
 **Result**:
 - Graph Databases: 1,873 chunks (6%)
@@ -253,6 +312,28 @@ Think of your Neo4j database like a **digital library** that's been specially or
 ---
 
 ### Query 19: "Where Does This Knowledge Come From?"
+
+**Cypher Script:**
+```cypher
+MATCH (d:Document)
+WHERE d.source CONTAINS '.pdf'
+WITH d.source as source, d
+WITH
+    CASE
+        WHEN source CONTAINS 'oreilly' OR source CONTAINS 'OReilly' THEN "O'Reilly Media"
+        WHEN source CONTAINS 'arxiv' THEN 'arXiv Papers'
+        WHEN source CONTAINS 'neo4j' OR source CONTAINS 'Neo4j' THEN 'Neo4j Official'
+        WHEN source CONTAINS 'Beginning' THEN 'Apress'
+        WHEN source CONTAINS 'Deep-Learning' OR source CONTAINS 'Graph-Representation' THEN 'Academic Books'
+        ELSE 'Other'
+    END as publisher, d
+OPTIONAL MATCH (d)-[:HAS_CHUNK]->(c:Chunk)
+RETURN
+    publisher,
+    COUNT(DISTINCT d) as documents,
+    COUNT(c) as total_chunks
+ORDER BY documents DESC;
+```
 
 **Result**:
 - Neo4j Official: 8 books (trusted company documentation)
