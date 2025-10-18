@@ -325,4 +325,5 @@ BitNet/models/
 
 # Performance test results
 performance_results/
-benchmark_results/
+benchmark_results/scripts/models/ggml-model-i2_s.gguf
+*.gguf
