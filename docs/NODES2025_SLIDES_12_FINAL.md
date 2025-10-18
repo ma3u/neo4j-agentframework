@@ -414,95 +414,46 @@ CALL rag.query(
 
 ---
 
-## Slide 11: My Claude Code Learnings (What Actually Works)
+## Slide 11: Claude Code = 50% Faster Development
 
-**Visual**: Best practices diagram with tips
+**Visual**: Simple timeline comparison
 
-### What We Built (Results)
+### Built in Half the Time
 
-- Complete hybrid RAG system (production-ready)
-- 12 books, 30K chunks in Neo4j Aura
-- 45 Cypher queries documented
-- Azure deployment automated
-- **Time**: 3-4 weeks (vs 6-8 weeks traditional) = **50% faster**
+| Task | Normal | With Claude Code |
+|------|--------|------------------|
+| **45 Cypher Queries** | 1 week | 1 day |
+| **Azure Automation** | 4 days | 8 hours |
+| **Documentation** | 1 week | 6 hours |
+| **Total Project** | **6-8 weeks** | **3-4 weeks** |
 
-### Best Practices I Learned
+### 5 Best Practices That Worked
 
-**1. Use CLAUDE.md for Project Context** 📝
-```markdown
-# Create docs/CLAUDE.md with:
-- Project overview
-- Key components
-- Common commands
-- Gotchas and solutions
-```
-**Why**: Claude reads this first, stays aligned with your goals
+**1. CLAUDE.md** 📝
+- Project context file Claude reads first
+- Keeps AI aligned with your architecture
 
-**2. Plan Mode for Complex Tasks** 🗺️
-```bash
-# Start with planning for:
-- Multi-file refactoring
-- Architecture decisions
-- Large migrations
-```
-**Example**: "Plan how to reorganize 50+ docs" → Claude creates structure first
-**Result**: Fewer mistakes, better organization
+**2. Plan Mode** 🗺️
+- Use for complex tasks (reorganizing 50+ files)
+- Claude creates structure before coding
 
-**3. GitHub as Your Time Machine** ⏰
-```bash
-# Use Issues to track decisions
-# Use Discussions for architecture debates
-# Use Releases to mark working states
+**3. Git Tags** 🔖
+- `git tag v1.5-working-bitnet`
+- Saved us twice when things broke
 
-git tag v1.5-working-bitnet  # ← Saved us twice!
-```
+**4. Small Commits** ✅
+- 87 commits, each working
+- Easy to debug, easy to revert
 
-**Real Example**:
-- BitNet compilation broke? → `git checkout v1.5-working-bitnet`
-- Aura credentials lost? → Found in Issue #14 discussion
-- Forgot deployment steps? → Release notes had them
+**5. Explain + Generate** 💡
+- Ask for: explanation → code → example output
+- Result: All 45 queries fully documented
 
-**Why**: Version control + good documentation = recoverable
+### The Stack
 
-**4. Break Big Tasks into Small Commits** 🔄
-```bash
-# Don't: "Build entire RAG system" (fails)
-# Do:   "Add upload script --target switch" (succeeds)
-```
+🔵 **Neo4j** + ☁️ **Azure CLI** + 🤖 **Claude Code** = **Production in weeks, not months**
 
-**Result**: 87 commits over 4 weeks, each working
-
-**5. Ask Claude to Explain AND Generate** 💡
-```bash
-# Don't: "Write Cypher query"
-# Do:   "Explain query, then generate, then show example output"
-```
-
-**Example**: All 45 queries have:
-- ✅ Explanation (what it shows)
-- ✅ Cypher script (copy-paste ready)
-- ✅ Expected results (what to look for)
-
-### Time Saved
-
-| Task | Traditional | With Claude Code | Saved |
-|------|-------------|------------------|-------|
-| Cypher queries | 1 week | 1 day | **85%** |
-| Azure CLI scripts | 3-4 days | 8 hours | **75%** |
-| Documentation | 1 week | 6 hours | **90%** |
-| **Total** | **6-8 weeks** | **3-4 weeks** | **50%** |
-
-### Tools Working Together
-
-- 🔵 **Neo4j** - Database brilliance
-- ☁️ **Azure CLI** - Cloud automation
-- 🤖 **Claude Code** - Development acceleration
-- 📝 **CLAUDE.md** - Context persistence
-- 🔖 **Git Tags** - Recoverable checkpoints
-
-**Message**: "Claude Code + good practices = production AI in half the time."
-
-**Lesson**: "Use AI to build AI. Document everything. Tag working states. You'll thank yourself later."
+**Message**: "Use AI to build AI. It works."
 
 ---
 
