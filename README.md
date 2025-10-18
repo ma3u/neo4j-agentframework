@@ -1,39 +1,45 @@
 # Neo4j Hybrid RAG System
 
-**Intelligent document search and generation with Neo4j graph database + local/cloud LLM options**
+**Production-ready intelligent document search with Neo4j graph database + Azure AI Foundry**
 
-Transform your documents into an intelligent knowledge base that combines Neo4j's graph database power with retrieval-augmented generation. Deploy 100% locally for complete control, or scale to Azure for enterprise production.
+Transform your documents into an intelligent knowledge base combining Neo4j's graph database with retrieval-augmented generation. Currently deployed with **12 technical books** (**30,006 chunks**, 25.9 GB indexed) on Neo4j Aura, ready for Azure AI Foundry integration.
 
 ---
 
 ## 🎯 What It Does
 
-- **Stores documents** in Neo4j with vector embeddings and graph relationships
-- **Searches intelligently** using hybrid vector + keyword + graph search  
-- **Generates answers** using local BitNet LLM (1.58-bit quantized) or Azure OpenAI
-- **Scales flexibly** from local development to enterprise cloud deployment
+- **Stores documents** in Neo4j Aura with vector embeddings (384-dim) and graph relationships
+- **Searches intelligently** using hybrid vector + keyword search with 100% embedding coverage
+- **Generates answers** through Azure AI Foundry Assistant (gpt-4o-mini) with custom RAG functions
+- **Scales flexibly** from local development to enterprise Azure deployment
+
+## 📚 Current Knowledge Base
+
+**Production Aura Instance**: `6b870b04` (westeurope)
+- **12 PDF books**: Neo4j, Graph Theory, RAG Systems, ML/GNN, Knowledge Graphs
+- **30,006 text chunks**: 100% embedded with SentenceTransformers (all-MiniLM-L6-v2)
+- **25.9 GB indexed**: Technical content from O'Reilly, Manning, arXiv, Neo4j Official
+- **Categories**: Neo4j (59%), Graph Theory/ML (32%), RAG (5%), Knowledge Graphs (3%), Vector DBs (1%)
+
+**See**: [AURA_DATABASE_ANALYSIS_REPORT.md](AURA_DATABASE_ANALYSIS_REPORT.md) for complete analysis
 
 ## 🏗️ Architecture Options
 
-This project demonstrates production-ready hybrid RAG system that combines Neo4j's graph database with intelligent retrieval and generation capabilities. The system works both locally for development and testing (with optional BitNet.cpp LLM), and in Azure for enterprise production deployments (using AI Foundry's managed models). Built for flexibility, it delivers fast vector search while maintaining complete data sovereignty locally and enterprise scalability in the cloud.
+Flexible deployment architecture supporting both local development and enterprise Azure production. The system uses the same codebase for both environments, enabling seamless transition from development to production.
 
-**Core components:**
-
-- Graph database + vector search)
-- RAG Service (intelligent retrieval + generation)
-- High-efficiency LLM model 
-- Streamlit Chat UI (interactive interface for local testing)
-- Azure AI Foundry (Assistent + managed AI models for production)
+**Core Components:**
+- **Neo4j Database**: Graph storage with vector + keyword search (local Docker or Aura managed)
+- **RAG Service**: FastAPI + Docling + SentenceTransformers for intelligent retrieval
+- **LLM**: BitNet.cpp (local) or Azure AI Foundry Assistant (production)
+- **Streamlit UI**: Interactive chat interface (local development only)
 
 ### Local Development (100% Sovereign)
 
-Run the complete stack on your laptop with full data control and zero recurring costs, including BitNet.cpp for local LLM inference (optional). All components containerized with Docker for easy setup and teardown. Perfect for development, testing, demos, and organizations requiring complete data sovereignty without external API dependencies.
+Complete containerized stack for local development with zero external dependencies. All components run on your machine with Docker for easy setup and teardown.
 
-**100% sovereign deployment for complete data control and privacy.** Ideal for organizations with strict data residency requirements, development teams wanting full control over their infrastructure, or anyone seeking to avoid cloud costs and API dependencies. Run the entire AI-powered knowledge base on your laptop, development server, or private cloud infrastructure with zero external API calls. Perfect for offline environments, sensitive data processing, regulatory compliance scenarios, or simply learning and experimenting without cloud commitments.
-
-**Use Cases**: Development environments, sensitive data processing, regulatory compliance, offline operations, learning & experimentation
-**Benefits**: Zero cloud costs, complete data sovereignty, no external dependencies, full infrastructure control
-**Performance**: fast search, 87% memory reduction
+**Use Cases**: Development, testing, demos, sensitive data, offline environments, learning
+**Benefits**: Zero cloud costs, complete data sovereignty, no external dependencies, full control
+**Performance**: 417x faster search, 87% memory reduction vs traditional systems
 
 ```mermaid
 graph LR
@@ -65,13 +71,16 @@ graph LR
 
 ### Azure Production (Enterprise Scale)
 
-**Production-ready enterprise deployment with automatic scaling and managed services.** Ideal for organizations needing high availability, automatic scaling based on demand, and enterprise-grade AI capabilities through Azure AI Foundry. Scales from zero to ten replicas automatically based on traffic, eliminating infrastructure management overhead while maintaining exceptional performance. Perfect for production applications, customer-facing services, multi-user environments, and integrations with Microsoft 365, Teams, or custom enterprise applications requiring intelligent document search.
+**Production deployment with Azure AI Foundry and Neo4j Aura.** Managed services with automatic scaling, enterprise-grade AI, and zero infrastructure management overhead.
 
-Enterprise production deployments uses Neo4j Aura (managed graph database) and RAG service in Azure Container Apps with passwordless authentication via Managed Identity and Key Vault. Azure AI Foundry provides the complete AI agent solution with access to GPT-4o, GPT-5o-mini, and other models as a fully managed service - no LLM deployment needed. This secure architecture eliminates credential management overhead while delivering enterprise capabilities including auto-scaling, audit trails, and SOC 2/GDPR compliance at approximately $65-200/month for Neo4j Aura plus $150/month for RAG Container Apps.
+**Current Production State:**
+- ✅ Neo4j Aura instance `6b870b04` (westeurope) with 12 books, 30K chunks
+- ✅ Azure AI Foundry Assistant configured with custom RAG functions
+- ✅ Credentials secured in Azure Key Vault `kv-neo4j-rag-7048`
 
-**Use Cases**: Production applications, customer-facing services, multi-user environments, Microsoft 365/Teams integration, enterprise knowledge bases
-**Benefits**: Automatic scaling, zero infrastructure management, enterprise-grade AI (gpt-5o-mini), high availability, global reach
-**Scalability**: 0-10 replicas auto-scaling, 100+ concurrent users, serverless architecture
+**Use Cases**: Production apps, customer-facing services, enterprise knowledge bases, M365/Teams integration
+**Benefits**: Auto-scaling, managed infrastructure, enterprise AI (gpt-4o-mini), high availability
+**Scalability**: 0-10 replicas, 100+ concurrent users, serverless Container Apps
 
 ```mermaid
 graph LR
@@ -111,6 +120,44 @@ graph LR
 
 
 
+---
+
+## 📖 Knowledge Base Details
+
+Your Aura database contains a comprehensive collection of technical books:
+
+**Neo4j & Graph Databases (5 books, 17,656 chunks):**
+- O'Reilly Graph Databases 2nd Edition
+- Beginning Neo4j (Apress)
+- Learning Neo4j eBook
+- Graph Databases for Beginners
+- Graph Databases 2nd Edition
+
+**Graph Theory & ML (4 books, 9,555 chunks):**
+- Deep Learning on Graphs (Yao Ma & Jiliang Tang)
+- Graph Representation Learning (William Hamilton, McGill)
+- RAG for LLMs: A Survey (arXiv 2312.10997)
+- 5 Graph Data Science Basics
+
+**Specialized Topics (3 books, 2,795 chunks):**
+- O'Reilly: RAG in Production with Haystack
+- Knowledge Graphs: Data in Context (Neo4j)
+- Vector Database Management Systems (arXiv 2309.11322)
+
+**Manage Knowledge Base:**
+```bash
+# View statistics
+python scripts/rag_statistics.py
+
+# Upload more PDFs
+python scripts/upload_pdfs_to_neo4j.py --target aura
+
+# Test search
+python scripts/rag_search_examples.py
+```
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -142,12 +189,30 @@ The Docker Compose configuration automatically sets up all four services (Neo4j,
 ![Neo4j RAG Docker Desktop Containers](docs/images/neo4j-rag-docker-desktop-containers.jpg)
 *Neo4j Database + RAG Service + BitNet LLM running in Docker Desktop*
 
-### Option 2: Development Setup
+### Option 2: Connect to Production Aura Instance
 
-For developers who want to modify the RAG service code or debug with breakpoints. Runs Neo4j in Docker but the Python RAG service locally, enabling faster iteration cycles, easier debugging, and direct code editing without rebuilding containers.
+For testing against the production knowledge base with 12 books and 30K chunks.
 
 ```bash
-# Start Neo4j only
+# Configure credentials (already done if you followed setup)
+# Credentials in: neo4j-rag-demo/.env
+# Instance: 6b870b04 (westeurope)
+
+# Test connection
+cd neo4j-rag-demo
+source venv_local/bin/activate
+python scripts/rag_statistics.py
+
+# Test search
+python scripts/rag_search_examples.py
+```
+
+### Option 3: Local Development Setup
+
+For developers modifying RAG service code. Runs Neo4j in Docker, Python locally for debugging.
+
+```bash
+# Start local Neo4j
 docker run -d --name neo4j-rag \
   -p 7474:7474 -p 7687:7687 \
   -e NEO4J_AUTH=neo4j/password \
@@ -156,7 +221,7 @@ docker run -d --name neo4j-rag \
 # Setup Python environment
 cd neo4j-rag-demo
 python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
 
 # Load sample data
@@ -232,31 +297,31 @@ Flexible configuration through environment variables for Neo4j connection, embed
 
 ## 🌐 Azure Deployment
 
+### Current Production State ✅
+
+Your knowledge base is **deployed and operational** on Neo4j Aura with a comprehensive collection of 12 technical books. The database contains 30,006 embedded chunks covering Neo4j, Graph Databases, RAG systems, Machine Learning on Graphs, Knowledge Graphs, and Vector Databases. Azure AI Foundry Assistant is configured with custom functions to search this knowledge base and provide intelligent, grounded responses.
+
+**Aura Instance**: `6b870b04` (westeurope) | **Books**: 12 PDFs | **Chunks**: 30,006 | **Coverage**: 100%
+
+See [AURA_DATABASE_ANALYSIS_REPORT.md](AURA_DATABASE_ANALYSIS_REPORT.md) for detailed analysis.
+
 ### Quick Azure Deployment
 
-The automated deployment script creates all necessary Azure resources including Container Apps for Neo4j and RAG, Key Vault for secrets, Application Insights for monitoring, and configures networking between components. The entire process takes about 30 minutes and sets up a production-ready environment with auto-scaling and managed identity authentication.
+The automated deployment script creates all necessary Azure resources including Container Apps for the RAG service, Key Vault for secrets, Application Insights for monitoring, and configures networking between components. The entire process takes about 30 minutes and sets up a production-ready environment with auto-scaling and managed identity authentication to your existing Aura knowledge base.
 
-Run `./scripts/azure-deploy-enterprise.sh` to deploy Neo4j + RAG Container Apps
+Run `./scripts/azure-deploy-enterprise.sh` to deploy RAG Container App
 
 ### Configure Azure AI Assistant
 
-After deploying the knowledge base, integrate it with your Azure AI Foundry agent by running the configuration script. This adds custom tools for searching the knowledge base, uploading documents, and retrieving statistics. Your AI agent can then leverage the 417x performance improvements for instant, grounded responses.
+After deploying the RAG service, your Azure AI Foundry agent is already configured with custom tools for searching the knowledge base with 30K chunks, uploading new documents, and retrieving statistics. The AI agent leverages Neo4j's high-performance vector search for instant, grounded responses from your comprehensive technical library.
 
-After deployment, configure your AI Assistant: `python scripts/configure-azure-assistant.py`
-
-**What it configures:**
-- ✅ Adds 4 custom tools (search, add document, stats, health)
-- ✅ Updates instructions for Neo4j RAG usage
-- ✅ Sets optimal parameters for knowledge base queries
-- ✅ Enables 417x performance for your Assistant
+Your Assistant is ready: `python scripts/configure-azure-assistant.py` (if updates needed)
 
 **Your Assistant:**
 - **ID**: `asst_LHQBXYvRhnbFo7KQ7IRbVXRR`
-- **Name**: Neo4j RAG Assistant (updated from Assistant347)
 - **Model**: gpt-4o-mini
 - **Tools**: 4 Neo4j RAG functions
-
-![alt text](image.png)
+- **Knowledge Base**: 12 books, 30,006 chunks
 
 **Test in playground**: Ask "What is Neo4j?" and verify it searches the knowledge base.
 

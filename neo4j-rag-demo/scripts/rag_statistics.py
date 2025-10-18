@@ -320,10 +320,20 @@ def main():
     print("\n🚀 NEO4J RAG STATISTICS ANALYSIS")
     print("="*60)
 
+    # Load environment variables
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    neo4j_uri = os.getenv('NEO4J_URI', 'bolt://localhost:7687')
+    neo4j_username = os.getenv('NEO4J_USERNAME', 'neo4j')
+    neo4j_password = os.getenv('NEO4J_PASSWORD', 'password')
+
+    print(f"🔗 Target: {neo4j_uri}")
+
     # Connect to Neo4j
     try:
-        rag = Neo4jRAG()
-        print("✅ Connected to Neo4j")
+        rag = Neo4jRAG(uri=neo4j_uri, username=neo4j_username, password=neo4j_password)
+        print("✅ Connected to Neo4j Aura")
     except Exception as e:
         print(f"❌ Failed to connect to Neo4j: {e}")
         print("\nMake sure Neo4j is running:")

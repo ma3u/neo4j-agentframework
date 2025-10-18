@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 class KnowledgeBaseProcessor:
     """Process documents from knowledge folder using Docling and load into RAG system"""
     
-    def __init__(self, knowledge_dir: str = "knowledge", 
+    def __init__(self, knowledge_dir: str = "knowledge/pdfs", 
                  neo4j_uri: str = "bolt://localhost:7687",
                  neo4j_username: str = "neo4j", 
                  neo4j_password: str = "password"):
@@ -279,8 +279,22 @@ class KnowledgeBaseProcessor:
 
 def main():
     """Main function to process knowledge base"""
-    
-    processor = KnowledgeBaseProcessor()
+
+    # Load environment variables
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    neo4j_uri = os.getenv('NEO4J_URI', 'bolt://localhost:7687')
+    neo4j_username = os.getenv('NEO4J_USERNAME', 'neo4j')
+    neo4j_password = os.getenv('NEO4J_PASSWORD', 'password')
+
+    logger.info(f"Connecting to Neo4j: {neo4j_uri}")
+
+    processor = KnowledgeBaseProcessor(
+        neo4j_uri=neo4j_uri,
+        neo4j_username=neo4j_username,
+        neo4j_password=neo4j_password
+    )
     
     try:
         # Process all documents
