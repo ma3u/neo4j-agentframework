@@ -198,6 +198,66 @@ pids
 # Optional eslint cache
 .eslintcache
 
+# ============================================================================
+# BitNet.cpp and LLM Model Files
+# ============================================================================
+
+# Large model files (should use Git LFS or container registry)
+*.gguf
+*.gguf.json
+*.bin
+*.model
+*.vocab
+*.tokenizer
+*.safetensors
+
+# BitNet build artifacts
+BitNet/build/
+BitNet/*/build/
+
+# BitNet compiled binaries
+BitNet/**/*.exe
+BitNet/**/*.so
+BitNet/**/*.dylib
+BitNet/**/*.dll
+BitNet/**/*.a
+
+# BitNet model downloads and cache
+BitNet/models/
+BitNet/*/models/
+BitNet/3rdparty/llama.cpp/models/*.gguf
+BitNet/checkpoints/
+BitNet/gpu/checkpoints/
+
+# BitNet temporary and log files
+BitNet/**/*.log
+BitNet/**/*.tmp
+BitNet/**/*.etag
+BitNet/**/*.lastModified
+BitNet/logs/
+
+# BitNet generated kernels (except preset ones)
+BitNet/include/bitnet-lut-kernels.h
+
+# CMake build artifacts
+cmake_install.cmake
+CMakeCache.txt
+CMakeFiles/
+install_manifest.txt
+
+# ============================================================================
+# Docker and Container Registry
+# ============================================================================
+
+# Don't commit large Docker contexts
+*.tar
+*.tar.gz
+docker-context/
+
+# Container build logs
+build-*.log
+container-*.log
+
 # Optional stylelint cache
 .stylelintcache
 
