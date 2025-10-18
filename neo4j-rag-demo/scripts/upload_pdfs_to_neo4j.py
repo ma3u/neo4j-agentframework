@@ -162,6 +162,12 @@ def main():
         action='store_true',
         help='Show what would be uploaded without processing'
     )
+    parser.add_argument(
+        '--target',
+        choices=['local', 'aura'],
+        default='aura',
+        help='Target Neo4j instance: local (bolt://localhost:7687) or aura (from .env) - default: aura'
+    )
 
     args = parser.parse_args()
 
@@ -220,11 +226,31 @@ def main():
         return 0
 
     # Connect to Neo4j
-    print(f"\n🔗 Connecting to Neo4j...")
+    print(f"\n🔗 Connecting to Neo4j ({args.target})...")
     try:
-        rag = Neo4jRAG()
+        # Determine connection based on target
+        if args.target == 'local':
+            neo4j_uri = 'bolt://localhost:7687'
+            neo4j_username = 'neo4j'
+            neo4j_password = 'password'
+            print("📍 Target: Local Neo4j (localhost:7687)")
+        else:  # aura
+            # Load environment variables
+            from dotenv import load_dotenv
+            load_dotenv()
+
+            neo4j_uri = os.getenv('NEO4J_URI')
+            neo4j_username = os.getenv('NEO4J_USERNAME', 'neo4j')
+            neo4j_password = os.getenv('NEO4J_PASSWORD')
+
+            if not neo4j_uri or not neo4j_password:
+                raise ValueError("NEO4J_URI and NEO4J_PASSWORD must be set in .env file for Aura")
+
+            print(f"📍 Target: Neo4j Aura ({neo4j_uri})")
+
+        rag = Neo4jRAG(uri=neo4j_uri, username=neo4j_username, password=neo4j_password)
         loader = DoclingDocumentLoader(neo4j_rag=rag)
-        print("✅ Connected to Neo4j")
+        print(f"✅ Connected successfully")
 
         # Get initial stats
         stats_before = rag.get_stats()
