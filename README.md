@@ -144,6 +144,13 @@ Your Aura database contains a comprehensive collection of technical books:
 - Knowledge Graphs: Data in Context (Neo4j)
 - Vector Database Management Systems (arXiv 2309.11322)
 
+**Explore with Cypher Queries:**
+- **[45 Copy-Paste Queries](neo4j-rag-demo/AURA_CYPHER_QUERIES.md)** - Complete Cypher guide with graph DB benefits
+- **[Results Explained](CYPHER_ANALYSIS_RESULTS_EXPLAINED.md)** - Non-technical explanation of your data
+- **[Browser Queries](neo4j-rag-demo/scripts/neo4j_browser_queries.cypher)** - Basic statistics and search
+- **[Content Analysis](neo4j-rag-demo/scripts/neo4j_content_analysis.cypher)** - Advanced topic analysis
+- **[Enhanced Queries](neo4j-rag-demo/scripts/neo4j_browser_queries_enhanced.cypher)** - Visualization and utilities
+
 **Manage Knowledge Base:**
 ```bash
 # View statistics
@@ -152,8 +159,8 @@ python scripts/rag_statistics.py
 # Upload more PDFs
 python scripts/upload_pdfs_to_neo4j.py --target aura
 
-# Test search
-python scripts/rag_search_examples.py
+# Run Cypher analysis
+python scripts/run_cypher_analysis.py
 ```
 
 ---
