@@ -312,6 +312,9 @@ Your knowledge base is **deployed and operational** on Neo4j Aura with a compreh
 
 See [Aura Database Analysis](docs/analysis/AURA_DATABASE_ANALYSIS_REPORT.md) for detailed analysis.
 
+![Aura Instance with Cypher Scripts](image.png)
+Neo4J Aura Instance with Cypher Scripts
+
 ### Quick Azure Deployment
 
 The automated deployment script creates all necessary Azure resources including Container Apps for the RAG service, Key Vault for secrets, Application Insights for monitoring, and configures networking between components. The entire process takes about 30 minutes and sets up a production-ready environment with auto-scaling and managed identity authentication to your existing Aura knowledge base.
