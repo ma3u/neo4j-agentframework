@@ -1,0 +1,115 @@
+# BitNet.cpp Ultra-Minimal Dockerfile (Target: 200MB)
+# Model mounted as external volume for maximum efficiency
+# Based on ajsween/bitnet-b1-58-arm-docker
+
+# Build stage - Keep everything needed for compilation
+FROM ubuntu:22.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-dev \
+    cmake \
+    build-essential \
+    git \
+    software-properties-common \
+    wget \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install LLVM 18 for optimal ARM compilation
+RUN wget -O - https://apt.llvm.org/llvm.sh | bash -s 18
+
+# Clone BitNet repository with submodules
+WORKDIR /build
+RUN git clone --recursive https://github.com/microsoft/BitNet.git
+
+# Install Python dependencies for codegen
+WORKDIR /build/BitNet
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# CRITICAL: Generate kernel file using codegen_tl1.py
+RUN python3 utils/codegen_tl1.py \
+    --model bitnet_b1_58-3B \
+    --BM 160,320,320 \
+    --BK 64,128,64 \
+    --bm 32,64,32 && \
+    echo "✅ Kernel file generated" && \
+    ls -lh include/bitnet-lut-kernels.h
+
+# Build BitNet.cpp with clang-18
+RUN export CC=clang-18 CXX=clang++-18 && \
+    mkdir -p build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && \
+    make -j$(nproc) && \
+    echo "✅ BitNet.cpp compiled" && \
+    ls -lh /build/BitNet/build/bin/llama-cli
+
+# Install HuggingFace CLI for runtime model download
+RUN pip3 install --no-cache-dir huggingface-hub
+
+# ULTRA-MINIMAL Runtime stage - Only essentials (Target: ~200MB)
+FROM python:3.11-slim
+
+# Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Install minimal Python packages
+RUN pip3 install --no-cache-dir \
+    fastapi==0.104.0 \
+    uvicorn[standard]==0.24.0 \
+    pydantic==2.5.0 \
+    huggingface-hub
+
+# Create app directory structure
+WORKDIR /app
+RUN mkdir -p /app/bin /app/models
+
+# Copy ONLY the compiled binary (not entire BitNet directory)
+COPY --from=builder /build/BitNet/build/bin/llama-cli /app/bin/
+
+# Copy ONLY the shared libraries
+COPY --from=builder /build/BitNet/build/3rdparty/llama.cpp/ggml/src/libggml.so /usr/local/lib/
+COPY --from=builder /build/BitNet/build/3rdparty/llama.cpp/src/libllama.so /usr/local/lib/
+
+# Update library cache
+RUN ldconfig
+
+# Copy model download script
+COPY download_model.sh /app/
+
+# Copy updated server script
+COPY bitnet_server_minimal.py /app/server.py
+
+# Make scripts executable
+RUN chmod +x /app/download_model.sh
+
+# Verify binary works
+RUN /app/bin/llama-cli --version 2>/dev/null || echo "✅ BitNet binary ready"
+
+# Environment variables
+ENV MODEL_PATH=/app/models/ggml-model-i2_s.gguf
+ENV BITNET_BINARY=/app/bin/llama-cli
+ENV BITNET_THREADS=4
+ENV BITNET_CTX_SIZE=2048
+ENV PYTHONUNBUFFERED=1
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENV HF_MODEL_ID=microsoft/BitNet-b1.58-2B-4T-gguf
+
+# Health check - more lenient for model downloading
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
+    CMD curl -f http://localhost:8001/health || exit 1
+
+EXPOSE 8001
+
+WORKDIR /app
+
+# Startup command that downloads model if needed
+CMD ["sh", "-c", "./download_model.sh && python3 server.py"]

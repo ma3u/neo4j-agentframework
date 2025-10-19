@@ -464,6 +464,315 @@ az containerapp update --name neo4j-rag-agent \
 - [ ] Enhanced security features
 - [ ] GraphRAG advanced features
 
+## 🗂️ Large File Management & Container Development Workflow
+
+### Problem: AI/ML Projects with Large Files
+
+AI projects often involve large files that shouldn't be stored in Git:
+- **Model files** (*.gguf, *.bin): 100MB - 10GB
+- **Compiled binaries** (*.exe, *.so, *.dll): 1-100MB  
+- **Build artifacts** (build/, CMakeFiles/): 10MB - 1GB
+- **Downloaded datasets**: 1GB+
+
+### Solution: Hybrid Git + Container Registry Strategy
+
+```
+✅ Git Repository (Source Code):          ✅ Container Registry (Binaries):
+┌─────────────────────────────┐          ┌─────────────────────────────┐
+│ ✅ Source code (*.py, *.cpp)       │          │ ✅ Compiled binaries (llama-cli) │
+│ ✅ Build scripts (CMakeLists.txt) │          │ ✅ Model files (*.gguf)         │
+│ ✅ Documentation (README.md)     │          │ ✅ Runtime environment           │
+│ ✅ Configuration files           │          │ ✅ Dependencies                  │
+│ ✅ .gitignore patterns           │          │ ✅ Complete deployment package   │
+│                              │          │                               │
+│ Size: ~100MB                 │          │ Size: 1.4GB - 3.2GB          │
+│ Clone time: 30 seconds       │          │ Pull time: 2-5 minutes       │
+│ Purpose: Development         │          │ Purpose: Deployment           │
+└─────────────────────────────┘          └─────────────────────────────┘
+```
+
+### Implementation Steps
+
+#### 1. Repository Cleanup Process
+
+```bash
+# 1. Identify large files currently tracked
+git ls-files | xargs ls -lh | awk '$5 > 1000000 {print $5, $9}'
+
+# 2. Run cleanup script to remove from Git tracking
+./scripts/cleanup-large-files.sh
+
+# 3. Verify cleanup worked
+git ls-files BitNet/ | grep -E "\.gguf$|\.bin$|\.so$" | wc -l  # Should be 0
+
+# 4. Commit the cleanup
+git commit -m "Remove large binary files from Git tracking
+
+- Remove vocabulary model files (*.gguf) from Git tracking
+- Files still available in Docker containers
+- Add comprehensive .gitignore patterns for large files
+- Repository cleanup: Focus on source code, not binary artifacts"
+```
+
+#### 2. Comprehensive .gitignore Patterns
+
+Add to `.gitignore`:
+```bash
+# ============================================================================
+# BitNet.cpp and LLM Model Files
+# ============================================================================
+
+# Large model files (use container registry instead)
+*.gguf
+*.gguf.json
+*.bin
+*.model
+*.vocab
+*.tokenizer
+*.safetensors
+
+# Build artifacts
+BitNet/build/
+BitNet/*/build/
+CMakeFiles/
+cmake_install.cmake
+CMakeCache.txt
+
+# Compiled binaries
+BitNet/**/*.exe
+BitNet/**/*.so
+BitNet/**/*.dylib
+BitNet/**/*.dll
+BitNet/**/*.a
+
+# Model downloads and cache
+BitNet/models/
+BitNet/*/models/
+BitNet/3rdparty/llama.cpp/models/*.gguf
+BitNet/checkpoints/
+BitNet/gpu/checkpoints/
+
+# Generated files
+BitNet/include/bitnet-lut-kernels.h
+BitNet/**/*.log
+BitNet/**/*.tmp
+```
+
+#### 3. Container Registry Setup
+
+**GitHub Container Registry (Recommended):**
+```bash
+# 1. Build and tag images
+docker build -f scripts/Dockerfile.bitnet-final \
+    -t ghcr.io/ma3u/ms-agentf-neo4j/bitnet-final:latest scripts/
+
+# 2. Login to GHCR
+echo $GITHUB_TOKEN | docker login ghcr.io -u ma3u --password-stdin
+
+# 3. Push to registry
+docker push ghcr.io/ma3u/ms-agentf-neo4j/bitnet-final:latest
+
+# 4. Use automated build script
+./scripts/build-and-push-images.sh --push
+```
+
+**Available Pre-built Images:**
+- `ghcr.io/ma3u/ms-agentf-neo4j/bitnet-final:latest` (3.2GB) - Full BitNet.cpp
+- `ghcr.io/ma3u/ms-agentf-neo4j/bitnet-optimized:latest` (2.5GB) - Size-optimized
+- `ghcr.io/ma3u/ms-agentf-neo4j/rag-service:latest` (2.76GB) - RAG service
+- `ghcr.io/ma3u/ms-agentf-neo4j/streamlit-chat:latest` (792MB) - Chat UI
+
+### Container Development Workflow
+
+#### Pre-built Container Deployment (Recommended)
+```bash
+# 1. Clone source code (fast)
+git clone https://github.com/ma3u/ms-agentf-neo4j.git
+cd ms-agentf-neo4j
+
+# 2. Use pre-built containers (instant deployment)
+docker-compose -f scripts/docker-compose.ghcr.yml up -d
+
+# 3. Access services immediately
+open http://localhost:8501  # Streamlit Chat UI
+open http://localhost:7474  # Neo4j Browser
+open http://localhost:8000/docs  # RAG API
+```
+
+#### Local Development with Containers
+```bash
+# 1. Build containers locally (30+ minutes for BitNet)
+docker-compose -f scripts/docker-compose.optimized.yml up -d --build
+
+# 2. Make code changes to source files
+vim neo4j-rag-demo/src/neo4j_rag.py
+
+# 3. Restart specific services to test changes
+docker-compose -f scripts/docker-compose.optimized.yml restart rag-service
+
+# 4. Commit only source code changes (small, fast)
+git add neo4j-rag-demo/src/
+git commit -m "Improve Neo4j RAG performance"
+```
+
+#### Container Verification Process
+```bash
+# 1. Health checks for all services
+curl -s http://localhost:8000/health | jq '.status'  # RAG service
+curl -s http://localhost:8001/health | jq '.status'  # BitNet LLM
+curl -s http://localhost:7474 > /dev/null && echo "Neo4j: healthy"  # Neo4j
+
+# 2. Verify BitNet is real inference (not mock)
+curl -s http://localhost:8001/health | jq '.mode'  # Should be "real_inference"
+
+# 3. Test end-to-end pipeline
+curl -X POST http://localhost:8000/query \
+  -H 'Content-Type: application/json' \
+  -d '{"question":"What is Neo4j?","k":3}' | jq '.processing_time'
+
+# 4. Performance verification
+curl -s http://localhost:8000/stats | jq '.avg_response_time_ms'
+```
+
+### Container Upload/Download Process
+
+#### Upload Process (CI/CD)
+```bash
+# Automated via GitHub Actions (.github/workflows/build-docker-images.yml)
+# Triggered on:
+# - Push to main branch
+# - Dockerfile changes
+# - Manual workflow dispatch
+
+# Manual upload:
+./scripts/build-and-push-images.sh --push
+
+# Verify upload
+curl -s https://api.github.com/users/ma3u/packages?package_type=container
+```
+
+#### Download Process (Deployment)
+```bash
+# 1. Pull specific image
+docker pull ghcr.io/ma3u/ms-agentf-neo4j/bitnet-final:latest
+
+# 2. Pull all images via compose
+docker-compose -f scripts/docker-compose.ghcr.yml pull
+
+# 3. Start services
+docker-compose -f scripts/docker-compose.ghcr.yml up -d
+
+# 4. Verify deployment
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+```
+
+### Software Development Process Integration
+
+#### Developer Onboarding
+```bash
+# New developer setup (5 minutes)
+1. git clone https://github.com/ma3u/ms-agentf-neo4j.git
+2. docker-compose -f scripts/docker-compose.ghcr.yml up -d
+3. open http://localhost:8501  # Start developing!
+
+# No more:
+# ❌ 30-minute BitNet compilation
+# ❌ Complex dependency installation 
+# ❌ "It works on my machine" issues
+# ❌ Large Git clone times
+```
+
+#### Development Cycle
+```bash
+# 1. Feature development
+git checkout -b feature/improve-rag
+vim neo4j-rag-demo/src/neo4j_rag.py  # Make changes
+
+# 2. Local testing with containers
+docker-compose restart rag-service
+curl http://localhost:8000/health
+
+# 3. Commit source code only
+git add neo4j-rag-demo/src/
+git commit -m "Improve query performance by 2x"
+
+# 4. CI/CD rebuilds containers automatically
+# Push triggers GitHub Actions → New container images
+git push origin feature/improve-rag
+```
+
+#### Production Deployment
+```bash
+# Azure Container Apps with pre-built images
+az containerapp create \
+  --name bitnet-rag \
+  --resource-group myResourceGroup \
+  --environment myEnvironment \
+  --image ghcr.io/ma3u/ms-agentf-neo4j/bitnet-final:latest \
+  --cpu 2 --memory 4Gi
+
+# Kubernetes deployment
+kubectl create deployment bitnet-rag \
+  --image=ghcr.io/ma3u/ms-agentf-neo4j/bitnet-final:latest
+```
+
+### Best Practices Summary
+
+#### ✅ DO:
+1. **Commit source code** (*.py, *.cpp, *.h, *.js)
+2. **Use pre-built containers** for deployment
+3. **Keep .gitignore updated** with large file patterns
+4. **Document what files are excluded** and why
+5. **Use container health checks** to verify deployments
+6. **Test containers locally** before pushing
+7. **Version container images** with tags
+
+#### ❌ DON'T:
+1. **Commit large binary files** (*.gguf, *.bin, *.exe)
+2. **Store models in Git** (use container registry)
+3. **Include build artifacts** (build/, node_modules/)
+4. **Forget to test pre-built containers**
+5. **Mix build and runtime concerns**
+
+### File Size Guidelines
+
+| File Type | Size Limit | Action |
+|-----------|------------|--------|
+| Source Code | < 1MB | ✅ Commit to Git |
+| Documentation | < 10MB | ✅ Commit to Git |
+| Configuration | < 100KB | ✅ Commit to Git |
+| **Binary Files** | **> 10MB** | **🐳 Use containers** |
+| **Model Files** | **> 100MB** | **🐳 Use containers** |
+| **Build Artifacts** | **Any size** | **🗑️ .gitignore** |
+
+### Verification Commands
+
+```bash
+# Repository health check
+echo "📊 Repository Analysis:"
+echo "Git database size: $(du -sh .git/ | cut -f1)"
+echo "Large files in Git: $(git ls-files | xargs ls -lh 2>/dev/null | awk '$5 > 10000000' | wc -l)"
+echo "Total tracked files: $(git ls-files | wc -l)"
+
+# Container verification
+echo "\n🐳 Container Status:"
+docker images | grep ghcr.io/ma3u/ms-agentf-neo4j
+docker ps --format "table {{.Names}}\t{{.Status}}"
+
+# Service verification
+echo "\n🔍 Service Health:"
+curl -s http://localhost:8000/health | jq -r '"RAG: " + .status'
+curl -s http://localhost:8001/health | jq -r '"BitNet: " + .status + " (" + .mode + ")"'
+```
+
+### Related Documentation
+- [BITNET-FILE-MANAGEMENT.md](docs/BITNET-FILE-MANAGEMENT.md) - Complete file management guide
+- [CONTAINER_REGISTRY.md](docs/CONTAINER_REGISTRY.md) - Container registry usage
+- [BITNET-COMPLETE-GUIDE.md](docs/BITNET-COMPLETE-GUIDE.md) - Full BitNet journey
+- [build-and-push-images.sh](scripts/build-and-push-images.sh) - Build automation
+
+---
+
 ## Support and Resources
 
 **Issues**: https://github.com/ma3u/neo4j-agentframework/issues
