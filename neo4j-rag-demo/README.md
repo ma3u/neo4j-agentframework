@@ -116,6 +116,9 @@ curl -X POST http://localhost:8000/query \
 - 📖 **API Documentation**: http://localhost:8000/docs
 - ⚡ **Ultra-low resources**: 0.5GB memory, minimal CPU usage
 
+![Docker Containers Running](images/docker-containers.png)
+*Docker Desktop showing all services running: Neo4j, RAG API, BitNet LLM, and Streamlit UI*
+
 ### 5. Explore in Neo4j Browser
 
 #### Quick Setup - Import Pre-built Queries
@@ -139,6 +142,9 @@ This will:
 ---
 
 ## 🏗️ Architecture
+
+![System Architecture Overview](images/architecture-overview.png)
+*Complete system architecture showing Neo4j, BitNet LLM, RAG API, and integration components*
 
 ### Core Components
 
@@ -202,7 +208,10 @@ The framework includes **50+ pre-built Cypher queries** organized into categorie
 ![Neo4j Browser with Imported Queries](images/neo4j-browser-queries.png)
 *Neo4j Browser showing imported custom queries including Quick Stats, Dashboard Overview, PDF Document List, Topic Analysis, and more*
 
-![alt text](images/neo4j-browser.png)
+![Neo4j Browser Interface](images/neo4j-browser.png)
+
+![Neo4j Aura Cloud Database](images/neo4j-aura.png)
+*Neo4j Aura cloud database showing graph data visualization and performance metrics*
 
 ### Quick Import
 ```bash
@@ -373,6 +382,9 @@ python tests/test_docling_pdf.py
 ### Production Deployment with BitNet
 Deploy ultra-efficient BitNet RAG to Azure Container Apps with serverless scaling.
 
+![Azure AI Foundry Deployment](images/azure-ai-foundry.png)
+*Azure AI Foundry showing deployed RAG application with BitNet integration and monitoring dashboard*
+
 ### Prerequisites
 - Azure CLI installed and authenticated (`az login`)
 - Docker Desktop running
@@ -380,7 +392,7 @@ Deploy ultra-efficient BitNet RAG to Azure Container Apps with serverless scalin
 
 ### Quick Deploy (Automated)
 ```bash
-cd azure
+cd azure_deploy
 chmod +x deploy_bitnet.sh
 ./deploy_bitnet.sh
 ```
@@ -425,7 +437,7 @@ az acr create \
 az acr build \
   --registry $REGISTRY_NAME \
   --image neo4j-rag-bitnet:v2.0 \
-  --file azure/Dockerfile.bitnet \
+  --file azure_deploy/Dockerfile.bitnet \
   .
 ```
 
@@ -807,7 +819,7 @@ rag = Neo4jRAG(embedding_model=custom_model)
 | Slow queries | `rag.get_stats()` → increase pool/cache |
 | Memory errors | Reduce chunk_size in `RecursiveCharacterTextSplitter` |
 | Connection fails | Check `docker ps`, verify Neo4j running on 7687 |
-| Azure deploy fails | Validate: `docker build -f azure/Dockerfile.agent .` |
+| Azure deploy fails | Validate: `docker build -f azure_deploy/Dockerfile.agent .` |
 
 **Debug Commands**
 ```bash

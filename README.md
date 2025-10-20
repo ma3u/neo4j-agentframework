@@ -193,7 +193,7 @@ The Docker Compose configuration automatically sets up all four services (Neo4j,
 - 🤖 BitNet LLM (port 8001) *optional - local development only*
 - 🧠 Streamlit Chat UI (port 8501) *local development only*
 
-![Neo4j RAG Docker Desktop Containers](docs/images/neo4j-rag-docker-desktop-containers.jpg)
+![alt text](image.png)
 *Neo4j Database + RAG Service + BitNet LLM running in Docker Desktop*
 
 ### Option 2: Connect to Production Aura Instance
@@ -308,6 +308,7 @@ Flexible configuration through environment variables for Neo4j connection, embed
 
 Your knowledge base is **deployed and operational** on Neo4j Aura with a comprehensive collection of 12 technical books. The database contains 30,006 embedded chunks covering Neo4j, Graph Databases, RAG systems, Machine Learning on Graphs, Knowledge Graphs, and Vector Databases. Azure AI Foundry Assistant is configured with custom functions to search this knowledge base and provide intelligent, grounded responses.
 
+![alt text](image-2.png)
 **Aura Instance**: `6b870b04` (westeurope) | **Books**: 12 PDFs | **Chunks**: 30,006 | **Coverage**: 100%
 
 See [AURA_DATABASE_ANALYSIS_REPORT.md](AURA_DATABASE_ANALYSIS_REPORT.md) for detailed analysis.
@@ -323,6 +324,10 @@ Run `./scripts/azure-deploy-enterprise.sh` to deploy RAG Container App
 After deploying the RAG service, your Azure AI Foundry agent is already configured with custom tools for searching the knowledge base with 30K chunks, uploading new documents, and retrieving statistics. The AI agent leverages Neo4j's high-performance vector search for instant, grounded responses from your comprehensive technical library.
 
 Your Assistant is ready: `python scripts/configure-azure-assistant.py` (if updates needed)
+
+![alt text](image-1.png)
+Azure AI Agent configured with Neo4j RAG functions
+
 
 **Your Assistant:**
 - **ID**: `asst_LHQBXYvRhnbFo7KQ7IRbVXRR`
