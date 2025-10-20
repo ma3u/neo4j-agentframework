@@ -1,0 +1,69 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Neo4j RAG API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://neo4j-rag-agent.yellowtree-8fdce811.swedencentral.azurecontainerapps.io"
+    }
+  ],
+  "paths": {
+    "/search_knowledge_base": {
+      "post": {
+        "operationId": "searchKnowledgeBase",
+        "summary": "Search Knowledge Base",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "question": {
+                    "type": "string"
+                  },
+                  "max_results": {
+                    "type": "integer",
+                    "default": 5
+                  }
+                },
+                "required": [
+                  "question"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/get_knowledge_base_statistics": {
+      "get": {
+        "operationId": "getKnowledgeBaseStats",
+        "summary": "Get Knowledge Base Statistics",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/check_knowledge_base_health": {
+      "get": {
+        "operationId": "checkKnowledgeBaseHealth",
+        "summary": "Check Knowledge Base Health",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    }
+  }
+}

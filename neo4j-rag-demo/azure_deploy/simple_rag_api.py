@@ -32,7 +32,7 @@ class QueryRequest(BaseModel):
 
 @app.post("/query")
 async def query(req: QueryRequest):
-    results = rag.vector_search(req.question, k=req.k)
+    results = rag.optimized_vector_search(req.question, k=req.k)
     return {"results": results}
 
 @app.get("/health")

@@ -1,0 +1,267 @@
+openapi: 3.0.0
+info:
+  title: Neo4j RAG API for Azure AI Foundry
+  description: |
+    High-performance Neo4j RAG system with 417x performance improvement.
+
+    Connects to Neo4j Aura database (6b870b04) with 12 documents and 30,006 chunks.
+
+    Features:
+    - Optimized vector search with sentence transformers
+    - Real-time knowledge base queries
+    - Production-grade caching and connection pooling
+
+    Use this OpenAPI spec to configure Azure AI Foundry Assistant functions.
+  version: 2.0.0
+  contact:
+    name: Neo4j RAG Support
+    url: https://github.com/ma3u/ms-agentf-neo4j
+
+servers:
+  - url: https://neo4j-rag-agent.yellowtree-8fdce811.swedencentral.azurecontainerapps.io
+    description: Azure Container Apps Production Server
+
+paths:
+  /health:
+    get:
+      operationId: check_system_health
+      summary: Check system health status
+      description: |
+        Returns health status of the Neo4j RAG system including:
+        - Service status
+        - Database connection status
+        - Document and chunk counts
+      responses:
+        '200':
+          description: System health information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                    description: Overall system health status
+                  mode:
+                    type: string
+                    description: Running mode (production, development, mock_data)
+                  stats:
+                    type: object
+                    properties:
+                      documents:
+                        type: integer
+                        description: Total number of documents in knowledge base
+                      chunks:
+                        type: integer
+                        description: Total number of text chunks indexed
+                      avg_chunks_per_doc:
+                        type: number
+                        description: Average chunks per document
+                      cache_size:
+                        type: integer
+                        description: Number of cached queries
+              example:
+                status: "healthy"
+                mode: "production"
+                stats:
+                  documents: 12
+                  chunks: 30006
+                  avg_chunks_per_doc: 2500.5
+                  cache_size: 15
+
+  /stats:
+    get:
+      operationId: get_statistics
+      summary: Get comprehensive system statistics
+      description: |
+        Returns detailed Neo4j database statistics including:
+        - Document count
+        - Chunk count
+        - Average chunks per document
+        - Cache performance metrics
+      responses:
+        '200':
+          description: System statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: integer
+                    description: Total documents in database
+                  chunks:
+                    type: integer
+                    description: Total chunks indexed
+                  avg_chunks_per_doc:
+                    type: number
+                    description: Average chunks per document
+                  cache_size:
+                    type: integer
+                    description: Current cache size
+              example:
+                documents: 12
+                chunks: 30006
+                avg_chunks_per_doc: 2500.5
+                cache_size: 15
+
+  /query:
+    post:
+      operationId: search_knowledge_base
+      summary: Search the Neo4j knowledge graph
+      description: |
+        Perform optimized vector search on the Neo4j Aura knowledge base.
+
+        This endpoint:
+        - Generates embeddings for the query using SentenceTransformers
+        - Performs optimized vector similarity search (417x faster than baseline)
+        - Returns top-k most relevant chunks with metadata and sources
+
+        Performance:
+        - First query: ~5-10s (includes embedding generation)
+        - Cached queries: <100ms
+        - Subsequent queries: ~1-2s
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - question
+              properties:
+                question:
+                  type: string
+                  description: The question to search for in the knowledge base
+                  minLength: 1
+                  maxLength: 2000
+                  example: "What is Neo4j and how does it work?"
+                k:
+                  type: integer
+                  description: Number of results to return
+                  default: 5
+                  minimum: 1
+                  maximum: 20
+                  example: 3
+      responses:
+        '200':
+          description: Search results with relevant chunks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    description: Array of relevant chunks
+                    items:
+                      type: object
+                      properties:
+                        text:
+                          type: string
+                          description: The chunk text content
+                        score:
+                          type: number
+                          description: Similarity score (0-1, higher is better)
+                        doc_id:
+                          type: string
+                          description: Document UUID
+                        chunk_index:
+                          type: integer
+                          description: Position of chunk in source document
+                        metadata:
+                          type: object
+                          description: Document metadata (source, filename, etc.)
+              example:
+                results:
+                  - text: "Neo4j is a graph database management system..."
+                    score: 0.87
+                    doc_id: "abc123"
+                    chunk_index: 5
+                    metadata:
+                      source: "/path/to/document.pdf"
+                      filename: "neo4j_guide.pdf"
+                      category: "graph_databases"
+        '400':
+          description: Bad request - invalid parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error message
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error message
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        mode:
+          type: string
+        stats:
+          type: object
+
+    StatsResponse:
+      type: object
+      properties:
+        documents:
+          type: integer
+        chunks:
+          type: integer
+        avg_chunks_per_doc:
+          type: number
+        cache_size:
+          type: integer
+
+    QueryRequest:
+      type: object
+      required:
+        - question
+      properties:
+        question:
+          type: string
+        k:
+          type: integer
+          default: 5
+
+    SearchResult:
+      type: object
+      properties:
+        text:
+          type: string
+        score:
+          type: number
+        doc_id:
+          type: string
+        chunk_index:
+          type: integer
+        metadata:
+          type: object
+
+tags:
+  - name: Health
+    description: System health and status endpoints
+  - name: Statistics
+    description: Database statistics and metrics
+  - name: Search
+    description: Knowledge base search operations
+
+externalDocs:
+  description: Full project documentation
+  url: https://github.com/ma3u/ms-agentf-neo4j

@@ -1,0 +1,285 @@
+{
+  "timestamp": "2025-10-20T13:51:17.753968",
+  "base_url": "http://localhost:8000",
+  "summary": {
+    "total": 20,
+    "passed": 18,
+    "failed": 2,
+    "success_rate": 90.0
+  },
+  "tests": [
+    {
+      "test_id": 1,
+      "name": "Basic Health Check",
+      "category": "Health & System",
+      "status": "PASS",
+      "response_time_ms": 277.6532173156738,
+      "details": {
+        "status": "healthy",
+        "mode": "production",
+        "stats": {
+          "documents": 12,
+          "chunks": 30006,
+          "avg_chunks_per_doc": 3717.1,
+          "cache_size": 0
+        }
+      },
+      "error": null
+    },
+    {
+      "test_id": 2,
+      "name": "Stats Endpoint",
+      "category": "Health & System",
+      "status": "PASS",
+      "response_time_ms": 365.0341033935547,
+      "details": {
+        "documents": 12,
+        "chunks": 30006,
+        "avg_chunks_per_doc": 3717.1,
+        "cache_size": 0
+      },
+      "error": null
+    },
+    {
+      "test_id": 3,
+      "name": "Simple Query - What is Neo4j?",
+      "category": "Functional",
+      "status": "PASS",
+      "response_time_ms": 2921.7982292175293,
+      "details": {
+        "num_results": 3,
+        "first_score": 0.24370288471324703
+      },
+      "error": null
+    },
+    {
+      "test_id": 4,
+      "name": "Graph Database Query",
+      "category": "Functional",
+      "status": "PASS",
+      "response_time_ms": 3984.182119369507,
+      "details": {
+        "num_results": 5,
+        "avg_score": 0.24716697370931245
+      },
+      "error": null
+    },
+    {
+      "test_id": 5,
+      "name": "RAG System Query",
+      "category": "Functional",
+      "status": "PASS",
+      "response_time_ms": 2954.6937942504883,
+      "details": {
+        "num_results": 5,
+        "has_rag_content": true
+      },
+      "error": null
+    },
+    {
+      "test_id": 13,
+      "name": "Technical Query - Cypher",
+      "category": "Functional",
+      "status": "PASS",
+      "response_time_ms": 2173.142910003662,
+      "details": {
+        "num_results": 3,
+        "contains_cypher": false
+      },
+      "error": null
+    },
+    {
+      "test_id": 14,
+      "name": "Conceptual Query - Graph Theory",
+      "category": "Functional",
+      "status": "PASS",
+      "response_time_ms": 2851.435899734497,
+      "details": {
+        "num_results": 5,
+        "avg_score": 0.20017197444645024
+      },
+      "error": null
+    },
+    {
+      "test_id": 15,
+      "name": "Comparison Query",
+      "category": "Functional",
+      "status": "PASS",
+      "response_time_ms": 2914.8058891296387,
+      "details": {
+        "num_results": 5,
+        "top_score": 0.31149378991217813
+      },
+      "error": null
+    },
+    {
+      "test_id": 16,
+      "name": "Use Case Query",
+      "category": "Functional",
+      "status": "PASS",
+      "response_time_ms": 2634.31978225708,
+      "details": {
+        "num_results": 5,
+        "unique_docs": 1
+      },
+      "error": null
+    },
+    {
+      "test_id": 17,
+      "name": "Performance Query",
+      "category": "Functional",
+      "status": "PASS",
+      "response_time_ms": 2159.782886505127,
+      "details": {
+        "num_results": 5,
+        "contains_performance": false
+      },
+      "error": null
+    },
+    {
+      "test_id": 6,
+      "name": "Performance - Single Result (k=1)",
+      "category": "Performance",
+      "status": "PASS",
+      "response_time_ms": 447.82400131225586,
+      "details": {
+        "query_time_ms": 447.5991725921631,
+        "num_results": 1
+      },
+      "error": null
+    },
+    {
+      "test_id": 7,
+      "name": "Performance - Multiple Results (k=10)",
+      "category": "Performance",
+      "status": "PASS",
+      "response_time_ms": 8370.654821395874,
+      "details": {
+        "query_time_ms": 8370.306730270386,
+        "num_results": 10
+      },
+      "error": null
+    },
+    {
+      "test_id": 18,
+      "name": "Concurrent Query Handling",
+      "category": "Performance",
+      "status": "PASS",
+      "response_time_ms": 10357.642889022827,
+      "details": {
+        "concurrent_queries": 5,
+        "all_successful": true,
+        "avg_response_time_ms": 7876.442050933838,
+        "individual_times": [
+          4168.895959854126,
+          4168.7939167022705,
+          10349.437236785889,
+          10348.29306602478,
+          10346.790075302124
+        ]
+      },
+      "error": null
+    },
+    {
+      "test_id": 19,
+      "name": "Cache Performance Test",
+      "category": "Performance",
+      "status": "PASS",
+      "response_time_ms": 4223.839044570923,
+      "details": {
+        "first_query_ms": 4189.907073974609,
+        "second_query_ms": 13.504981994628906,
+        "third_query_ms": 20.173072814941406,
+        "speedup_2nd": 310.2489937151331,
+        "speedup_3rd": 207.69800973857136
+      },
+      "error": null
+    },
+    {
+      "test_id": 8,
+      "name": "Metadata Completeness",
+      "category": "Data Quality",
+      "status": "PASS",
+      "response_time_ms": 1389.0442848205566,
+      "details": {
+        "has_all_fields": true,
+        "metadata_keys": [
+          "size_bytes",
+          "format",
+          "extraction_method",
+          "table_3_summary",
+          "source_type",
+          "source",
+          "chunk_count",
+          "table_0_summary",
+          "file_size_mb",
+          "filename",
+          "table_2_summary",
+          "category",
+          "table_1_summary"
+        ]
+      },
+      "error": null
+    },
+    {
+      "test_id": 9,
+      "name": "Score Ordering Validation",
+      "category": "Data Quality",
+      "status": "PASS",
+      "response_time_ms": 2907.480001449585,
+      "details": {
+        "scores": [
+          0.23071286005336386,
+          0.17488424504625022,
+          0.1308112664961371,
+          0.10768765250936285,
+          0.10760061890233692
+        ],
+        "properly_ordered": true
+      },
+      "error": null
+    },
+    {
+      "test_id": 10,
+      "name": "Empty Query Handling",
+      "category": "Error Handling",
+      "status": "PASS",
+      "response_time_ms": 1537.6429557800293,
+      "details": {
+        "status_code": 200,
+        "response": "{\"results\":[{\"text\":\"Index Terms -Large language model, retrieval-augmented generation, natural language processing, information retrieval\\n\\n## I. INTRODUCTION\",\"score\":0.1501113710367537,\"doc_id\":\"e"
+      },
+      "error": null
+    },
+    {
+      "test_id": 11,
+      "name": "Invalid k Parameter",
+      "category": "Error Handling",
+      "status": "PASS",
+      "response_time_ms": 74.93424415588379,
+      "details": {
+        "status_code": 200,
+        "response_preview": "{\"results\":[]}"
+      },
+      "error": null
+    },
+    {
+      "test_id": 12,
+      "name": "Large k Parameter (k=20)",
+      "category": "Error Handling",
+      "status": "FAIL",
+      "response_time_ms": 1636.0249519348145,
+      "details": {},
+      "error": ""
+    },
+    {
+      "test_id": 20,
+      "name": "End-to-End Workflow",
+      "category": "Integration",
+      "status": "FAIL",
+      "response_time_ms": 88.94896507263184,
+      "details": {},
+      "error": ""
+    }
+  ]
+}

@@ -332,11 +332,29 @@ Your Assistant is ready: `python scripts/configure-azure-assistant.py` (if updat
 
 **Test in playground**: Ask "What is Neo4j?" and verify it searches the knowledge base.
 
-See [ASSISTANT_CONFIGURATION.md](docs/ASSISTANT_CONFIGURATION.md) for detailed setup guide.
+### Azure AI Foundry Integration
 
-### Azure AI Agent Integration
+**📘 Integration Guides**:
 
-See [Azure AI Integration Guide](docs/AZURE_CLOUD_ARCHITECTURE.md) for Python integration examples
+| Guide | Description | Status |
+|-------|-------------|--------|
+| [Python SDK Integration](docs/AZURE_AI_FOUNDRY_PYTHON_SDK.md) | Complete guide using Azure AI Projects SDK with code examples | ✅ Ready |
+| [OpenAPI Configuration](docs/AZURE_AI_FOUNDRY_SETUP_INSTRUCTIONS.md) | Upload OpenAPI spec for function calling | ✅ Ready |
+| [Test Results](docs/ISSUE_4_TEST_RESULTS.md) | 20 comprehensive tests, 90% pass rate | ✅ Validated |
+
+**Quick Test** (Python SDK):
+```bash
+# Install SDK
+pip install azure-ai-projects azure-identity
+
+# Test your assistant
+export AZURE_AI_PROJECT_ENDPOINT="https://YOUR_PROJECT.api.azureml.ms"
+python scripts/test_azure_ai_foundry.py
+```
+
+**Test Validation**: ✅ 18/20 tests passed (90% success rate), 310x cache speedup measured
+
+See [Azure Architecture](docs/AZURE_CLOUD_ARCHITECTURE.md) for deployment architecture
 
 
 
@@ -362,6 +380,20 @@ Detailed guides for deploying to Azure Container Apps with comprehensive coverag
 | [Azure Architecture](docs/AZURE_ARCHITECTURE.md) | Azure architecture documentation |
 | [Basic Deployment](docs/DEPLOYMENT.md) | Quick deployment reference |
 | [BitNet Deployment](docs/BITNET_DEPLOYMENT_GUIDE.md) | BitNet-specific deployment |
+
+### 🤖 Azure AI Foundry Integration
+
+Complete guides for integrating Neo4j RAG with Azure AI Foundry, including Python SDK usage, OpenAPI configuration, and comprehensive test validation with 90% pass rate.
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| [Python SDK Integration Guide](docs/AZURE_AI_FOUNDRY_PYTHON_SDK.md) | Complete Azure AI Projects SDK integration with working code examples | ✅ Ready |
+| [OpenAPI Setup Instructions](docs/AZURE_AI_FOUNDRY_SETUP_INSTRUCTIONS.md) | Step-by-step guide to upload OpenAPI spec and configure functions | ✅ Ready |
+| [Configuration Guide](docs/AZURE_AI_FOUNDRY_CONFIGURATION_GUIDE.md) | Detailed configuration with troubleshooting and demo scripts | ✅ Ready |
+| [Test Results & Validation](docs/ISSUE_4_TEST_RESULTS.md) | 20 comprehensive tests, 90% pass rate, 310x cache speedup proven | ✅ Validated |
+| [Complete Summary](docs/ISSUE_4_COMPLETE_SUMMARY.md) | Full Issue #4 implementation with all deliverables | ✅ Complete |
+
+**Quick Start**: `pip install azure-ai-projects azure-identity` then `python scripts/test_azure_ai_foundry.py`
 
 ### 🏗️ Technical Documentation
 

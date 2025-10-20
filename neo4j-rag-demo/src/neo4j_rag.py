@@ -10,7 +10,7 @@ from typing import List, Dict, Optional
 from neo4j import GraphDatabase
 from sentence_transformers import SentenceTransformer
 import numpy as np
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 import logging
 import time
