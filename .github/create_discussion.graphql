@@ -1,0 +1,14 @@
+mutation($body: String!) {
+  createDiscussion(input: {
+    repositoryId: "R_kgDOP7q_LQ"
+    categoryId: "DIC_kwDOP7q_Lc4CwNUz"
+    title: "Neo4j GraphRAG for Hybrid Environments (Azure Cloud + Local/On-Prem)"
+    body: $body
+  }) {
+    discussion {
+      url
+      id
+      title
+    }
+  }
+}
