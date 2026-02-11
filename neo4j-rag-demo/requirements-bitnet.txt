@@ -24,7 +24,7 @@ python-dotenv==1.0.0  # Environment management
 structlog==23.2.0
 
 # Security (minimal)
-cryptography==44.0.1  # Updated to latest secure version (fixes all CVEs including low severity)
+cryptography==46.0.5  # Updated to latest secure version (fixes all CVEs including low severity)
 requests==2.32.4  # Updated to latest secure version (fixes CVE-2024-47081)
 
 # BitNet Efficiency Achievements:
