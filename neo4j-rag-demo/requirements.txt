@@ -18,17 +18,17 @@ neo4j>=5.15.0
 tiktoken>=0.5.2  # Fast tokenization only
 langchain>=0.1.0  # Text splitting utilities
 langchain-community>=0.1.0  # Community integrations
-langchain-text-splitters>=0.1.0  # Text splitting module
+langchain-text-splitters>=1.1.2  # Text splitting module
 langchain-core>=0.1.0  # Core langchain types
 
 # Essential utilities
 numpy>=1.24.4  # Only for embeddings array handling
 pydantic>=2.5.0  # Data validation
-python-dotenv>=1.0.0  # Environment management
+python-dotenv>=1.2.2  # Environment management
 
 # Security: Pin secure versions to fix vulnerabilities
-cryptography>=43.0.1  # Fixes OpenSSL vulnerabilities, NULL pointer, Bleichenbacher attack
-requests>=2.32.4  # Fixes .netrc credentials leak and verify=False issues
+cryptography>=46.0.7  # Fixes OpenSSL vulnerabilities, NULL pointer, Bleichenbacher attack
+requests>=2.33.0  # Fixes .netrc credentials leak and verify=False issues
 
 # Monitoring and observability (minimal)
 opentelemetry-api>=1.20.0
