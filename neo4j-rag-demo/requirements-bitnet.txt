@@ -18,14 +18,14 @@ tiktoken==0.5.2  # Fast tokenization only
 # Essential utilities
 numpy==1.24.4  # Only for embeddings array handling
 pydantic==2.5.0  # Data validation
-python-dotenv==1.0.0  # Environment management
+python-dotenv==1.2.2  # Environment management
 
 # Ultra-minimal logging
 structlog==23.2.0
 
 # Security (minimal)
-cryptography==44.0.1  # Updated to latest secure version (fixes all CVEs including low severity)
-requests==2.32.4  # Updated to latest secure version (fixes CVE-2024-47081)
+cryptography==46.0.7  # Updated to latest secure version (fixes all CVEs including low severity)
+requests==2.33.0  # Updated to latest secure version (fixes CVE-2024-47081)
 
 # BitNet Efficiency Achievements:
 # ================================
